@@ -51,7 +51,7 @@ else
     fi
     
     if [ "$DOCKER_PULL_NEW" = "1" ] && ([ -z "$CSGOJ_DEV" ] || [ "$CSGOJ_DEV" != "1" ]); then
-        docker pull csgrandeur/csgoj-judge:$CSGOJ_VERSION   # 先pull以确保镜像最新
+        docker pull csgrandeur/ccpcoj-judge:$CSGOJ_VERSION   # 先pull以确保镜像最新
     fi
 
     docker run -dit $LINK_LOCAL \
@@ -69,7 +69,7 @@ else
         --memory=$JUDGE_DOCKER_MEMORY \
         --cap-add=SYS_PTRACE $SHM_CONFIG \
         --restart unless-stopped \
-        csgrandeur/csgoj-judge:$CSGOJ_VERSION
+        csgrandeur/ccpcoj-judge:$CSGOJ_VERSION
 
     echo "judge-$OJ_NAME inited"
 fi

@@ -7,7 +7,7 @@ do
 done
 
 if [ "$FLAG_CACHE" = "true" ]; then
-    docker build -t csgrandeur/csgoj-judge .
+    docker build -t csgrandeur/ccpcoj-judge .
 else
-    docker build --no-cache -t csgrandeur/csgoj-judge .
+    docker build --no-cache -t csgrandeur/ccpcoj-judge .
 fi

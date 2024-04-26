@@ -1,4 +1,6 @@
-# CSGOJ - 一站式XCPC比赛系统
+# CCPCOJ - 一站式XCPC比赛系统
+
+> [CSGOJ](https://github.com/CSGrandeur/CSGOJ) 分支版本
 
 集成抽签、气球、打印、滚榜
 

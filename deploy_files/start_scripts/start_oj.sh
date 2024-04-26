@@ -28,7 +28,7 @@ if [ "$(docker ps -aq -f name=/php-$OJ_NAME$)" ]; then
 else
     WEB_MOUNT=""
     if [ "$DOCKER_PULL_NEW" = "1" ] && ([ -z "$CSGOJ_DEV" ] || [ "$CSGOJ_DEV" != "1" ]); then
-        docker pull csgrandeur/csgoj-web:$CSGOJ_VERSION # 先pull以确保镜像最新
+        docker pull csgrandeur/ccpcoj-web:$CSGOJ_VERSION # 先pull以确保镜像最新
     fi
     if [ "$CSGOJ_DEV" = "1" ]; then
         WEB_MOUNT="-v `pwd`/../../ojweb/application:/ojweb/application 
@@ -61,7 +61,7 @@ else
         -v $PATH_DATA/var/data/judge-$BELONG_TO:/home/judge \
         -v $PATH_DATA/nginx/nginx_conf.d:/etc/nginx/conf.d \
         --restart=unless-stopped \
-        csgrandeur/csgoj-web:$CSGOJ_VERSION
+        csgrandeur/ccpcoj-web:$CSGOJ_VERSION
     echo "php-$OJ_NAME inited"
     docker restart nginx-server 2>/dev/null
 fi

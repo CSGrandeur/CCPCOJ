@@ -62,20 +62,20 @@ fi
 
 
 if [ "$FLAG_WEB" = "true" ]; then
-    docker tag csgrandeur/csgoj-web:latest csgrandeur/csgoj-web:$TAG_VERSION
+    docker tag csgrandeur/ccpcoj-web:latest csgrandeur/ccpcoj-web:$TAG_VERSION
 fi
 if [ "$FLAG_JUDGE" = "true" ]; then
-    docker tag csgrandeur/csgoj-judge:latest csgrandeur/csgoj-judge:$TAG_VERSION
+    docker tag csgrandeur/ccpcoj-judge:latest csgrandeur/ccpcoj-judge:$TAG_VERSION
 fi
 
 if [ "$FLAG_PUSH" = "true" ]; then
     if [ "$FLAG_WEB" = "true" ]; then
-        docker push csgrandeur/csgoj-web:latest
-        docker push csgrandeur/csgoj-web:$TAG_VERSION
+        docker push csgrandeur/ccpcoj-web:latest
+        docker push csgrandeur/ccpcoj-web:$TAG_VERSION
     fi
     if [ "$FLAG_JUDGE" = "true" ]; then
-        docker push csgrandeur/csgoj-judge:latest
-        docker push csgrandeur/csgoj-judge:$TAG_VERSION
+        docker push csgrandeur/ccpcoj-judge:latest
+        docker push csgrandeur/ccpcoj-judge:$TAG_VERSION
     fi
 fi
 
