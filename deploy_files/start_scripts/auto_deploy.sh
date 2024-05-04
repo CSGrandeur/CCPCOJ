@@ -13,7 +13,7 @@
 #     --PASS_JUDGER="999999" \
 #     --PASS_ADMIN="666666" \
 #     --PASS_MYADMIN_PAGE="333333" \
-#     --SQL_USER="csgoj" \
+#     --SQL_USER="csgcpc" \
 #     --SQL_HOST="db" \
 #     --PORT_OJ=80 \
 #     --PORT_MYADMIN=8080 \
