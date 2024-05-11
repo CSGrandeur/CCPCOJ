@@ -1,20 +1,44 @@
-# 批量启动一系列判题端
+## 批量启动一系列判题端
+## 常用调用方式
 # bash batch_sub_judge.sh \
 #   --PATH_DATA=`pwd`/csgoj_data \
 #   --OJ_NAME=test \
 #   --OJ_HTTP_BASEURL=http://url:20080 \
 #   --PASS_JUDGER=987654321 \
 #   --OJ_OPEN_OI=0 \
-#   --JUDGER_TOTAL=10 
+#   --JUDGER_TOTAL=10
+## 完整参数
+# bash batch_sub_judge.sh \
+#   --PATH_DATA=`pwd`/csgoj_data \
+#   --OJ_NAME=test \
+#   --OJ_HTTP_BASEURL=http://url:20080 \
+#   --PASS_JUDGER=987654321 \
+#   --OJ_OPEN_OI=0 \
+#   --JUDGER_TOTAL=10 \
+#   --JUDGE_USER_NAME=judger \
+#   --JUDGE_IGNORE_ESOL=1 \
+#   --JUDGE_PROCESS_NUM=2 \
+#   --JUDGE_SHM_RUN=0 \
+#   --JUDGE_SHM_SIZE=1g \
+#   --JUDGE_DOCKER_CPUS=6 \
+#   --JUDGE_DOCKER_MEMORY=6g \
+#   --JUDGE_TOP_DIFF_BYTES=2048
 
 source parse_args.sh
 parse_args "$@"
 
 echo "OJ_NAME: $OJ_NAME"
 echo "OJ_HTTP_BASEURL: $OJ_HTTP_BASEURL"
+echo "JUDGE_USER_NAME: $JUDGE_USER_NAME"
 echo "PASS_JUDGER: $PASS_JUDGER"
 echo "JUDGER_TOTAL: $JUDGER_TOTAL"
 echo "OJ_OPEN_OI: $OJ_OPEN_OI"
+echo "JUDGE_IGNORE_ESOL: $JUDGE_IGNORE_ESOL"
+echo "JUDGE_PROCESS_NUM: $JUDGE_PROCESS_NUM"
+echo "JUDGE_SHM_RUN: $JUDGE_SHM_RUN"
+echo "JUDGE_SHM_SIZE: $JUDGE_SHM_SIZE"
+echo "JUDGE_DOCKER_CPUS: $JUDGE_DOCKER_CPUS"
+echo "JUDGE_DOCKER_MEMORY: $JUDGE_DOCKER_MEMORY"
 
 for ((i=0; i<$JUDGER_TOTAL; i++))
 do
@@ -24,7 +48,15 @@ do
         --OJ_HTTP_BASEURL="$OJ_HTTP_BASEURL" \
         --PASS_JUDGER="$PASS_JUDGER" \
         --OJ_OPEN_OI="$OJ_OPEN_OI" \
+        --JUDGE_USER_NAME="$JUDGE_USER_NAME" \
+        --JUDGE_IGNORE_ESOL=$JUDGE_IGNORE_ESOL \
         --JUDGER_TOTAL=$JUDGER_TOTAL \
+        --JUDGE_PROCESS_NUM=$JUDGE_PROCESS_NUM \
+        --JUDGE_SHM_RUN=$JUDGE_SHM_RUN \
+        --JUDGE_SHM_SIZE=$JUDGE_SHM_SIZE \
+        --JUDGE_DOCKER_CPUS=$JUDGE_DOCKER_CPUS \
+        --JUDGE_DOCKER_MEMORY=$JUDGE_DOCKER_MEMORY \
+        --JUDGE_TOP_DIFF_BYTES=$JUDGE_TOP_DIFF_BYTES \
         --OJ_MOD=$i
 done
 
