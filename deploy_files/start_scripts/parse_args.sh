@@ -29,6 +29,7 @@ OJ_UPDATE_STATIC=0
 BELONG_TO=0
 JUDGE_USER_NAME="judger"
 JUDGE_DOCKER_CPUS=6
+JUDGE_DOCKER_CPU_OFFSET=0
 JUDGE_DOCKER_MEMORY=6g
 JUDGE_PROCESS_NUM=2
 JUDGE_IGNORE_ESOL=1
@@ -72,6 +73,7 @@ parse_args() {
     BELONG_TO:, \
     JUDGE_USER_NAME:, \
     JUDGE_DOCKER_CPUS:, \
+    JUDGE_DOCKER_CPU_OFFSET:, \
     JUDGE_DOCKER_MEMORY:, \
     JUDGE_PROCESS_NUM:, \
     JUDGE_IGNORE_ESOL:, \
@@ -119,7 +121,8 @@ parse_args() {
         --PORT_DB)                      PORT_DB="$2"; shift 2;;                     # DB 3306映射给外部的端口
         --BELONG_TO)                    BELONG_TO="$2"; shift 2;;                   # 新启动的OJ作为 $BELONG_TO 的同数据库同文件系统的另一功能的OJ
         --JUDGE_USER_NAME)              JUDGE_USER_NAME="$2"; shift 2;;             # 评测机连接OJ使用的账号
-        --JUDGE_DOCKER_CPUS)            JUDGE_DOCKER_CPUS="$2"; shift 2;;           # docker限制judge的内核数，建议$JUDGE_PROCESS_NUM*3
+        --JUDGE_DOCKER_CPUS)            JUDGE_DOCKER_CPUS="$2"; shift 2;;           # docker限制judge的内核数，建议至少$JUDGE_PROCESS_NUM*3
+        --JUDGE_DOCKER_CPU_OFFSET)      JUDGE_DOCKER_CPU_OFFSET="$2"; shift 2;;     # 指定CPU逻辑处理器绑定，为 0 不绑定，大于 0 时作为偏移量按JUDGE_DOCKER_CPUS数量挨个绑定
         --JUDGE_DOCKER_MEMORY)          JUDGE_DOCKER_MEMORY="$2"; shift 2;;         # docker限制judge的内存
         --JUDGE_PROCESS_NUM)            JUDGE_PROCESS_NUM="$2"; shift 2;;           # judge并行判题进程数
         --JUDGE_IGNORE_ESOL)            JUDGE_IGNORE_ESOL="$2"; shift 2;;           # judge 1忽略/0不忽略 输出的行末空格，0为严格模式，易PE

@@ -103,7 +103,11 @@ bash batch_sub_judge.sh \
 
 建议参数（估算pod个数的方法）： 
 
-满载情况 每个默认pod应有 6个CPU逻辑处理器、6GB可用内存，考虑一般不至于全面满载，也可以相对开多几个pod
+满载情况 每个默认pod应有 6个CPU逻辑处理器、6GB可用内存。
+
+如果题目压力不大不至于满载，也可以相对开多几个pod。如果题目压力非常大，可酌情参照“**3.2.4 一些常用的其它定制参数**”进行深度定制。
+
+
 
 ##### 3.2.2 单机单pod
 
@@ -131,7 +135,33 @@ bash start_judge.sh \
 
 ![](doc/deploy_doc_image/user_gen_judger.png)
 
+`JUDGE_PROCESS_NUM`
+
+每个 pod 内的并行评测进程数，默认为 2，如果设备配置很差，可改为 1
+
+`JUDGE_DOCKER_CPUS`
+
+每个 pod 限制使用的逻辑处理器个数，默认为 6，对应 `JUDGE_PROCESS_NUM=2` 时的数量需求，每个判题进程至少需要 3 个逻辑处理器，在此基础上可酌情增加。
+
+`JUDGE_DOCKER_MEMORY`
+
+每个 pod 限制使用的内存大小，默认`6g`，对应 `JUDGE_PROCESS_NUM=2` 两个评测进程的内存，可酌情增加，值为整数加字母“g”，比如 `--JUDGE_DOCKER_MEMORY=8g`。
+
+`JUDGE_DOCKER_CPU_OFFSET`
+
+是否让容器绑定 CPU 逻辑处理器，默认为 0 ，表示不绑定，系统自动动态分配逻辑处理器。
+
+如果CPU逻辑处理器数量不多，题目评测压力较大，在设置不满载的情况下仍然出现抢夺CPU资源导致评测波动的情况下，启用该参数，将作为绑定逻辑处理器编号的起始偏移量。
+
+例如将`JUDGE_DOCKER_CPU_OFFSET`设为 2，`JUDGE_DOCKER_CPUS=6`，则第一个pod绑定编号为 `2,3,4,5,6,7` 的逻辑处理器，后续pod顺延。
+
+`JUDGER_TOTAL`
+
+使用`batch_sub_judge.sh`批量启动评测pod时使用该参数设置pod总数，如上文估算方式所述。
+
 `JUDGE_SHM_RUN`
+
+默认为0
 
 如果评测机硬盘较差，可以提供该参数设为 1，让评测机每次复制数据到内存后再执行评测
 
@@ -152,6 +182,43 @@ bash batch_sub_judge.sh \
   --JUDGE_USER_NAME="judger2" \
   --JUDGE_SHM_RUN=1
 ```
+
+`JUDGE_SHM_SIZE`
+
+配合`JUDGE_SHM_RUN`使用，每个pod为评测数据提供的内存文件区大小，默认 `1g`，基本无需修改。使用时传参也为整数加字母“g”，例如`--JUDGE_SHM_RUN=2g`。
+
+
+上述JUDGE参数更具体的建议：
+
+```
+JUDGE_PROCESS_NUM ∈ {1, 2}
+JUDGE_DOCKER_CPUS >= JUDGE_PROCESS_NUM * 3
+JUDGER_TOTAL=⌊ ({CPU逻辑处理器总数}> - 2) / JUDGE_DOCKER_CPUS ⌋
+JUDGE_SHM_RUN=0时：
+JUDGE_DOCKER_MEMORY * JUDGER_TOTAL < {系统内存}, 
+JUDGE_SHM_RUN=1时：
+(JUDGE_DOCKER_MEMORY + JUDGE_SHM_SIZE) * JUDGER_TOTAL < {系统内存}, 
+```
+
+SSD环境下大数据题目30次测试统计，仅供参考：
+
+| 模式   | 常规                | SHM                                | CPU绑定                                        | CPU绑定+SHM                                                      |
+|------|-------------------|------------------------------------|----------------------------------------------|----------------------------------------------------------------|
+| 参数   | --JUDGER_TOTAL=3<br/> | --JUDGER_TOTAL=3<br/>--JUDGE_SHM_RUN=1 | --JUDGER_TOTAL=3<br/>--JUDGE_DOCKER_CPU_OFFSET=2 | --JUDGER_TOTAL=3<br/>--JUDGE_DOCKER_CPU_OFFSET=2<br/>--JUDGE_SHM_RUN=1 |
+| 耗时均值   | 1451.35           | 1443.55                            | 1435.35                                      | 1436.94                                                        |
+| 标准差  | 28.01             | 27.67                              | 25.92                                        | 24.93                                                          |
+| 浮动比率 | 1.93%             | 1.92%                              | 1.81%                                        | 1.73%                                                          |
+
+
+
+##### 3.2.5 关于虚拟机
+
+建议使用实体机作为评测机，不建议使用虚拟机。
+
+虚拟机可能存在虚拟CPU资源波动、虚拟硬盘读写性能差导致高压力题目评测波动的可能。
+
+如果仍要使用虚拟机，优先考虑VMware vsphere Hypervisor等硬件虚拟化能够真实映射CPU逻辑处理器的虚拟平台。
+
 
 #### 3.3 参数日志
 

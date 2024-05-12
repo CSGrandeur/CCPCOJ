@@ -7,6 +7,7 @@
 # --PASS_JUDGER='999999'  \
 # --JUDGE_USER_NAME='judger' \
 # --JUDGE_DOCKER_CPUS=6 \
+# --JUDGE_DOCKER_CPU_OFFSET=0 \
 # --JUDGE_DOCKER_MEMORY=6g \
 # --JUDGE_PROCESS_NUM=2 \
 # --JUDGE_SHM_RUN=0 \
@@ -54,6 +55,18 @@ else
         docker pull csgrandeur/ccpcoj-judge:$CSGOJ_VERSION   # 先pull以确保镜像最新
     fi
 
+    # 用于绑定CPU逻辑处理器，仅 JUDGE_DOCKER_CPU_OFFSET > 0 时有效
+    if [ -n "$JUDGE_DOCKER_CPU_OFFSET" ] && [ "$JUDGE_DOCKER_CPU_OFFSET" -gt 0 ]; then
+        CPU_START=$(($JUDGE_DOCKER_CPUS * $OJ_MOD + $JUDGE_DOCKER_CPU_OFFSET))
+        CPU_END=$(($CPU_START + $JUDGE_DOCKER_CPUS - 1))
+        CPUSET_CPUS=$(seq -s, $CPU_START $CPU_END)
+        echo "CPU_START: $CPU_START"
+        echo "CPU_END: $CPU_END"
+        echo "CPUSET_CPUS: $CPUSET_CPUS"
+        CPUSET_CONFIG="--cpuset-cpus=$CPUSET_CPUS"
+    else
+        CPUSET_CONFIG=""
+    fi
     docker run -dit $LINK_LOCAL \
         --name $CONTAINER_NAME \
         -e OJ_HTTP_BASEURL="$OJ_HTTP_BASEURL" \
@@ -65,7 +78,7 @@ else
         -e JUDGE_TOP_DIFF_BYTES=$JUDGE_TOP_DIFF_BYTES \
         -e JUDGE_SHM_RUN=$JUDGE_SHM_RUN \
         -v $PATH_DATA/var/data/judge-$OJ_NAME:/volume $SIDE_ETC \
-        --cpus=$JUDGE_DOCKER_CPUS \
+        --cpus=$JUDGE_DOCKER_CPUS $CPUSET_CONFIG \
         --memory=$JUDGE_DOCKER_MEMORY \
         --cap-add=SYS_PTRACE $SHM_CONFIG \
         --restart unless-stopped \
