@@ -2,7 +2,7 @@
 # nginx and mysql should be started ahead, and baseoj should be inited
 # bash start_judge.sh \
 # --PATH_DATA=`pwd`/csgoj_data \
-# --OJ_NAME=csgoj \
+# --OJ_NAME=ccpc \
 # --OJ_HTTP_BASEURL='http://nginx-server:20080' \
 # --PASS_JUDGER='999999'  \
 # --JUDGE_USER_NAME='judger' \

@@ -3,7 +3,7 @@
 # # PORT_OJ 需要保证 nginx-server 映射了对应端口，否则可能需要重新开 nginx-server 容器进行映射
 # bash start_oj.sh \
 #   --PATH_DATA=`pwd`/csgoj_data \
-#   --OJ_NAME=csgoj \
+#   --OJ_NAME=ccpc \
 #   --PORT_OJ=20080 \
 #   --OJ_CDN=local \
 #   --OJ_MODE=cpcsys \
