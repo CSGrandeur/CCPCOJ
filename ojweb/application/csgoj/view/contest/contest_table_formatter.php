@@ -46,7 +46,7 @@ function FormatterStatus(value, row, index, field) {
     let cl, wd, sta;
     if(value == '0') {
         cl = 'success';
-        wd = 'Availabe';
+        wd = 'Available';
         sta = '0';
     } else {
         cl = 'warning';
