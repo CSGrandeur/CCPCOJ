@@ -29,7 +29,8 @@ else
             "https://huecker.io",
             "https://dockerhub.timeweb.cloud",
             "https://dockerhub1.beget.com",
-            "https://noohub.ru"
+            "https://dockerhub1.beget.com",
+            "https://docker.jianmuhub.com"
         ]
     }'
     sudo bash -c "echo '$daemonjson' > /etc/docker/daemon.json"

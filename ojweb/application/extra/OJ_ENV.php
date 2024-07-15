@@ -8,6 +8,7 @@ return [
     'OJ_MODE'               => Env::get('OJ_MODE', 'cpcsys'),               // online/cpcsys
     'OJ_STATUS'             => Env::get('OJ_STATUS', 'cpc'),                // cpc/exp
     'OJ_OPEN_OI'            => Env::get('OJ_OPEN_OI', false),               // add pass_rate to status
+    'OJ_OPEN_ARCHIVE'       => Env::get('OJ_OPEN_ARCHIVE', false),          // whether to manage archive
     'OJ_NAME'               => Env::get('OJ_NAME', 'CCPC'),                 // OJ name to display
     'ICP_RECORD'            => Env::get('ICP_RECORD', ''),                  // ICP RECORD
     'GA_CODE'               => Env::get('GA_CODE', false),                  // Google Analytics

@@ -35,6 +35,16 @@ class Itemstatuschange extends Adminbase
 					'status_str'	=> 'Private',
 					'status_class'	=> 'primary',
 				],
+			],
+			'archived' 	=> [
+				[
+					'status_str'	=> 'UnArchive',
+					'status_class'	=> 'default',
+				],
+				[
+					'status_str'	=> 'Archived',
+					'status_class'	=> 'info',
+				],
 			]
 		]; //以后扩展功能再改此配置
 		$this->AdminInit();
@@ -97,6 +107,7 @@ class Itemstatuschange extends Adminbase
 			[
 				'status'=>$this->changeInfo['status'],
 				'status_str'=>$this->allowField[$this->changeInfo['field']][$this->changeInfo['status']]['status_str'],
+				'status_class_rmv'=>$this->allowField[$this->changeInfo['field']][!$this->changeInfo['status']]['status_class'],
 				'status_class'=>$this->allowField[$this->changeInfo['field']][$this->changeInfo['status']]['status_class'],
 			]
 		);

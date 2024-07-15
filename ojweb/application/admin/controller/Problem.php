@@ -19,10 +19,13 @@ class Problem extends Adminbase
     public function problem_list_ajax()
     {
         $columns = ['problem_id', 'title', 'in_date', 'source', 'author', 'defunct', 'spj'];
+        if($this->OJ_OPEN_ARCHIVE) {
+            $columns[] = 'archived';
+        }
         $offset		= intval(input('offset'));
         $limit		= intval(input('limit'));
         $sort		= trim(input('sort'));
-        $sort = validate_item_range($sort, $columns);
+        $sort       = validate_item_range($sort, $columns);
         $order		= input('order');
         $search		= trim(input('search/s'));
 
@@ -48,18 +51,14 @@ class Problem extends Adminbase
             ->order($ordertype)
             ->select();
         foreach($problemList as &$problem) {
-            $problem['title'] = "<a href='/csgoj/problemset/problem?pid=" . $problem['problem_id'] . "' " .
-                ($problem['spj'] == 1 ? " class='red-link' " : "") .">" . $problem['title'] . "</a>";
             if(IsAdmin($this->privilegeStr, $problem['problem_id'])) {
-                $problem['defunct'] =
-                    "<button type='button' field='defunct' itemid='".$problem['problem_id']."' class='change_status btn ".
-                    ($problem['defunct'] == '0' ? "btn-success' status='0' >Available" : "btn-warning' status='1' >Reserved").
-                    "</button>";
+                $problem['isadmin'] = true; // 有权限管理该题
                 $problem['edit'] = 1;
                 $problem['testdata'] = 1;
             }
             else {
-                $problem['defunct'] = $problem['defunct'] == '0' ? "<span class='text-success'>Available</span>" : "<span class='text-warning'>Reserved</span>";
+                $problem['isadmin'] = false;
+                // $problem['defunct'] = $problem['defunct'] == '0' ? "<span class='text-success'>Available</span>" : "<span class='text-warning'>Reserved</span>";
                 $problem['edit'] = 0;
                 $problem['testdata'] = 0;
             }

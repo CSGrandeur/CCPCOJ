@@ -5,6 +5,7 @@ class Globalbasecontroller extends Controller
     var $OJ_MODE;
     var $OJ_STATUS;
     var $OJ_OPEN_OI;
+    var $OJ_OPEN_ARCHIVE;
     var $OJ_NAME;
     var $OJ_SSO;
     var $OJ_SCLIENT_ID;
@@ -35,6 +36,7 @@ class Globalbasecontroller extends Controller
         $this->OJ_MODE = config('OJ_ENV.OJ_MODE');
         $this->OJ_STATUS = config('OJ_ENV.OJ_STATUS');
         $this->OJ_OPEN_OI = config('OJ_ENV.OJ_OPEN_OI');
+        $this->OJ_OPEN_ARCHIVE = config('OJ_ENV.OJ_OPEN_ARCHIVE');
         $this->OJ_ADMIN = config('OjAdmin.' . $this->OJ_MODE);
         $this->OJ_NAME = config('OJ_ENV.OJ_NAME');
         $this->OJ_SSO = config('OJ_ENV.OJ_SSO');
@@ -57,6 +59,7 @@ class Globalbasecontroller extends Controller
         $this->assign('OJ_MODE', $this->OJ_MODE);
         $this->assign('OJ_STATUS', $this->OJ_STATUS);
         $this->assign('OJ_OPEN_OI', $this->OJ_OPEN_OI);
+        $this->assign('OJ_OPEN_ARCHIVE', $this->OJ_OPEN_ARCHIVE);
         $this->assign('OJ_NAME', $this->OJ_NAME);
         $this->assign('OJ_SSO', $this->OJ_SSO);
         $this->assign('OJ_SCLIENT_ID', $this->OJ_SCLIENT_ID);

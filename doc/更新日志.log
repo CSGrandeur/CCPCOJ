@@ -1,3 +1,20 @@
+## 1.2.15
+
+- 增加题目归档板块
+    ````
+    ALTER TABLE `problem` ADD `archived` BOOLEAN NOT NULL DEFAULT FALSE AFTER `attach`;
+    ````
+- docker安装暂时修改为阿里镜像
+- 更新题目导入导出，支持酒井算协格式
+- 修复融合rank数据处理
+- 微调比赛密码导出样式
+- 优化气球管理性能
+- 修复直播逻辑
+- 更新管理员查看WA信息样式
+- 批量启动 judge pod 参数补充
+- 修复初始化sql bug
+
+
 ## 1.2.0
 
 重大更新：添加直播系统，支持obstudio直播信号覆盖

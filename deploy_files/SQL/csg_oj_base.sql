@@ -293,6 +293,7 @@ CREATE TABLE IF NOT EXISTS `problem` (
   `solved` int DEFAULT '0',
   `author` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `attach` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '',
+  `archived` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`problem_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
