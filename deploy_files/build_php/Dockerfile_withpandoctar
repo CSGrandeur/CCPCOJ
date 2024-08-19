@@ -1,5 +1,4 @@
 FROM php:7.3.33-fpm-alpine
-MAINTAINER csgrandeur <csgrandeur@gmail.com>
 # RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tencent.com/g' /etc/apk/repositories
 ADD ./php.ini-production $PHP_INI_DIR/php.ini
