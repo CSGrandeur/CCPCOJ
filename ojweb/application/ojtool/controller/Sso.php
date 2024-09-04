@@ -29,7 +29,7 @@ class Sso extends UserBase {
             $this->redirect($this->OJ_SSO . '/sso/ssologout?sclient_id=' . $this->OJ_SCLIENT_ID);
         } else {
             session(null);
-            $this->redirect('/');
+            $this->redirect('/index');
         }
     }
     public function ProcessSchool($sc) {
@@ -124,6 +124,6 @@ class Sso extends UserBase {
         //在登录这种相对低频操作时更新用户资料的ac数和submit数，用于显示总用户rank
         $this->update_user_solved_submit($user_id);
         // $this->success('Login successful!<br/>Reloading data.', '/', null, 1);
-        $this->redirect('/');
+        $this->redirect('/index');
     }
 }
