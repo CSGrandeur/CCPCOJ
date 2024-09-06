@@ -26,7 +26,7 @@ class Sso extends UserBase {
     public function sso_logout() {
         if(session('?sso_login')) {
             session(null);
-            $this->redirect($this->OJ_SSO . '/sso/ssologout?sclient_id=' . $this->OJ_SCLIENT_ID);
+            $this->redirect($this->OJ_SSO . '/sso/ssologout?logout_redirect=/index&sclient_id=' . $this->OJ_SCLIENT_ID);
         } else {
             session(null);
             $this->redirect('/index');

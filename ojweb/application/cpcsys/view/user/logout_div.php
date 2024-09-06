@@ -10,17 +10,14 @@
 
 <script type="text/javascript">
 	$(document).ready(function(){
-		$("#logout_button").unbind('click').click(function()
-		{
+		$("#logout_button").unbind('click').click(function() {
 			$.post("__OJ__/User/logout_ajax", function(ret){
-				if(ret['code'] == 1)
-				{
+				if(ret.code == 1) {
 					alertify.success(ret['msg']);
 					$('#logout_button').attr('disabled', true);
 					setTimeout(function(){location.reload()}, 500);
 				}
-				else
-				{
+				else {
 					alertify.alert(ret['msg']);
 					location.href = '__OJ__';
 				}
