@@ -11,7 +11,7 @@ Java 有额外 2 秒和额外 512M 内存用于运行与评测.
 
 - C/C++： gcc version 11.4.0 (Ubuntu 11.4.0-1ubuntu1~22.04) 
 - Python： 3.10.12
-- JAVA： openjdk 17.0.8.1
+- JAVA： openjdk 17.0.10
 
 ### Q:输入输出的形式
 A:输入为`stdin`(`Standard Input`)，输出为`stdout`(`Standard Output`). 例如，你可以用`C`语言的`scanf`或`C++`的`cin`从`stdin`中读取数据，并使用`C`语言的`printf`或`C++`的`cout`向`stdout`输出.

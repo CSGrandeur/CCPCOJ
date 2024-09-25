@@ -11,7 +11,7 @@ Java has 2 more seconds and 512M more memory when running and judging.
 
 - C/C++： gcc version 11.4.0 (Ubuntu 11.4.0-1ubuntu1~22.04) 
 - Python： 3.10.12
-- JAVA： openjdk 17.0.8.1
+- JAVA： openjdk 17.0.10
 
 ### Q:Where is the input and the output?
 A:Your program shall read input from stdin(`Standard Input`) and write output to stdout(`Standard Output`).For example,you can use `scanf` in C or `cin` in C++ to read from stdin,and use `printf` in C or `cout` in C++ to write to stdout.
