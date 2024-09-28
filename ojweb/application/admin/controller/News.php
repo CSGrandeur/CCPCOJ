@@ -43,7 +43,7 @@ class News extends Adminbase
 			$map['news_id|user_id|title|category'] = ['like', "%$search%"];
 		$list = $News
 			->field(implode(",", $columns))
-			->where('news_id', 'gt', 1000)
+			->where('news_id', 'egt', 1000)
 //			->where($map)
 //			->limit($offset,$limit)
 			->order('news_id', $order)
