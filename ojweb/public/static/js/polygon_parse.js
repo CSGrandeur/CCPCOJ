@@ -27,7 +27,13 @@ async function HandlePolygonZipFile(file) {
 
         // 合并 ordered_contest_problems 和 list_other_problem
         list_problem = ordered_contest_problems.concat(list_other_problem);
-
+        for(let i = 0; i < list_problem.length; i ++) {
+            const pid = i + 1;
+            list_problem[i].idx         =    pid;
+            list_problem[i].title       =   `<a href="#" onclick="DownloadPro(${pid})">${list_problem[i].title}</a>`;
+            list_problem[i].testdata    =   `<a href="#" onclick="handleDownloadTestData(${pid})">${list_problem[i].testdata}</a>`;
+            list_problem[i].spj         =   `<input type="checkbox" class="spj-switch" data-pid="${pid}" checked>`;
+        }
         // 组织数据并更新表格
         const tableData = [];
         let idx = 1;
@@ -343,11 +349,10 @@ async function FetchProblem(problem_entries, problem_xml_entry) {
     }
 
     return {
-        idx:            pid,
-        title:          `<a href="#" onclick="DownloadPro(${pid})">${problem.title}</a>`,
+        title:          problem.title,
         author:         problem.author_md,
-        testdata:       `<a href="#" onclick="handleDownloadTestData(${pid})">${testData.fileCount} tests, ${totalSizeMB} MB</a>`,
-        spj:            `<input type="checkbox" class="spj-switch" data-pid="${pid}" checked>`,
+        testdata:       `${testData.fileCount} tests, ${totalSizeMB} MB`,
+        spj:            '',
         hash:           problem.attach,
         problemJson:    problem,
         testData,
@@ -360,9 +365,7 @@ function GetSpjSwitch(pid) {
     return document.querySelector(`.spj-switch[data-pid="${pid}"]`);
 }
 function DownloadPro(pid) {
-    const problem =
-        map_contest_problem.get(pid) ||
-        list_other_problem.find((p) => p.idx === pid);
+    const problem = list_problem.find((p) => p.idx === pid);
     if (problem) {
         const spjCheckbox = GetSpjSwitch(pid);
         if (spjCheckbox && spjCheckbox.checked) {
@@ -375,6 +378,7 @@ function DownloadPro(pid) {
         const zipWriter = new zip.ZipWriter(new zip.BlobWriter("application/zip"));
         zipWriter.add("problemlist.json", new zip.TextReader(JSON.stringify([problem.problemJson], null, 4)));
 
+        console.log(222, problem.attach_files);
         if (problem.attach_files && problem.attach_files.length > 0) {
             MakeAttachFiles(problem.testData.entries, problem.statement_entry, problem.attach_files).then((attachFilesData) => {
                 attachFilesData.forEach(async (file) => {
@@ -390,6 +394,7 @@ function DownloadPro(pid) {
                 });
             });
         } else {
+            console.log(111, problem.problemJson);
             zipWriter.close().then((zipContent) => {
                 const url = URL.createObjectURL(zipContent);
                 const a = document.createElement("a");
@@ -403,9 +408,7 @@ function DownloadPro(pid) {
 }
 
 async function DownloadTestData(pid) {
-    const problem =
-        map_contest_problem.get(pid) ||
-        list_other_problem.find((p) => p.idx === pid);
+    const problem = list_problem.find((p) => p.idx === pid);
     if (problem) {
         const spjCheckbox = GetSpjSwitch(pid);
         const includeSpj = spjCheckbox && spjCheckbox.checked;
