@@ -422,13 +422,12 @@ async function downloadSelectedProblems() {
 
         for (let i = 0; i < selectedProblems.length; i++) {
             const problem = selectedProblems[i];
-            const spjCheckbox = GetSpjSwitch(pid);
+            const spjCheckbox = GetSpjSwitch(problem.idx);
             if (spjCheckbox && spjCheckbox.checked) {
                 problem.problemJson.spj = "1";
             } else {
                 problem.problemJson.spj = "0";
             }
-            console.log(problem.problemJson)
             problemList.push(problem.problemJson);
 
             const testDir = `TEST_${String(i + 1).padStart(5, "0")}`;
@@ -438,12 +437,15 @@ async function downloadSelectedProblems() {
             );
 
             const entries = await testZipReader.getEntries();
+            const addedFiles = new Set(); // 用于跟踪已添加的文件
+
             for (const entry of entries) {
                 const data = await entry.getData(new zip.BlobWriter());
-                await zipWriter.add(
-                    `${testDir}/${entry.filename}`,
-                    new zip.BlobReader(data)
-                );
+                const filePath = `${testDir}/${entry.filename}`;
+                if (!addedFiles.has(filePath)) {
+                    await zipWriter.add(filePath, new zip.BlobReader(data));
+                    addedFiles.add(filePath);
+                }
             }
 
             if (problem.problemJson.spj === "1") {
@@ -452,10 +454,11 @@ async function downloadSelectedProblems() {
                 );
                 if (spjEntry) {
                     const spjContent = await spjEntry.getData(new zip.BlobWriter());
-                    await zipWriter.add(
-                        `${testDir}/tpj.cc`,
-                        new zip.BlobReader(spjContent)
-                    );
+                    const spjFilePath = `${testDir}/tpj.cc`;
+                    if (!addedFiles.has(spjFilePath)) {
+                        await zipWriter.add(spjFilePath, new zip.BlobReader(spjContent));
+                        addedFiles.add(spjFilePath);
+                    }
                 }
             }
 

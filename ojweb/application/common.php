@@ -17,7 +17,14 @@ function ParseMarkdown($str, $highlight=false, $toc=0, $title=null)
     $retHtml = '';
     try {
         $Pandoc = new Pandoc();
-        $retHtml = $Pandoc->convert($str, "markdown", "html", $highlight, $toc, $title);
+        $text_type = "markdown";
+        // 基于首行 “__LATEX__” 作为 LaTex 标识
+        $firstLine = strtok(ltrim($str), "\n");
+        if ($firstLine !== false && trim($firstLine) === '__LATEX__') {
+            $text_type = "latex";
+            $str = substr($str, strlen($firstLine) + 1); // Remove the first line
+        }
+        $retHtml = $Pandoc->convert($str, $text_type, "html", $highlight, $toc, $title);
     } catch (Exception $e) {
         $Parsedown = new \ParsedownExtra();
         $retHtml = $Parsedown->text($str);
