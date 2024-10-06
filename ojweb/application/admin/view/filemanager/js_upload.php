@@ -221,7 +221,7 @@
 
     function CheckMultiFile(filelist, maxsize, reg) {
         var filename_check = true;
-        var msg = `单文件大小限制(Single file size limit):<br/>&gt;&gt;${Math.ceil(maxsize / 1024 / 1024)}MB<br/>文件名限制(File name limit):<br/>&gt;&gt;仅包含字母或数字(Only include alphabet and numbers)<br/>`;
+        var msg = `单文件大小限制(Single file size limit):<br/>- ${Math.ceil(maxsize / 1024 / 1024)}MB<br/>文件名限制(File name limit):<br/>- 仅包含字母或数字(Only include alphabet and numbers)<br/>`;
         if (filelist.files.length > maxfilenum) {
             filename_check = false;
             msg = "我真不信有这么多测试数据，一定是你鼠标点错了<br/>一次别超过" + maxfilenum + "个。。。";
@@ -229,13 +229,13 @@
         }
         for (var i = 0; i < filelist.files.length; i++) {
             if (filelist.files[i].size > maxsize) {
-                msg += '<br/>' + filelist.files[i].name + ': <br/>&gt;&gt;文件过大(size too large).';
+                msg += '<br/>' + filelist.files[i].name + ': <br/>- 文件过大(size too large).';
                 filename_check = false;
             }
 
-            if (!reg.test(filelist.files[i].name)) {
+            if (!reg.test(filelist.files[i].name.toLowerCase())) {
                 filename_check = false;
-                msg += '<br/>' + filelist.files[i].name + ': <br/>&gt;&gt;文件名不合法(name not valid).';
+                msg += '<br/>' + filelist.files[i].name + ': <br/>- 文件名不合法(name not valid).';
             }
         }
         return [filename_check, msg];

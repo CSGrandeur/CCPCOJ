@@ -47,13 +47,13 @@
             </li>
             {if(IsAdmin('administrator'))}
             <li>
+                <a href="__ADMIN__/problem/polygon_import">Polygon Parse</a>
+            </li>
+            <li>
                 <a href="__ADMIN__/problemexport/problem_export?item=problemexport">Problem Export</a>
             </li>
             <li>
                 <a href="__ADMIN__/problemexport/problem_export_filemanager?item=problemexport" target="_blank">Problem Import</a>
-            </li>
-            <li>
-                <a href="__ADMIN__/problem/polygon_import">Polygon Import</a>
             </li>
             {/if}
         </ul>

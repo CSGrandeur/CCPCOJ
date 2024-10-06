@@ -49,16 +49,18 @@
             </div>
             <div class="modal-body">
                 <p><a href="https://polygon.codeforces.com" target="_blank">Polygon</a>导出的zip中，每道题目需要有如下结构:</p>
-                <p>You need to prepare this structure for each problem:</p>
+                <p>You need to prepare files with this structure for each problem:</p>
                 <div class="directory">
                     <ul>
                         <li class="file">problem.xml</li>
                         <li class="file">check.cpp</li>
                         <li class="folder">statements
                             <ul>
-                                <li class="folder">lang
+                                <li class="folder">[language]
                                     <ul>
                                         <li class="file">problem-properties.json</li>
+                                        <li class="img">[picture_name].[picture_extend] (like a.png)</li>
+                                        <li class="img">[picture_name].[picture_extend] ...</li>
                                     </ul>
                                 </li>
                             </ul>
@@ -72,8 +74,12 @@
                     </ul>
                 </div>
                 <li>题目解析后，可勾选并打包为CSGOJ支持的导入格式。<p>After parsing the problem, you can select and pack it into a format supported by CSGOJ.</p></li>
+
                 <li>Polygon 默认每道题带有check.cpp，对应CSGOJ的Special Judge，对应评测数据目录的 tpj.cc（基于testlib.h），且题目设置中 Special Judge 处于勾选状态。如不需要，可关掉对应题目的开关，打包时将不包含tpj.cc。
                 <p>By default, each problem in Polygon includes check.cpp, which corresponds to the Special Judge in CSGOJ and the tpj.cc in the test data directory (based on testlib.h). The Special Judge option is checked in the problem settings. If not needed, you can turn off the switch for the corresponding problem, and tpj.cc will not be included in the package.</p>
+
+                
+                <li>插图转换基于 <code>\includegraphics</code> 匹配，不保证全部成功，文件名需为数字、字母、下划线、减号，后跟常见图像扩展名，导入后注意检查。<p>Image conversion is based on <code>\includegraphics</code> matching and is not guaranteed to be fully successful. The file name should consist of numbers, letters, underscores, hyphens, and common image extensions. Please check after import.</p></li>
 
                 </li>
             </div>
@@ -106,7 +112,7 @@
         });
 
         $('#download_selected_btn').click(() => {
-            downloadSelectedProblems();
+            DownloadSelectedProblems();
         });
         polygon_parse_table.on('click-cell.bs.table', function(e, field, td, row) {
             if (field === 'spj') {
@@ -133,5 +139,8 @@
     }
     .directory .file::before {
         content: "📄 ";
+    }
+    .directory .img::before {
+        content: "🏞️ ";
     }
 </style>

@@ -7,7 +7,7 @@ const SplitPath = (filename) => {
     return filename.split(/[/\\]/);
 };
 
-function showOverlay(initialText = "Scanning ... Find 0 problem(s), 0 tests") {
+function showOverlay(initialText = "Scanning ... Found 0 problem(s), 0 tests") {
     const overlay = document.createElement("div");
     overlay.id = "overlay";
     overlay.style.position = "fixed";
@@ -165,51 +165,92 @@ async function AttachHash(projson) {
         .slice(0, 16);
     return `${dateStr}_${hashed_res}`;
 }
-
 async function MakeProblemJson(entry, pid) {
     try {
         const text = await entry.getData(new zip.TextWriter());
         const projson = JSON.parse(text);
         const now = new Date();
+        const attach_hash = await AttachHash(projson);
+
+        const attach_files = [];
+        const prefix = `/upload/problem_attach/${attach_hash}/`;
+
+        const replaceGraphicsPath = (content) => {
+            return content.replace(/\\includegraphics(?:\[[^\]]*\])?\{([^}]+)\}/g, (match, p1) => {
+                if (!p1.startsWith("http")) {
+                    // 如果路径是局部路径“./xxx”的形式，则去掉路径，仅保留文件名
+                    const trimmedPath = p1.replace(/^(\.\/|\\)+|(\.\/|\\)+$/g, '');
+                    // 如果路径包含目录，则不执行替换，也不保存
+                    if (!trimmedPath.includes("/") && !trimmedPath.includes("\\")) {
+                        attach_files.push(trimmedPath);
+                        return match.replace(p1, `${prefix}${trimmedPath}`);
+                    }
+                }
+                return match;
+            });
+        };
+
+        projson.legend = replaceGraphicsPath(projson.legend || "");
+        projson.notes = replaceGraphicsPath(projson.notes || "");
+        projson.input = replaceGraphicsPath(projson.input || "");
+        projson.output = replaceGraphicsPath(projson.output || "");
+
         return {
-            accepted: 0,
-            attach: await AttachHash(projson),
-            author: "",
-            author_md: projson?.authorName || projson?.authorLogin,
-            defunct: "0",
-            description: "",
-            description_md: `__LATEX__\n\n${projson?.legend || "-"}`,
-            hint: "",
-            hint_md: `__LATEX__\n\n${projson?.notes || ""}`,
-            in_date: now.toISOString().slice(0, 19).replace("T", " "),
-            input: "",
-            input_md: `__LATEX__\n\n${projson?.input || ""}`,
-            output: "",
-            output_md: `__LATEX__\n\n${projson?.output || ""}`,
-            time_limit: ((projson?.timeLimit || 1000) / 1000).toFixed(1),
-            memory_limit: Math.round(
-                (projson?.memoryLimit || 268435456) / 1024 / 1024
-            ),
-            problem_id: 0,
-            problem_new_id: pid,
-            sample_input: projson.sampleTests
-                .map((test) => test.input.replace(/\r\n/g, "\n"))
-                .join("\n##CASE##\n"),
-            sample_output: projson.sampleTests
-                .map((test) => test.output.replace(/\r\n/g, "\n"))
-                .join("\n##CASE##\n"),
-            solved: 0,
-            source: "",
-            source_md: "",
-            spj: "0",
-            submit: 0,
-            title: projson?.name || "NO TITLE",
+            problem: {
+                accepted:       0,
+                attach:         attach_hash,
+                author:         "",
+                author_md:      projson?.authorName || projson?.authorLogin,
+                defunct:        "0",
+                description:    "",
+                description_md: `__LATEX__\n\n${projson?.legend || "-"}`,
+                hint:           "",
+                hint_md:        `__LATEX__\n\n${projson?.notes || ""}`,
+                in_date:        now.toISOString().slice(0, 19).replace("T", " "),
+                input:          "",
+                input_md:       `__LATEX__\n\n${projson?.input || ""}`,
+                output:         "",
+                output_md:      `__LATEX__\n\n${projson?.output || ""}`,
+                time_limit:     ((projson?.timeLimit || 1000) / 1000).toFixed(1),
+                memory_limit:   Math.round((projson?.memoryLimit || 268435456) / 1024 / 1024),
+                problem_id:     0,
+                problem_new_id: pid,
+                sample_input:   projson.sampleTests
+                                    .map((test) => test.input.replace(/\r\n/g, "\n"))
+                                    .join("\n##CASE##\n"),
+                sample_output:  projson.sampleTests
+                                    .map((test) => test.output.replace(/\r\n/g, "\n"))
+                                    .join("\n##CASE##\n"),
+                solved:         0,
+                source:         "",
+                source_md:      "",
+                spj:            "0",
+                submit:         0,
+                title:          projson?.name || "NO TITLE"
+            },
+            attach_files: attach_files
         };
     } catch (error) {
         alertify.error(`Read file ${entry.filename} failed: ${error}`);
         console.error("Error reading or parsing file:", error);
         throw error;
     }
+}
+
+async function MakeAttachFiles(problem_entries, statement_entry, attach_files) {
+    const statementDir = statement_entry.filename.substring(0, statement_entry.filename.lastIndexOf("/") + 1);
+    const attachFilesData = [];
+
+    for (const file of attach_files) {
+        const filePath = statementDir + file;
+        const entry = problem_entries.find((e) => e.filename === filePath);
+        if (entry) {
+            const fileContent = await entry.getData(new zip.BlobWriter());
+            attachFilesData.push({ filename: file, content: fileContent });
+        }
+    }
+
+    return attachFilesData;
 }
 
 async function MakeTestData(
@@ -282,28 +323,29 @@ async function MakeTestData(
 }
 
 async function FetchProblem(problem_entries, problem_xml_entry) {
-    let statement_entry = null,
-        statement_lang = null;
+    let statement_entry = null, statement_lang = null;
     for (const entry of problem_entries) {
         if (entry.filename.endsWith("problem-properties.json")) {
-            if (entry.filename.includes("/statements/chinese/")) {
+            if (entry.filename.includes("statements/chinese/")) {
                 statement_entry = entry;
-                statement_lang = "cn";
+                statement_lang = "chinese";
             } else if (
-                entry.filename.includes("/statements/english/") &&
-                statement_lang != "cn"
+                entry.filename.includes("statements/english/") &&
+                statement_lang != "english"
             ) {
                 statement_entry = entry;
-                statement_lang = "en";
+                statement_lang = "english";
             } else if (!statement_entry) {
                 statement_entry = entry;
+                let file_patch = SplitPath(entry.filename);
+                statement_lang = file_patch[file_patch.length - 2];
             }
         }
     }
     let pid = polygon_pid++;
-    const problemJson = await MakeProblemJson(statement_entry, pid);
+    const { problem, attach_files } = await MakeProblemJson(statement_entry, pid);
     const testData = await MakeTestData(
-        problemJson.title,
+        problem.title,
         problem_entries,
         problem_xml_entry,
         true
@@ -319,7 +361,7 @@ async function FetchProblem(problem_entries, problem_xml_entry) {
                 0
             ) + map_contest_problem.size;
         updateOverlay(
-            `Scanning ... Find ${problemCount} problem(s), ${testCount} tests`
+            `Scanning ... Found ${problemCount} problem(s), ${testCount} tests`
         );
     }
 
@@ -333,45 +375,66 @@ async function FetchProblem(problem_entries, problem_xml_entry) {
     }
 
     return {
-        idx: pid,
-        title: `<a href="#" onclick="downloadJson(${pid})">${problemJson.title}</a>`,
-        author: problemJson.author_md,
-        testdata: `<a href="#" onclick="handleDownloadTestData(${pid})">${testData.fileCount} tests, ${totalSizeMB} MB</a>`,
-        spj: `<input type="checkbox" class="spj-switch" data-pid="${pid}" checked>`,
-        hash: problemJson.attach,
-        problemJson,
+        idx:            pid,
+        title:          `<a href="#" onclick="DownloadPro(${pid})">${problem.title}</a>`,
+        author:         problem.author_md,
+        testdata:       `<a href="#" onclick="handleDownloadTestData(${pid})">${testData.fileCount} tests, ${totalSizeMB} MB</a>`,
+        spj:            `<input type="checkbox" class="spj-switch" data-pid="${pid}" checked>`,
+        hash:           problem.attach,
+        problemJson:    problem,
         testData,
+        statement_entry,
+        attach_files
     };
 }
 
 function GetSpjSwitch(pid) {
     return document.querySelector(`.spj-switch[data-pid="${pid}"]`);
 }
-function downloadJson(pid) {
+function DownloadPro(pid) {
     const problem =
         map_contest_problem.get(pid) ||
         list_other_problem.find((p) => p.idx === pid);
     if (problem) {
         const spjCheckbox = GetSpjSwitch(pid);
-        let res_filename = `${pid}.json`;
         if (spjCheckbox && spjCheckbox.checked) {
             problem.problemJson.spj = "1";
-            res_filename = `${pid}_with_tpj.json`;
         } else {
             problem.problemJson.spj = "0";
         }
-        const formattedJson = JSON.stringify(problem.problemJson, null, 4); // 格式化 JSON
-        const blob = new Blob([formattedJson], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = res_filename;
-        a.click();
-        URL.revokeObjectURL(url);
+        problem.problemJson.problem_new_id = 1;
+
+        const zipWriter = new zip.ZipWriter(new zip.BlobWriter("application/zip"));
+        zipWriter.add("problemlist.json", new zip.TextReader(JSON.stringify([problem.problemJson], null, 4)));
+
+        if (problem.attach_files && problem.attach_files.length > 0) {
+            MakeAttachFiles(problem.testData.entries, problem.statement_entry, problem.attach_files).then((attachFilesData) => {
+                attachFilesData.forEach(async (file) => {
+                    await zipWriter.add(`ATTACH_${String(1).padStart(5, "0")}/${file.filename}`, new zip.BlobReader(file.content));
+                });
+                zipWriter.close().then((zipContent) => {
+                    const url = URL.createObjectURL(zipContent);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `${pid}.zip`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                });
+            });
+        } else {
+            zipWriter.close().then((zipContent) => {
+                const url = URL.createObjectURL(zipContent);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `${pid}.zip`;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
     }
 }
 
-async function downloadTestData(pid) {
+async function DownloadTestData(pid) {
     const problem =
         map_contest_problem.get(pid) ||
         list_other_problem.find((p) => p.idx === pid);
@@ -402,11 +465,11 @@ async function downloadTestData(pid) {
 }
 
 function handleDownloadTestData(pid) {
-    downloadTestData(pid).catch((error) => {
+    DownloadTestData(pid).catch((error) => {
         console.error("Error downloading test data:", error);
     });
 }
-async function downloadSelectedProblems() {
+async function DownloadSelectedProblems() {
     showOverlay("Packing ... 0 problem(s) packed");
     try {
         const selectedProblems = $("#polygon_parse_table").bootstrapTable(
@@ -428,6 +491,7 @@ async function downloadSelectedProblems() {
             } else {
                 problem.problemJson.spj = "0";
             }
+            problem.problemJson.problem_new_id = i + 1;
             problemList.push(problem.problemJson);
 
             const testDir = `TEST_${String(i + 1).padStart(5, "0")}`;
@@ -459,6 +523,15 @@ async function downloadSelectedProblems() {
                         await zipWriter.add(spjFilePath, new zip.BlobReader(spjContent));
                         addedFiles.add(spjFilePath);
                     }
+                }
+            }
+
+            // 添加 ATTACH_${i + 1} 目录（如果有附件文件）
+            if (problem.attach_files && problem.attach_files.length > 0) {
+                const attachDir = `ATTACH_${String(i + 1).padStart(5, "0")}`;
+                const attachFilesData = await MakeAttachFiles(problem.testData.entries, problem.statement_entry, problem.attach_files);
+                for (const file of attachFilesData) {
+                    await zipWriter.add(`${attachDir}/${file.filename}`, new zip.BlobReader(file.content));
                 }
             }
 

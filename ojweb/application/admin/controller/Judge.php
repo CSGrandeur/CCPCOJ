@@ -87,7 +87,7 @@ class Judge extends Filebase
         foreach($files as $file)
         {
             $filename = $file->getinfo('name');
-            if(!preg_match($this->filenameRe, $filename))
+            if(!preg_match($this->filenameRe, strtolower($filename)))
             {
                 $infolist .= "<br/>" . $filename . ": 文件名不合法(Name not valid)";
                 continue;
