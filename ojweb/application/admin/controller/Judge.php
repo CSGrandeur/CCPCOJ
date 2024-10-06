@@ -1,7 +1,10 @@
 <?php
+
 namespace app\admin\controller;
+
 use think\Controller;
 use Alchemy\Zippy\Zippy;
+
 class Judge extends Filebase
 {
     var $tmpFileBaseName;
@@ -19,20 +22,21 @@ class Judge extends Filebase
         $this->validateRule = ['size' => $this->maxFileSize];
 
 
-        if(!input('?item') || trim(input('item') != 'problem'))
+        if (!input('?item') || trim(input('item') != 'problem'))
             $this->error('This page is only for problem judging ralated things.');
         $this->GetInput();
         $this->FileAuthentication();
         $this->GetPath();
     }
-    public function judgedata_manager() {
+    public function judgedata_manager()
+    {
         $this->assign([
             'pagetitle'         => 'Judge Data ' . $this->inputInfo['id'],
             'inputinfo'         => $this->inputInfo,
             'iteminfo'          => $this->itemInfo,
-            'file_url'          => '/admin/judge/judgedata_manager_ajax?item='.$this->inputInfo['item'].'&id='.$this->inputInfo['id'],
-            'delete_url'        => '/admin/judge/file_delete_ajax?item='.$this->inputInfo['item'].'&id='.$this->inputInfo['id'],
-            'rename_url'        => '/admin/judge/file_rename_ajax?item='.$this->inputInfo['item'].'&id='.$this->inputInfo['id'],
+            'file_url'          => '/admin/judge/judgedata_manager_ajax?item=' . $this->inputInfo['item'] . '&id=' . $this->inputInfo['id'],
+            'delete_url'        => '/admin/judge/file_delete_ajax?item=' . $this->inputInfo['item'] . '&id=' . $this->inputInfo['id'],
+            'rename_url'        => '/admin/judge/file_rename_ajax?item=' . $this->inputInfo['item'] . '&id=' . $this->inputInfo['id'],
             'upload_url'        => '/admin/judge/upload_ajax',
             'method_button'     => 'File Type',
             'attach_notify'     => "<code>.in</code>, <code>.out</code> and <code>spj.cc/tpj.cc</code>. <br/>
@@ -42,15 +46,16 @@ class Judge extends Filebase
         ]);
         return $this->fetch();
     }
-    public function GetPath() {
+    public function GetPath()
+    {
         $this->inputInfo['path'] =  $this->ojPath['testdata'] . '/' . $this->inputInfo['id'];
-        if(!MakeDirs($this->inputInfo['path']))
-        {
+        if (!MakeDirs($this->inputInfo['path'])) {
             $this->error('Folder permission denied.');
         }
         return $this->inputInfo;
     }
-    public function judgedata_manager_ajax() {
+    public function judgedata_manager_ajax()
+    {
         $filelist = $this->GetDir();
         $ret['total'] = count($filelist);
         $ret['rows'] = $filelist;
@@ -60,76 +65,73 @@ class Judge extends Filebase
     public function file_rename_ajax()
     {
 
-        if(!preg_match($this->filenameRe, $this->inputInfo['rename']))
-        {
-            $this->error("Please enter a valid filename".$this->filenameReMsg);
+        if (!preg_match($this->filenameRe, $this->inputInfo['rename'])) {
+            $this->error("Please enter a valid filename" . $this->filenameReMsg);
         }
-        if(!rename($this->inputInfo['path'] . '/' . $this->inputInfo['filename'], $this->inputInfo['path'] . '/' . $this->inputInfo['rename']))
-        {
+        if (!rename($this->inputInfo['path'] . '/' . $this->inputInfo['filename'], $this->inputInfo['path'] . '/' . $this->inputInfo['rename'])) {
             $this->error('Failed.');
         }
         $this->ojPath = config('OjPath');
         $this->success(
             'Renamed to ' . $this->inputInfo['rename'],
             '',
-            ['rename'  => "<a href='/admin/judge/downloaddata?id=".$this->inputInfo['id']."&filename=". $this->inputInfo['rename']."' filename='".$this->inputInfo['rename']."'>" .  $this->inputInfo['rename'] . "</a>"]
+            ['rename'  => "<a href='/admin/judge/downloaddata?id=" . $this->inputInfo['id'] . "&filename=" . $this->inputInfo['rename'] . "' filename='" . $this->inputInfo['rename'] . "'>" .  $this->inputInfo['rename'] . "</a>"]
         );
     }
-
+    protected function PostProcessUploadedFile($filePath, $fileName)
+    {
+        $fileExt = strtolower(GetExtension($fileName));
+        if (strlen($fileExt) == 0) {
+            rename($filePath . ".FILE_NO_EXT", $filePath);
+            if ($fileName == 'spj' || $fileName == 'tpj') {
+                exec("chmod +x " . $filePath);
+            }
+        } else if ($fileExt == 'zip') {
+            $this->tmpFileBaseName = basename($fileName, '.zip');
+            $this->DecompressZipData($filePath);
+            unlink($filePath);
+            if (is_file($this->inputInfo['path'] . "/spj")) {
+                exec("chmod +x " . $this->inputInfo['path'] . "/spj");
+            }
+            if (is_file($this->inputInfo['path'] . "/tpj")) {
+                exec("chmod +x " . $this->inputInfo['path'] . "/tpj");
+            }
+        }
+    }
     public function upload_ajax()
     {
         $files = request()->file("upload_file");
-        // 移动到框架应用根目录/public/uploads/ 目录下
-        if(count($files) > $this->maxFileNum)
-            $this->error('Do not upload more than '.$this->maxFileNum.' files one time');
+        if (count($files) > $this->maxFileNum) {
+            $this->error('Do not upload more than ' . $this->maxFileNum . ' files one time');
+        }
         $infolist = '';
         $atLeastOneFile = 0;
-        foreach($files as $file)
-        {
+        foreach ($files as $file) {
             $filename = $file->getinfo('name');
-            if(!preg_match($this->filenameRe, strtolower($filename)))
-            {
+            if (!preg_match($this->filenameRe, strtolower($filename))) {
                 $infolist .= "<br/>" . $filename . ": 文件名不合法(Name not valid)";
                 continue;
             }
-            //$fileExt处理类似 spj 这样没有扩展名的文件。ThinkPHP的move这里会给没后缀名文件自动加一个“.”。
             $fileExt = strtolower(GetExtension($filename));
-            if(strlen($fileExt) == 0)
+            if (strlen($fileExt) == 0) {
                 $info = $file->validate($this->validateRule)->move($this->inputInfo['path'], $filename . ".FILE_NO_EXT");
-            else
+            } else {
                 $info = $file->validate($this->validateRule)->move($this->inputInfo['path'], '');
-            if (!$info) {
-                $infolist .= "<br/>File \"".$filename."\": ".($file->getError());
+                if ($fileExt == 'zip') {
+                    $this->PostProcessUploadedFile($this->inputInfo['path'] . DIRECTORY_SEPARATOR . $filename, $filename);
+                }
             }
-            else {
+            if (!$info) {
+                $infolist .= "<br/>File \"" . $filename . "\": " . ($file->getError());
+            } else {
                 $atLeastOneFile++;
-                if(strlen($fileExt) == 0)
-                {
-                    rename($this->inputInfo['path'] . "/" . $filename . ".FILE_NO_EXT", $this->inputInfo['path'] . "/" . $filename);
-                    if($filename == 'spj' || $filename == 'tpj') {
-                        exec("chmod +x " . $this->inputInfo['path'] . "/" . $filename);
-                    }
-                }
-                else if($fileExt == 'zip')
-                {
-                    //有时候压缩数据时候直接对文件夹打包，为方便这个操作，允许与zip同名的文件夹，递归一次。此处暂存zip不带扩展名的文件名。
-                    $this->tmpFileBaseName = basename($filename, '.zip');
-                    $this->DecompressZipData($this->inputInfo['path'] . "/" . $filename);
-                    unlink($this->inputInfo['path'] . "/" . $filename);
-                    if(is_file($this->inputInfo['path'] . "/spj")) {
-                        //不加上传判断了，直接看一下有没有spj，有就给chmod。
-                        exec("chmod +x " . $this->inputInfo['path'] . "/spj");
-                    }
-                    if(is_file($this->inputInfo['path'] . "/tpj")) {
-                        exec("chmod +x " . $this->inputInfo['path'] . "/tpj");
-                    }
-                }
             }
         }
-        if($infolist == '')
+        if ($infolist == '') {
             $this->success('OK');
-        else
+        } else {
             $this->error('存在文件上传失败(Some files upload failed)' . $infolist);
+        }
     }
     function DecompressZipData($zipFilePath)
     {
@@ -138,13 +140,12 @@ class Judge extends Filebase
         DelTimeExpireFolders($this->ojPath['import_problem_temp'], $this->ojPath['export_temp_keep_time']);
         //导入题目过程中文件中转的临时文件夹
         $importTempPath = $this->ojPath['import_problem_temp'] . '/' . $date . '-' . session('user_id');
-        if(!MakeDirs($importTempPath))
+        if (!MakeDirs($importTempPath))
             $this->error("Folder [" . $this->ojPath['import_problem_temp'] . "] permission denied, you may need 'chmod'.");
         $zippy = Zippy::load();
         $archive = $zippy->open($zipFilePath);
         $archive->extract($importTempPath);
-        if(!$this->MoveUnzipFile($importTempPath))
-        {
+        if (!$this->MoveUnzipFile($importTempPath)) {
             DelDirs($importTempPath);
             $this->error('Some file in the zip is not valid, delete failed.');
         }
@@ -153,56 +154,40 @@ class Judge extends Filebase
     }
 
     // 验证目标文件夹文件名合法性
-    public function MoveUnzipFile($path, $depth=0, $deleteFile = true)
+    public function MoveUnzipFile($path, $depth = 0, $deleteFile = true)
     {
         // 如果允许删除非法文件，则都删除后返回true，删除失败返回false。如果不允许删除，直接返回false
-        if (is_dir($path) && ($handle = opendir($path)))
-        {
-            while (($file = readdir($handle)) !== false)
-            {
-                if ($file!="." && $file!="..")
-                {
-                    if(is_dir($path . '/' . $file))
-                    {
+        if (is_dir($path) && ($handle = opendir($path))) {
+            while (($file = readdir($handle)) !== false) {
+                if ($file != "." && $file != "..") {
+                    if (is_dir($path . '/' . $file)) {
                         //有时候压缩数据时候直接对文件夹打包，为方便这个操作，允许与zip同名的文件夹，递归一次。
-                        if($file == $this->tmpFileBaseName && $depth < 3)
-                        {
+                        if ($file == $this->tmpFileBaseName && $depth < 3) {
                             //$depth 控制一下递归深度。虽然又是个基本不会发生的情况，应该不会套很多层文件夹吧。不过还是防一下。
                             $this->MoveUnzipFile($path . '/' . $file, $depth + 1);
                         }
                         //文件夹直接删除。problem附带文件不该有子文件夹
-                        if($deleteFile)
-                        {
-                            if(!DelDirs($path . '/' . $file))
+                        if ($deleteFile) {
+                            if (!DelDirs($path . '/' . $file))
                                 return false;
-                        }
-                        else
+                        } else
                             return false;
-                    }
-                    else if(!preg_match($this->filenameRe, $file))
-                    {
-                        if($deleteFile)
-                        {
-                            if(!unlink($path . '/' . $file))
+                    } else if (!preg_match($this->filenameRe, $file)) {
+                        if ($deleteFile) {
+                            if (!unlink($path . '/' . $file))
                                 return false;
-                        }
-                        else
+                        } else
                             return false;
-                    }
-                    else
-                    {
+                    } else {
                         //mv时文件路径加引号，不然带括号的文件会有问题。
                         //PHP bug?，rename文件夹跨“驱动器”会提示copy()xxx，反正有问题
                         exec("mv \"" . $path . '/' . $file . "\"  \"" . $this->inputInfo['path'] . "/" . $file . "\"");
                     }
-
                 }
             }
             //关闭句柄
-            closedir ( $handle );
-        }
-        else
-        {
+            closedir($handle);
+        } else {
             return false;
         }
         return true;
@@ -211,26 +196,23 @@ class Judge extends Filebase
     public function GetDir()
     {
         $filelist = [];
-        if ($handle  = opendir($this->inputInfo['path']))
-        {
+        if ($handle  = opendir($this->inputInfo['path'])) {
             $i = 1;
-            while (($file = readdir($handle)) !== false)
-            {
-                if ($file!="." && $file!="..")
-                {
+            while (($file = readdir($handle)) !== false) {
+                if ($file != "." && $file != "..") {
                     $filelist[] = [
                         'file_lastmodify'   => date("Y-m-d h:i:s", filemtime($this->inputInfo['path'] . '/' . $file)),
                         'file_name'         => $file,
                         'file_size'         => round(filesize($this->inputInfo['path'] . '/' . $file) / 1024, 2),
                         'file_type'         => mime_content_type($this->inputInfo['path'] . '/' . $file),
-                        'file_url'          => "/admin/judge/downloaddata?item=".$this->inputInfo['item']."&id=".$this->inputInfo['id']."&filename=".$file
+                        'file_url'          => "/admin/judge/downloaddata?item=" . $this->inputInfo['item'] . "&id=" . $this->inputInfo['id'] . "&filename=" . $file
                     ];
-                    $i ++;
+                    $i++;
                 }
             }
             rsort($filelist);
             //关闭句柄
-            closedir ( $handle );
+            closedir($handle);
         }
         return $filelist;
     }

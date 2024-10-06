@@ -1,4 +1,9 @@
 {include file="../../csgoj/view/public/clipboard_js" /}
+
+{js href="__JS__/overlay.js" /}
+{js href="__JS__/chunk_upload.js" /}
+
+
 <div style="max-width:1140px; margin:auto;">
     <form id="upload_form" method="post" action="{$upload_url}" enctype="multipart/form-data" style="display:none">
         <input type="file" id="upload_input" name="upload_file[]" multiple style="display:none">
@@ -19,7 +24,7 @@
         <div class="form-inline fake-form" role="form">
             <button id="upload_button" class="btn btn-default">Upload File</button>&nbsp;&nbsp;
             {if isset($addition_tools) && !empty($addition_tools)}
-                {$addition_tools}&nbsp;&nbsp;
+            {$addition_tools}&nbsp;&nbsp;
             {/if}
         </div>
     </div>
@@ -97,6 +102,7 @@
     var rename_url = id_input.attr('rename_url');
     var maxfilenum = id_input.attr('maxfilenum');
     let flg_dblclick_inform = false;
+    let upload_url = "<?php echo $upload_url; ?>";
 
     var clipboard = new ClipboardJS('.copy_button');
     clipboard.on('success', function(e) {
@@ -216,7 +222,6 @@
         } else {
             alertify.alert(msg);
         }
-        upload_file_input.val('');
     });
 
     function CheckMultiFile(filelist, maxsize, reg) {
@@ -240,40 +245,76 @@
         }
         return [filename_check, msg];
     }
+    async function UploadFile(upload_file_input, upload_file_form, upload_file_button) {
+        const file_list = upload_file_input[0].files;
+        if (file_list.length === 0) {
+            alertify.alert('No files selected');
+            return;
+        }
 
-    function UploadFile(upload_file_input, upload_file_form, upload_file_button) {
-        upload_file_form.ajaxForm({
-            beforeSend: function() {
-                upload_file_button.attr('disabled', true);
-                var percentVal = '0%';
-                upload_file_button.text('Uploading' + percentVal);
-            },
-            uploadProgress: function(event, position, total, percentComplete) {
-                var percentVal = percentComplete + '%';
-                upload_file_button.text('Uploading' + percentVal);
-            },
-            success: function() {
-                var percentVal = '100%';
-                upload_file_button.text("Uploaded");
-            },
-            complete: function(e) {
-                ret = JSON.parse(e.responseText);
-                if (ret.code == 1) {
-                    alertify.success(ret['msg']);
-                    table.bootstrapTable('refresh');
-                    upload_file_button.text('Upload File');
-                    upload_file_button.removeAttr('disabled');
-                    return true;
-                } else {
-                    alertify.alert(ret.msg);
-                    button_delay(upload_file_button, 1, 'Upload File', 'Upload File');
-                    return false;
-                }
+        upload_file_button.attr('disabled', true);
+        upload_file_button.text('Uploading 0%');
+
+        let allFilesUploaded = true;
+        let failedFiles = [];
+
+        const additionalData = {
+            item:   upload_file_form.find('input[name="item"]').val(),
+            id:     upload_file_form.find('input[name="id"]').val()
+        };
+        for (let i = 0; i < file_list.length; i++) {
+            const file = file_list[i];
+            const success = await ChunkUpload(file, upload_url.replace('/upload_ajax', '/chunk_upload_ajax'), additionalData);
+            if (!success) {
+                allFilesUploaded = false;
+                failedFiles.push(file.name);
             }
-        });
-        upload_file_form.submit();
+        }
+
+        if (allFilesUploaded) {
+            upload_file_button.text('Upload File');
+            alertify.success('All files uploaded successfully');
+            table.bootstrapTable('refresh');
+        } else {
+            alertify.alert(`The following files failed to upload: ${failedFiles.join(', ')}`);
+        }
+
+        upload_file_button.removeAttr('disabled');
         upload_file_input.val('');
     }
+    // function UploadFile(upload_file_input, upload_file_form, upload_file_button) {
+    //     upload_file_form.ajaxForm({
+    //         beforeSend: function() {
+    //             upload_file_button.attr('disabled', true);
+    //             var percentVal = '0%';
+    //             upload_file_button.text('Uploading' + percentVal);
+    //         },
+    //         uploadProgress: function(event, position, total, percentComplete) {
+    //             var percentVal = percentComplete + '%';
+    //             upload_file_button.text('Uploading' + percentVal);
+    //         },
+    //         success: function() {
+    //             var percentVal = '100%';
+    //             upload_file_button.text("Uploaded");
+    //         },
+    //         complete: function(e) {
+    //             ret = JSON.parse(e.responseText);
+    //             if (ret.code == 1) {
+    //                 alertify.success(ret['msg']);
+    //                 table.bootstrapTable('refresh');
+    //                 upload_file_button.text('Upload File');
+    //                 upload_file_button.removeAttr('disabled');
+    //                 return true;
+    //             } else {
+    //                 alertify.alert(ret.msg);
+    //                 button_delay(upload_file_button, 1, 'Upload File', 'Upload File');
+    //                 return false;
+    //             }
+    //         }
+    //     });
+    //     upload_file_form.submit();
+    //     upload_file_input.val('');
+    // }
     table.on('post-body.bs.table', function() {
         table.bootstrapTable('resetView', {
             'height': this.scrollHeight + 120

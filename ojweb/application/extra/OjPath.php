@@ -21,6 +21,7 @@ return [
     'summary_contest'       => ROOT_PATH . 'CONTEST_SUMMARY/SUMMARY',
     'export_keep_time'      => 30,
     'import_problem_temp'   => ROOT_PATH . 'PROBLEM_EXPORT/IMPORT_TEMP',
+    'chunk_file_temp'       => ROOT_PATH . 'CHUNK_TEMP',
 
     'export_temp_keep_time'    => 2,    //因为一些程序错误未删除的临时文件夹，设置2天。（文件时间有可能是12小时制的问题，时间不对，避免出问题设置大于1天）
 ];

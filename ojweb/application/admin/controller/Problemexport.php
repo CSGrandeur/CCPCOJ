@@ -26,8 +26,9 @@ class Problemexport extends Filebase
 
         $this->GetInput();
 
-        if ($this->inputInfo['item'] != 'problemexport')
+        if ($this->inputInfo['item'] != 'problemexport') {
             $this->error('This page is for problem export');
+        }
         $this->FileAuthentication();
         $this->GetPath();
     }
@@ -124,15 +125,15 @@ class Problemexport extends Filebase
         if (!IsAdmin('administrator'))
             $this->error("You cannot export problem according to your privilege");
         $this->assign([
-            'inputinfo'        => $this->inputInfo,
-            'iteminfo'         => $this->itemInfo,
-            'file_url'        => '/admin/problemexport/problem_export_filemanager_ajax?item=' . $this->inputInfo['item'] . '&id=' . $this->inputInfo['id'],
+            'inputinfo'     => $this->inputInfo,
+            'iteminfo'      => $this->itemInfo,
+            'file_url'      => '/admin/problemexport/problem_export_filemanager_ajax?item=' . $this->inputInfo['item'] . '&id=' . $this->inputInfo['id'],
             'delete_url'    => '/admin/problemexport/file_delete_ajax?item=' . $this->inputInfo['item'] . '&id=' . $this->inputInfo['id'],
             'rename_url'    => '/admin/problemexport/file_rename_ajax?item=' . $this->inputInfo['item'] . '&id=' . $this->inputInfo['id'],
             'upload_url'    => '/admin/problemexport/upload_ajax',
-            'method_button'    => 'Do!',        //file_type 那一列的表头名字，这列当个功能button用
-            'attach_notify'    => 'Files will be automatically deleted after ' . $this->ojPath['export_keep_time'] . ' days. Only "zip" allowed', // 上传按钮旁的提示信息
-            'fire_url'        =>    '/admin/problemexport/problem_import_ajax'    //执行题目导入的链接
+            'method_button' => 'Do!',        //file_type 那一列的表头名字，这列当个功能button用
+            'attach_notify' => 'Files will be automatically deleted after ' . $this->ojPath['export_keep_time'] . ' days. Only "zip" allowed', // 上传按钮旁的提示信息
+            'fire_url'      =>    '/admin/problemexport/problem_import_ajax'    //执行题目导入的链接
         ]);
         return $this->fetch();
     }

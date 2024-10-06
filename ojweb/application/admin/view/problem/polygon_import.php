@@ -1,4 +1,5 @@
 {include file="../../csgoj/view/public/js_zip" /}
+{js href="__JS__/overlay.js" /}
 {js href="__JS__/polygon_parse.js" /}
 
 

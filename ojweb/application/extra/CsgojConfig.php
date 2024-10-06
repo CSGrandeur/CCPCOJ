@@ -26,51 +26,51 @@ return [
     ],
     'EMAIL_VERIFY_WAIT'     => 20,
     'OJ_LANGUAGE'    =>[
-        0    => 'C',
-        1    => 'C++',
-        3    => 'Java',
-        6    => 'Python3',
-        17   => 'Go',
+        0   => 'C',
+        1   => 'C++',
+        3   => 'Java',
+        6   => 'Python3',
+        17  => 'Go',
         // 2    => 'Pascal'
     ],
     'OJ_RESULTS'    =>[
-        4    =>    'AC',
-        5    =>    'PE',
-        6    =>    'WA',
-        7    =>    'TLE',
-        8    =>    'MLE',
-        9    =>    'OLE',
-        10    =>    'RE',
-        11    =>    'CE',
-        13    =>    'Tested',
-        0    =>    'PD',
-        1    =>    'PR',
-        2    =>    'CI',
-        3    =>    'RJ',
+        4   =>  'AC',
+        5   =>  'PE',
+        6   =>  'WA',
+        7   =>  'TLE',
+        8   =>  'MLE',
+        9   =>  'OLE',
+        10  =>  'RE',
+        11  =>  'CE',
+        13  =>  'Tested',
+        0   =>  'PD',
+        1   =>  'PR',
+        2   =>  'CI',
+        3   =>  'RJ',
     ],
     'OJ_RESULTS_HTML'    =>[
-        4    =>    ['success', 'Accepted'],
-        5    =>    ['danger' , 'Presentation Error'],
-        6    =>    ['danger' , 'Wrong Answer'],
-        7    =>    ['warning', 'Time Limit Exceed'],
-        8    =>    ['warning', 'Memory Limit Exceed'],
-        9    =>    ['warning', 'Output Limit Exceed'],
-        10    =>    ['warning', 'Runtime Error'],
-        11    =>    ['info', 'Compile Error'],  // CE不再罚时，故换成info颜色
-        13    =>    ['default', 'Tested'],
-        100    =>    ['default', 'Unknown'],
-        0    =>    ['default res_running', 'Pending'],
-        1    =>    ['default res_running', 'Pending Rejudging'],
-        2    =>    ['default res_running', 'Compiling'],
-        3    =>    ['info res_running', 'Running&Judging'],
+        4       =>  ['success', 'Accepted'],
+        5       =>  ['danger' , 'Presentation Error'],
+        6       =>  ['danger' , 'Wrong Answer'],
+        7       =>  ['warning', 'Time Limit Exceed'],
+        8       =>  ['warning', 'Memory Limit Exceed'],
+        9       =>  ['warning', 'Output Limit Exceed'],
+        10      =>  ['warning', 'Runtime Error'],
+        11      =>  ['info', 'Compile Error'],  // CE不再罚时，故换成info颜色
+        13      =>  ['default', 'Tested'],
+        100     =>  ['default', 'Unknown'],
+        0       =>  ['default res_running', 'Pending'],
+        1       =>  ['default res_running', 'Pending Rejudging'],
+        2       =>  ['default res_running', 'Compiling'],
+        3       =>  ['info res_running', 'Running&Judging'],
     ],
     'OJ_CONFIG' => [
         'user_id_maxlen' => 30
     ],
-    'OJ_UPLOAD_ATTACH_MAXSIZE'         => 20971520,        //一般文件上传尺寸限制，比如题目描述的插图
-    'OJ_UPLOAD_TESTDATA_MAXSIZE'     => 67108864,        //判题数据的尺寸限制
-    'OJ_UPLOAD_IMPORT_MAXSIZE'         => 134217728,        //导入题目最大尺寸
-    'OJ_UPLOAD_MAXNUM'                => 10,                //一次最多上传多少个文件
+    'OJ_UPLOAD_ATTACH_MAXSIZE'      => 20971520,    // 一般文件上传尺寸限制，比如题目描述的插图
+    'OJ_UPLOAD_TESTDATA_MAXSIZE'    => 134217728,   // 判题数据的尺寸限制
+    'OJ_UPLOAD_IMPORT_MAXSIZE'      => 134217728,   // 导入题目最大尺寸
+    'OJ_UPLOAD_MAXNUM'              => 20,          // 一次最多上传多少个文件
 
     'OJ_RANK_CACHE_OPTION' => ['type'=>'File', 'expire'=>10, 'path'=>CACHE_PATH, 'prefix'=>'csgoj'],  //比赛Ranklist的cache配置
     'OJ_RANKDYNAMIC_CACHE_OPTION' => ['type'=>'File', 'expire'=>60, 'path'=>CACHE_PATH, 'prefix'=>'csgoj'],  //新版Rank的cache配置
