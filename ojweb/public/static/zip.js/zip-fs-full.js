@@ -6,6 +6,7 @@
 
 	const { Array, Object, String, Number, BigInt, Math, Date, Map, Set, Response, URL, Error, Uint8Array, Uint16Array, Uint32Array, DataView, Blob, Promise, TextEncoder, TextDecoder, document, crypto, btoa, TransformStream, ReadableStream, WritableStream, CompressionStream, DecompressionStream, navigator, Worker } = typeof globalThis !== 'undefined' ? globalThis : this || self;
 
+	var _documentCurrentScript = typeof document !== 'undefined' ? document.currentScript : null;
 	/*
 	 Copyright (c) 2022 Gildas Lormeau. All rights reserved.
 
@@ -1046,7 +1047,7 @@
 			bi_windup(); // align on byte boundary
 			last_eob_len = 8; // enough lookahead for inflate
 
-			if (header) {
+			{
 				put_short(len);
 				put_short(~len);
 			}
@@ -1061,7 +1062,7 @@
 			eof // true if this is the last block for a file
 		) {
 			send_bits((STORED_BLOCK << 1) + (eof ? 1 : 0), 3); // send block type
-			copy_block(buf, stored_len, true); // with header
+			copy_block(buf, stored_len); // with header
 		}
 
 		// Determine the best encoding for the current block: dynamic trees, static
@@ -4282,6 +4283,7 @@
 	const EXTRAFIELD_TYPE_EXTENDED_TIMESTAMP = 0x5455;
 	const EXTRAFIELD_TYPE_UNICODE_PATH = 0x7075;
 	const EXTRAFIELD_TYPE_UNICODE_COMMENT = 0x6375;
+	const EXTRAFIELD_TYPE_USDZ = 0x1986;
 
 	const BITFLAG_ENCRYPTED = 0x01;
 	const BITFLAG_LEVEL = 0x06;
@@ -4299,8 +4301,8 @@
 	const MIN_DATE = new Date(1980, 0, 1);
 
 	const UNDEFINED_VALUE = undefined;
-	const UNDEFINED_TYPE$1 = "undefined";
-	const FUNCTION_TYPE$1 = "function";
+	const UNDEFINED_TYPE = "undefined";
+	const FUNCTION_TYPE = "function";
 
 	/*
 	 Copyright (c) 2022 Gildas Lormeau. All rights reserved.
@@ -4329,6 +4331,7 @@
 	 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 	 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	 */
+
 
 	class StreamAdapter {
 
@@ -4380,10 +4383,11 @@
 	 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	 */
 
+
 	const MINIMUM_CHUNK_SIZE = 64;
 	let maxWorkers = 2;
 	try {
-		if (typeof navigator != UNDEFINED_TYPE$1 && navigator.hardwareConcurrency) {
+		if (typeof navigator != UNDEFINED_TYPE && navigator.hardwareConcurrency) {
 			maxWorkers = navigator.hardwareConcurrency;
 		}
 	} catch (_error) {
@@ -4396,8 +4400,8 @@
 		useWebWorkers: true,
 		useCompressionStream: true,
 		workerScripts: UNDEFINED_VALUE,
-		CompressionStreamNative: typeof CompressionStream != UNDEFINED_TYPE$1 && CompressionStream,
-		DecompressionStreamNative: typeof DecompressionStream != UNDEFINED_TYPE$1 && DecompressionStream
+		CompressionStreamNative: typeof CompressionStream != UNDEFINED_TYPE && CompressionStream,
+		DecompressionStreamNative: typeof DecompressionStream != UNDEFINED_TYPE && DecompressionStream
 	};
 
 	const config = Object.assign({}, DEFAULT_CONFIGURATION);
@@ -4494,6 +4498,7 @@
 	 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	 */
 
+
 	function getMimeType$1() {
 		return "application/octet-stream";
 	}
@@ -4526,6 +4531,7 @@
 	 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	 */
 
+
 	const table$1 = {
 		"application": {
 			"andrew-inset": "ez",
@@ -4534,37 +4540,64 @@
 			"atomcat+xml": "atomcat",
 			"atomserv+xml": "atomsrv",
 			"bbolin": "lin",
-			"cap": ["cap", "pcap"],
 			"cu-seeme": "cu",
 			"davmount+xml": "davmount",
 			"dsptype": "tsp",
-			"ecmascript": ["es", "ecma"],
+			"ecmascript": [
+				"es",
+				"ecma"
+			],
 			"futuresplash": "spl",
 			"hta": "hta",
 			"java-archive": "jar",
 			"java-serialized-object": "ser",
 			"java-vm": "class",
-			"javascript": "js",
 			"m3g": "m3g",
 			"mac-binhex40": "hqx",
-			"mathematica": ["nb", "ma", "mb"],
+			"mathematica": [
+				"nb",
+				"ma",
+				"mb"
+			],
 			"msaccess": "mdb",
-			"msword": ["doc", "dot"],
+			"msword": [
+				"doc",
+				"dot",
+				"wiz"
+			],
 			"mxf": "mxf",
 			"oda": "oda",
 			"ogg": "ogx",
 			"pdf": "pdf",
 			"pgp-keys": "key",
-			"pgp-signature": ["asc", "sig"],
+			"pgp-signature": [
+				"asc",
+				"sig"
+			],
 			"pics-rules": "prf",
-			"postscript": ["ps", "ai", "eps", "epsi", "epsf", "eps2", "eps3"],
+			"postscript": [
+				"ps",
+				"ai",
+				"eps",
+				"epsi",
+				"epsf",
+				"eps2",
+				"eps3"
+			],
 			"rar": "rar",
 			"rdf+xml": "rdf",
 			"rss+xml": "rss",
 			"rtf": "rtf",
-			"smil": ["smi", "smil"],
-			"xhtml+xml": ["xhtml", "xht"],
-			"xml": ["xml", "xsl", "xsd"],
+			"xhtml+xml": [
+				"xhtml",
+				"xht"
+			],
+			"xml": [
+				"xml",
+				"xsl",
+				"xsd",
+				"xpdl"
+			],
 			"xspf+xml": "xspf",
 			"zip": "zip",
 			"vnd.android.package-archive": "apk",
@@ -4572,10 +4605,24 @@
 			"vnd.google-earth.kml+xml": "kml",
 			"vnd.google-earth.kmz": "kmz",
 			"vnd.mozilla.xul+xml": "xul",
-			"vnd.ms-excel": ["xls", "xlb", "xlt", "xlm", "xla", "xlc", "xlw"],
+			"vnd.ms-excel": [
+				"xls",
+				"xlb",
+				"xlt",
+				"xlm",
+				"xla",
+				"xlc",
+				"xlw"
+			],
 			"vnd.ms-pki.seccat": "cat",
 			"vnd.ms-pki.stl": "stl",
-			"vnd.ms-powerpoint": ["ppt", "pps", "pot"],
+			"vnd.ms-powerpoint": [
+				"ppt",
+				"pps",
+				"pot",
+				"ppa",
+				"pwz"
+			],
 			"vnd.oasis.opendocument.chart": "odc",
 			"vnd.oasis.opendocument.database": "odb",
 			"vnd.oasis.opendocument.formula": "odf",
@@ -4587,7 +4634,10 @@
 			"vnd.oasis.opendocument.spreadsheet": "ods",
 			"vnd.oasis.opendocument.spreadsheet-template": "ots",
 			"vnd.oasis.opendocument.text": "odt",
-			"vnd.oasis.opendocument.text-master": "odm",
+			"vnd.oasis.opendocument.text-master": [
+				"odm",
+				"otm"
+			],
 			"vnd.oasis.opendocument.text-template": "ott",
 			"vnd.oasis.opendocument.text-web": "oth",
 			"vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
@@ -4602,8 +4652,14 @@
 			"vnd.stardivision.chart": "sds",
 			"vnd.stardivision.draw": "sda",
 			"vnd.stardivision.impress": "sdd",
-			"vnd.stardivision.math": ["sdf", "smf"],
-			"vnd.stardivision.writer": ["sdw", "vor"],
+			"vnd.stardivision.math": [
+				"sdf",
+				"smf"
+			],
+			"vnd.stardivision.writer": [
+				"sdw",
+				"vor"
+			],
 			"vnd.stardivision.writer-global": "sgl",
 			"vnd.sun.xml.calc": "sxc",
 			"vnd.sun.xml.calc.template": "stc",
@@ -4615,8 +4671,21 @@
 			"vnd.sun.xml.writer": "sxw",
 			"vnd.sun.xml.writer.global": "sxg",
 			"vnd.sun.xml.writer.template": "stw",
-			"vnd.symbian.install": ["sis", "sisx"],
-			"vnd.visio": ["vsd", "vst", "vss", "vsw"],
+			"vnd.symbian.install": [
+				"sis",
+				"sisx"
+			],
+			"vnd.visio": [
+				"vsd",
+				"vst",
+				"vss",
+				"vsw",
+				"vsdx",
+				"vssx",
+				"vstx",
+				"vssm",
+				"vstm"
+			],
 			"vnd.wap.wbxml": "wbxml",
 			"vnd.wap.wmlc": "wmlc",
 			"vnd.wap.wmlscriptc": "wmlsc",
@@ -4628,15 +4697,31 @@
 			"x-apple-diskimage": "dmg",
 			"x-bcpio": "bcpio",
 			"x-bittorrent": "torrent",
-			"x-cbr": ["cbr", "cba", "cbt", "cb7"],
+			"x-cbr": [
+				"cbr",
+				"cba",
+				"cbt",
+				"cb7"
+			],
 			"x-cbz": "cbz",
-			"x-cdf": ["cdf", "cda"],
+			"x-cdf": [
+				"cdf",
+				"cda"
+			],
 			"x-cdlink": "vcd",
 			"x-chess-pgn": "pgn",
 			"x-cpio": "cpio",
 			"x-csh": "csh",
-			"x-debian-package": ["deb", "udeb"],
-			"x-director": ["dcr", "dir", "dxr", "cst", "cct", "cxt", "w3d", "fgd", "swa"],
+			"x-director": [
+				"dir",
+				"dxr",
+				"cst",
+				"cct",
+				"cxt",
+				"w3d",
+				"fgd",
+				"swa"
+			],
 			"x-dms": "dms",
 			"x-doom": "wad",
 			"x-dvi": "dvi",
@@ -4646,9 +4731,16 @@
 			"x-gnumeric": "gnumeric",
 			"x-go-sgf": "sgf",
 			"x-graphing-calculator": "gcf",
-			"x-gtar": ["gtar", "taz"],
+			"x-gtar": [
+				"gtar",
+				"taz"
+			],
 			"x-hdf": "hdf",
-			"x-httpd-php": ["phtml", "pht", "php"],
+			"x-httpd-php": [
+				"phtml",
+				"pht",
+				"php"
+			],
 			"x-httpd-php-source": "phps",
 			"x-httpd-php3": "php3",
 			"x-httpd-php3-preprocessed": "php3p",
@@ -4656,57 +4748,88 @@
 			"x-httpd-php5": "php5",
 			"x-ica": "ica",
 			"x-info": "info",
-			"x-internet-signup": ["ins", "isp"],
+			"x-internet-signup": [
+				"ins",
+				"isp"
+			],
 			"x-iphone": "iii",
 			"x-iso9660-image": "iso",
 			"x-java-jnlp-file": "jnlp",
 			"x-jmol": "jmz",
 			"x-killustrator": "kil",
-			"x-koan": ["skp", "skd", "skt", "skm"],
-			"x-kpresenter": ["kpr", "kpt"],
-			"x-kword": ["kwd", "kwt"],
 			"x-latex": "latex",
-			"x-lha": "lha",
 			"x-lyx": "lyx",
-			"x-lzh": "lzh",
 			"x-lzx": "lzx",
-			"x-maker": ["frm", "maker", "frame", "fm", "fb", "book", "fbdoc"],
+			"x-maker": [
+				"frm",
+				"fb",
+				"fbdoc"
+			],
 			"x-ms-wmd": "wmd",
-			"x-ms-wmz": "wmz",
-			"x-msdos-program": ["com", "exe", "bat", "dll"],
-			"x-msi": "msi",
-			"x-netcdf": ["nc", "cdf"],
-			"x-ns-proxy-autoconfig": ["pac", "dat"],
+			"x-msdos-program": [
+				"com",
+				"exe",
+				"bat",
+				"dll"
+			],
+			"x-netcdf": [
+				"nc"
+			],
+			"x-ns-proxy-autoconfig": [
+				"pac",
+				"dat"
+			],
 			"x-nwc": "nwc",
 			"x-object": "o",
 			"x-oz-application": "oza",
 			"x-pkcs7-certreqresp": "p7r",
-			"x-python-code": ["pyc", "pyo"],
-			"x-qgis": ["qgs", "shp", "shx"],
+			"x-python-code": [
+				"pyc",
+				"pyo"
+			],
+			"x-qgis": [
+				"qgs",
+				"shp",
+				"shx"
+			],
 			"x-quicktimeplayer": "qtl",
-			"x-redhat-package-manager": "rpm",
+			"x-redhat-package-manager": [
+				"rpm",
+				"rpa"
+			],
 			"x-ruby": "rb",
 			"x-sh": "sh",
 			"x-shar": "shar",
-			"x-shockwave-flash": ["swf", "swfl"],
+			"x-shockwave-flash": [
+				"swf",
+				"swfl"
+			],
 			"x-silverlight": "scr",
 			"x-stuffit": "sit",
 			"x-sv4cpio": "sv4cpio",
 			"x-sv4crc": "sv4crc",
 			"x-tar": "tar",
-			"x-tcl": "tcl",
 			"x-tex-gf": "gf",
 			"x-tex-pk": "pk",
-			"x-texinfo": ["texinfo", "texi"],
-			"x-trash": ["~", "%", "bak", "old", "sik"],
-			"x-troff": ["t", "tr", "roff"],
-			"x-troff-man": "man",
-			"x-troff-me": "me",
-			"x-troff-ms": "ms",
+			"x-texinfo": [
+				"texinfo",
+				"texi"
+			],
+			"x-trash": [
+				"~",
+				"%",
+				"bak",
+				"old",
+				"sik"
+			],
 			"x-ustar": "ustar",
 			"x-wais-source": "src",
 			"x-wingz": "wz",
-			"x-x509-ca-cert": ["crt", "der", "cer"],
+			"x-x509-ca-cert": [
+				"crt",
+				"der",
+				"cer"
+			],
 			"x-xcf": "xcf",
 			"x-xfig": "fig",
 			"x-xpinstall": "xpi",
@@ -4729,31 +4852,47 @@
 			"gpx+xml": "gpx",
 			"gxf": "gxf",
 			"hyperstudio": "stk",
-			"inkml+xml": ["ink", "inkml"],
+			"inkml+xml": [
+				"ink",
+				"inkml"
+			],
 			"ipfix": "ipfix",
-			"json": "json",
 			"jsonml+json": "jsonml",
 			"lost+xml": "lostxml",
 			"mads+xml": "mads",
 			"marc": "mrc",
 			"marcxml+xml": "mrcx",
-			"mathml+xml": "mathml",
+			"mathml+xml": [
+				"mathml",
+				"mml"
+			],
 			"mbox": "mbox",
 			"mediaservercontrol+xml": "mscml",
 			"metalink+xml": "metalink",
 			"metalink4+xml": "meta4",
 			"mets+xml": "mets",
 			"mods+xml": "mods",
-			"mp21": ["m21", "mp21"],
+			"mp21": [
+				"m21",
+				"mp21"
+			],
 			"mp4": "mp4s",
 			"oebps-package+xml": "opf",
 			"omdoc+xml": "omdoc",
-			"onenote": ["onetoc", "onetoc2", "onetmp", "onepkg"],
+			"onenote": [
+				"onetoc",
+				"onetoc2",
+				"onetmp",
+				"onepkg"
+			],
 			"oxps": "oxps",
 			"patch-ops-error+xml": "xer",
 			"pgp-encrypted": "pgp",
 			"pkcs10": "p10",
-			"pkcs7-mime": ["p7m", "p7c"],
+			"pkcs7-mime": [
+				"p7m",
+				"p7c"
+			],
 			"pkcs7-signature": "p7s",
 			"pkcs8": "p8",
 			"pkix-attr-cert": "ac",
@@ -4788,7 +4927,10 @@
 			"sru+xml": "sru",
 			"ssdl+xml": "ssdl",
 			"ssml+xml": "ssml",
-			"tei+xml": ["tei", "teicorpus"],
+			"tei+xml": [
+				"tei",
+				"teicorpus"
+			],
 			"thraud+xml": "tfi",
 			"timestamped-data": "tsd",
 			"vnd.3gpp.pic-bw-large": "plb",
@@ -4799,10 +4941,16 @@
 			"vnd.accpac.simply.aso": "aso",
 			"vnd.accpac.simply.imp": "imp",
 			"vnd.acucobol": "acu",
-			"vnd.acucorp": ["atc", "acutc"],
+			"vnd.acucorp": [
+				"atc",
+				"acutc"
+			],
 			"vnd.adobe.air-application-installer-package+zip": "air",
 			"vnd.adobe.formscentral.fcdt": "fcdt",
-			"vnd.adobe.fxp": ["fxp", "fxpl"],
+			"vnd.adobe.fxp": [
+				"fxp",
+				"fxpl"
+			],
 			"vnd.adobe.xdp+xml": "xdp",
 			"vnd.adobe.xfdf": "xfdf",
 			"vnd.ahead.space": "ahead",
@@ -4826,7 +4974,13 @@
 			"vnd.chipnuts.karaoke-mmd": "mmd",
 			"vnd.claymore": "cla",
 			"vnd.cloanto.rp9": "rp9",
-			"vnd.clonk.c4group": ["c4g", "c4d", "c4f", "c4p", "c4u"],
+			"vnd.clonk.c4group": [
+				"c4g",
+				"c4d",
+				"c4f",
+				"c4p",
+				"c4u"
+			],
 			"vnd.cluetrust.cartomobile-config": "c11amc",
 			"vnd.cluetrust.cartomobile-config-pkg": "c11amz",
 			"vnd.commonspace": "csp",
@@ -4844,10 +4998,24 @@
 			"vnd.curl.pcurl": "pcurl",
 			"vnd.dart": "dart",
 			"vnd.data-vision.rdz": "rdz",
-			"vnd.dece.data": ["uvf", "uvvf", "uvd", "uvvd"],
-			"vnd.dece.ttml+xml": ["uvt", "uvvt"],
-			"vnd.dece.unspecified": ["uvx", "uvvx"],
-			"vnd.dece.zip": ["uvz", "uvvz"],
+			"vnd.dece.data": [
+				"uvf",
+				"uvvf",
+				"uvd",
+				"uvvd"
+			],
+			"vnd.dece.ttml+xml": [
+				"uvt",
+				"uvvt"
+			],
+			"vnd.dece.unspecified": [
+				"uvx",
+				"uvvx"
+			],
+			"vnd.dece.zip": [
+				"uvz",
+				"uvvz"
+			],
 			"vnd.denovo.fcselayout-link": "fe_launch",
 			"vnd.dna": "dna",
 			"vnd.dolby.mlp": "mlp",
@@ -4864,15 +5032,26 @@
 			"vnd.epson.quickanime": "qam",
 			"vnd.epson.salt": "slt",
 			"vnd.epson.ssf": "ssf",
-			"vnd.eszigno3+xml": ["es3", "et3"],
+			"vnd.eszigno3+xml": [
+				"es3",
+				"et3"
+			],
 			"vnd.ezpix-album": "ez2",
 			"vnd.ezpix-package": "ez3",
 			"vnd.fdf": "fdf",
 			"vnd.fdsn.mseed": "mseed",
-			"vnd.fdsn.seed": ["seed", "dataless"],
+			"vnd.fdsn.seed": [
+				"seed",
+				"dataless"
+			],
 			"vnd.flographit": "gph",
 			"vnd.fluxtime.clip": "ftc",
-			"vnd.framemaker": ["fm", "frame", "maker", "book"],
+			"vnd.framemaker": [
+				"fm",
+				"frame",
+				"maker",
+				"book"
+			],
 			"vnd.frogans.fnc": "fnc",
 			"vnd.frogans.ltf": "ltf",
 			"vnd.fsc.weblaunch": "fsc",
@@ -4888,12 +5067,18 @@
 			"vnd.genomatix.tuxedo": "txd",
 			"vnd.geogebra.file": "ggb",
 			"vnd.geogebra.tool": "ggt",
-			"vnd.geometry-explorer": ["gex", "gre"],
+			"vnd.geometry-explorer": [
+				"gex",
+				"gre"
+			],
 			"vnd.geonext": "gxt",
 			"vnd.geoplan": "g2w",
 			"vnd.geospace": "g3w",
 			"vnd.gmx": "gmx",
-			"vnd.grafeq": ["gqf", "gqs"],
+			"vnd.grafeq": [
+				"gqf",
+				"gqs"
+			],
 			"vnd.groove-account": "gac",
 			"vnd.groove-help": "ghf",
 			"vnd.groove-identity-message": "gim",
@@ -4913,15 +5098,25 @@
 			"vnd.hp-pclxl": "pclxl",
 			"vnd.hydrostatix.sof-data": "sfd-hdstx",
 			"vnd.ibm.minipay": "mpy",
-			"vnd.ibm.modcap": ["afp", "listafp", "list3820"],
+			"vnd.ibm.modcap": [
+				"afp",
+				"listafp",
+				"list3820"
+			],
 			"vnd.ibm.rights-management": "irm",
 			"vnd.ibm.secure-container": "sc",
-			"vnd.iccprofile": ["icc", "icm"],
+			"vnd.iccprofile": [
+				"icc",
+				"icm"
+			],
 			"vnd.igloader": "igl",
 			"vnd.immervision-ivp": "ivp",
 			"vnd.immervision-ivu": "ivu",
 			"vnd.insors.igm": "igm",
-			"vnd.intercon.formnet": ["xpw", "xpx"],
+			"vnd.intercon.formnet": [
+				"xpw",
+				"xpx"
+			],
 			"vnd.intergeo": "i2g",
 			"vnd.intu.qbo": "qbo",
 			"vnd.intu.qfx": "qfx",
@@ -4933,19 +5128,36 @@
 			"vnd.jcp.javame.midlet-rms": "rms",
 			"vnd.jisp": "jisp",
 			"vnd.joost.joda-archive": "joda",
-			"vnd.kahootz": ["ktz", "ktr"],
+			"vnd.kahootz": [
+				"ktz",
+				"ktr"
+			],
 			"vnd.kde.karbon": "karbon",
 			"vnd.kde.kchart": "chrt",
 			"vnd.kde.kformula": "kfo",
 			"vnd.kde.kivio": "flw",
 			"vnd.kde.kontour": "kon",
-			"vnd.kde.kpresenter": ["kpr", "kpt"],
+			"vnd.kde.kpresenter": [
+				"kpr",
+				"kpt"
+			],
 			"vnd.kde.kspread": "ksp",
-			"vnd.kde.kword": ["kwd", "kwt"],
+			"vnd.kde.kword": [
+				"kwd",
+				"kwt"
+			],
 			"vnd.kenameaapp": "htke",
 			"vnd.kidspiration": "kia",
-			"vnd.kinar": ["kne", "knp"],
-			"vnd.koan": ["skp", "skd", "skt", "skm"],
+			"vnd.kinar": [
+				"kne",
+				"knp"
+			],
+			"vnd.koan": [
+				"skp",
+				"skd",
+				"skt",
+				"skm"
+			],
 			"vnd.kodak-descriptor": "sse",
 			"vnd.las.las+xml": "lasxml",
 			"vnd.llamagraphics.life-balance.desktop": "lbd",
@@ -4991,10 +5203,18 @@
 			"vnd.ms-powerpoint.slide.macroenabled.12": "sldm",
 			"vnd.ms-powerpoint.slideshow.macroenabled.12": "ppsm",
 			"vnd.ms-powerpoint.template.macroenabled.12": "potm",
-			"vnd.ms-project": ["mpp", "mpt"],
+			"vnd.ms-project": [
+				"mpp",
+				"mpt"
+			],
 			"vnd.ms-word.document.macroenabled.12": "docm",
 			"vnd.ms-word.template.macroenabled.12": "dotm",
-			"vnd.ms-works": ["wps", "wks", "wcm", "wdb"],
+			"vnd.ms-works": [
+				"wps",
+				"wks",
+				"wcm",
+				"wdb"
+			],
 			"vnd.ms-wpl": "wpl",
 			"vnd.ms-xpsdocument": "xps",
 			"vnd.mseq": "mseq",
@@ -5002,7 +5222,10 @@
 			"vnd.muvee.style": "msty",
 			"vnd.mynfc": "taglet",
 			"vnd.neurolanguage.nlu": "nlu",
-			"vnd.nitf": ["ntf", "nitf"],
+			"vnd.nitf": [
+				"ntf",
+				"nitf"
+			],
 			"vnd.noblenet-directory": "nnd",
 			"vnd.noblenet-sealer": "nns",
 			"vnd.noblenet-web": "nnw",
@@ -5023,7 +5246,11 @@
 			"vnd.osgeo.mapguide.package": "mgp",
 			"vnd.osgi.dp": "dp",
 			"vnd.osgi.subsystem": "esa",
-			"vnd.palm": ["pdb", "pqa", "oprc"],
+			"vnd.palm": [
+				"pdb",
+				"pqa",
+				"oprc"
+			],
 			"vnd.pawaafile": "paw",
 			"vnd.pg.format": "str",
 			"vnd.pg.osasli": "ei6",
@@ -5035,7 +5262,14 @@
 			"vnd.proteus.magazine": "mgz",
 			"vnd.publishare-delta-tree": "qps",
 			"vnd.pvi.ptid1": "ptid",
-			"vnd.quark.quarkxpress": ["qxd", "qxt", "qwd", "qwt", "qxl", "qxb"],
+			"vnd.quark.quarkxpress": [
+				"qxd",
+				"qxt",
+				"qwd",
+				"qwt",
+				"qxl",
+				"qxb"
+			],
 			"vnd.realvnc.bed": "bed",
 			"vnd.recordare.musicxml": "mxl",
 			"vnd.recordare.musicxml+xml": "musicxml",
@@ -5052,25 +5286,41 @@
 			"vnd.shana.informed.formtemplate": "itp",
 			"vnd.shana.informed.interchange": "iif",
 			"vnd.shana.informed.package": "ipk",
-			"vnd.simtech-mindmapper": ["twd", "twds"],
+			"vnd.simtech-mindmapper": [
+				"twd",
+				"twds"
+			],
 			"vnd.smart.teacher": "teacher",
-			"vnd.solent.sdkm+xml": ["sdkm", "sdkd"],
+			"vnd.solent.sdkm+xml": [
+				"sdkm",
+				"sdkd"
+			],
 			"vnd.spotfire.dxp": "dxp",
 			"vnd.spotfire.sfs": "sfs",
 			"vnd.stepmania.package": "smzip",
 			"vnd.stepmania.stepchart": "sm",
-			"vnd.sus-calendar": ["sus", "susp"],
+			"vnd.sus-calendar": [
+				"sus",
+				"susp"
+			],
 			"vnd.svd": "svd",
 			"vnd.syncml+xml": "xsm",
 			"vnd.syncml.dm+wbxml": "bdm",
 			"vnd.syncml.dm+xml": "xdm",
 			"vnd.tao.intent-module-archive": "tao",
-			"vnd.tcpdump.pcap": ["pcap", "cap", "dmp"],
+			"vnd.tcpdump.pcap": [
+				"pcap",
+				"cap",
+				"dmp"
+			],
 			"vnd.tmobile-livetv": "tmo",
 			"vnd.trid.tpt": "tpt",
 			"vnd.triscape.mxs": "mxs",
 			"vnd.trueapp": "tra",
-			"vnd.ufdl": ["ufd", "ufdl"],
+			"vnd.ufdl": [
+				"ufd",
+				"ufdl"
+			],
 			"vnd.uiq.theme": "utz",
 			"vnd.umajin": "umj",
 			"vnd.unity": "unityweb",
@@ -5092,7 +5342,10 @@
 			"vnd.yamaha.smaf-audio": "saf",
 			"vnd.yamaha.smaf-phrase": "spf",
 			"vnd.yellowriver-custom-menu": "cmp",
-			"vnd.zul": ["zir", "zirz"],
+			"vnd.zul": [
+				"zir",
+				"zirz"
+			],
 			"vnd.zzazz.deck+xml": "zaz",
 			"voicexml+xml": "vxml",
 			"widget": "wgt",
@@ -5100,12 +5353,23 @@
 			"wsdl+xml": "wsdl",
 			"wspolicy+xml": "wspolicy",
 			"x-ace-compressed": "ace",
-			"x-authorware-bin": ["aab", "x32", "u32", "vox"],
+			"x-authorware-bin": [
+				"aab",
+				"x32",
+				"u32",
+				"vox"
+			],
 			"x-authorware-map": "aam",
 			"x-authorware-seg": "aas",
-			"x-blorb": ["blb", "blorb"],
+			"x-blorb": [
+				"blb",
+				"blorb"
+			],
 			"x-bzip": "bz",
-			"x-bzip2": ["bz2", "boz"],
+			"x-bzip2": [
+				"bz2",
+				"boz"
+			],
 			"x-cfs-compressed": "cfs",
 			"x-chat": "chat",
 			"x-conference": "nsc",
@@ -5117,50 +5381,84 @@
 			"x-font-bdf": "bdf",
 			"x-font-ghostscript": "gsf",
 			"x-font-linux-psf": "psf",
-			"x-font-otf": "otf",
 			"x-font-pcf": "pcf",
 			"x-font-snf": "snf",
-			"x-font-ttf": ["ttf", "ttc"],
-			"x-font-type1": ["pfa", "pfb", "pfm", "afm"],
-			"x-font-woff": "woff",
+			"x-font-ttf": [
+				"ttf",
+				"ttc"
+			],
+			"x-font-type1": [
+				"pfa",
+				"pfb",
+				"pfm",
+				"afm"
+			],
 			"x-freearc": "arc",
 			"x-gca-compressed": "gca",
 			"x-glulx": "ulx",
 			"x-gramps-xml": "gramps",
 			"x-install-instructions": "install",
-			"x-lzh-compressed": ["lzh", "lha"],
+			"x-lzh-compressed": [
+				"lzh",
+				"lha"
+			],
 			"x-mie": "mie",
-			"x-mobipocket-ebook": ["prc", "mobi"],
+			"x-mobipocket-ebook": [
+				"prc",
+				"mobi"
+			],
 			"x-ms-application": "application",
 			"x-ms-shortcut": "lnk",
 			"x-ms-xbap": "xbap",
 			"x-msbinder": "obd",
 			"x-mscardfile": "crd",
 			"x-msclip": "clp",
-			"x-msdownload": ["exe", "dll", "com", "bat", "msi"],
-			"x-msmediaview": ["mvb", "m13", "m14"],
-			"x-msmetafile": ["wmf", "wmz", "emf", "emz"],
+			"application/x-ms-installer": "msi",
+			"x-msmediaview": [
+				"mvb",
+				"m13",
+				"m14"
+			],
+			"x-msmetafile": [
+				"wmf",
+				"wmz",
+				"emf",
+				"emz"
+			],
 			"x-msmoney": "mny",
 			"x-mspublisher": "pub",
 			"x-msschedule": "scd",
 			"x-msterminal": "trm",
 			"x-mswrite": "wri",
 			"x-nzb": "nzb",
-			"x-pkcs12": ["p12", "pfx"],
-			"x-pkcs7-certificates": ["p7b", "spc"],
+			"x-pkcs12": [
+				"p12",
+				"pfx"
+			],
+			"x-pkcs7-certificates": [
+				"p7b",
+				"spc"
+			],
 			"x-research-info-systems": "ris",
 			"x-silverlight-app": "xap",
 			"x-sql": "sql",
 			"x-stuffitx": "sitx",
 			"x-subrip": "srt",
 			"x-t3vm-image": "t3",
-			"x-tads": "gam",
-			"x-tex": "tex",
 			"x-tex-tfm": "tfm",
 			"x-tgif": "obj",
 			"x-xliff+xml": "xlf",
 			"x-xz": "xz",
-			"x-zmachine": ["z1", "z2", "z3", "z4", "z5", "z6", "z7", "z8"],
+			"x-zmachine": [
+				"z1",
+				"z2",
+				"z3",
+				"z4",
+				"z5",
+				"z6",
+				"z7",
+				"z8"
+			],
 			"xaml+xml": "xaml",
 			"xcap-diff+xml": "xdf",
 			"xenc+xml": "xenc",
@@ -5168,7 +5466,12 @@
 			"xop+xml": "xop",
 			"xproc+xml": "xpl",
 			"xslt+xml": "xslt",
-			"xv+xml": ["mxml", "xhvml", "xvml", "xvm"],
+			"xv+xml": [
+				"mxml",
+				"xhvml",
+				"xvml",
+				"xvm"
+			],
 			"yang": "yang",
 			"yin+xml": "yin",
 			"envoy": "evy",
@@ -5178,36 +5481,96 @@
 			"vnd.ms-outlook": "msg",
 			"vnd.ms-pkicertstore": "sst",
 			"x-compress": "z",
-			"x-compressed": "tgz",
-			"x-gzip": "gz",
-			"x-perfmon": ["pma", "pmc", "pml", "pmr", "pmw"],
-			"x-pkcs7-mime": ["p7c", "p7m"],
-			"ynd.ms-pkipko": "pko"
+			"x-perfmon": [
+				"pma",
+				"pmc",
+				"pmr",
+				"pmw"
+			],
+			"ynd.ms-pkipko": "pko",
+			"gzip": [
+				"gz",
+				"tgz"
+			],
+			"smil+xml": [
+				"smi",
+				"smil"
+			],
+			"vnd.debian.binary-package": [
+				"deb",
+				"udeb"
+			],
+			"vnd.hzn-3d-crossword": "x3d",
+			"vnd.sqlite3": [
+				"db",
+				"sqlite",
+				"sqlite3",
+				"db-wal",
+				"sqlite-wal",
+				"db-shm",
+				"sqlite-shm"
+			],
+			"vnd.wap.sic": "sic",
+			"vnd.wap.slc": "slc",
+			"x-krita": [
+				"kra",
+				"krz"
+			],
+			"x-perl": [
+				"pm",
+				"pl"
+			],
+			"yaml": [
+				"yaml",
+				"yml"
+			]
 		},
 		"audio": {
 			"amr": "amr",
 			"amr-wb": "awb",
 			"annodex": "axa",
-			"basic": ["au", "snd"],
+			"basic": [
+				"au",
+				"snd"
+			],
 			"flac": "flac",
-			"midi": ["mid", "midi", "kar", "rmi"],
-			"mpeg": ["mpga", "mpega", "mp2", "mp3", "m4a", "mp2a", "m2a", "m3a"],
+			"midi": [
+				"mid",
+				"midi",
+				"kar",
+				"rmi"
+			],
+			"mpeg": [
+				"mpga",
+				"mpega",
+				"mp3",
+				"m4a",
+				"mp2a",
+				"m2a",
+				"m3a"
+			],
 			"mpegurl": "m3u",
-			"ogg": ["oga", "ogg", "spx"],
+			"ogg": [
+				"oga",
+				"ogg",
+				"spx"
+			],
 			"prs.sid": "sid",
-			"x-aiff": ["aif", "aiff", "aifc"],
+			"x-aiff": "aifc",
 			"x-gsm": "gsm",
 			"x-ms-wma": "wma",
 			"x-ms-wax": "wax",
 			"x-pn-realaudio": "ram",
 			"x-realaudio": "ra",
 			"x-sd2": "sd2",
-			"x-wav": "wav",
 			"adpcm": "adp",
 			"mp4": "mp4a",
 			"s3m": "s3m",
 			"silk": "sil",
-			"vnd.dece.audio": ["uva", "uvva"],
+			"vnd.dece.audio": [
+				"uva",
+				"uvva"
+			],
 			"vnd.digital-winds": "eol",
 			"vnd.dra": "dra",
 			"vnd.dts": "dts",
@@ -5219,18 +5582,31 @@
 			"vnd.nuera.ecelp9600": "ecelp9600",
 			"vnd.rip": "rip",
 			"webm": "weba",
-			"x-aac": "aac",
 			"x-caf": "caf",
 			"x-matroska": "mka",
 			"x-pn-realaudio-plugin": "rmp",
 			"xm": "xm",
-			"mid": ["mid", "rmi"]
+			"aac": "aac",
+			"aiff": [
+				"aiff",
+				"aif",
+				"aff"
+			],
+			"opus": "opus",
+			"wav": "wav"
 		},
 		"chemical": {
 			"x-alchemy": "alc",
-			"x-cache": ["cac", "cache"],
+			"x-cache": [
+				"cac",
+				"cache"
+			],
 			"x-cache-csf": "csf",
-			"x-cactvs-binary": ["cbin", "cascii", "ctab"],
+			"x-cactvs-binary": [
+				"cbin",
+				"cascii",
+				"ctab"
+			],
 			"x-cdx": "cdx",
 			"x-chem3d": "c3d",
 			"x-cif": "cif",
@@ -5238,38 +5614,70 @@
 			"x-cml": "cml",
 			"x-compass": "cpa",
 			"x-crossfire": "bsd",
-			"x-csml": ["csml", "csm"],
+			"x-csml": [
+				"csml",
+				"csm"
+			],
 			"x-ctx": "ctx",
-			"x-cxf": ["cxf", "cef"],
-			"x-embl-dl-nucleotide": ["emb", "embl"],
-			"x-gamess-input": ["inp", "gam", "gamin"],
-			"x-gaussian-checkpoint": ["fch", "fchk"],
+			"x-cxf": [
+				"cxf",
+				"cef"
+			],
+			"x-embl-dl-nucleotide": [
+				"emb",
+				"embl"
+			],
+			"x-gamess-input": [
+				"inp",
+				"gam",
+				"gamin"
+			],
+			"x-gaussian-checkpoint": [
+				"fch",
+				"fchk"
+			],
 			"x-gaussian-cube": "cub",
-			"x-gaussian-input": ["gau", "gjc", "gjf"],
+			"x-gaussian-input": [
+				"gau",
+				"gjc",
+				"gjf"
+			],
 			"x-gaussian-log": "gal",
 			"x-gcg8-sequence": "gcg",
 			"x-genbank": "gen",
 			"x-hin": "hin",
-			"x-isostar": ["istr", "ist"],
-			"x-jcamp-dx": ["jdx", "dx"],
+			"x-isostar": [
+				"istr",
+				"ist"
+			],
+			"x-jcamp-dx": [
+				"jdx",
+				"dx"
+			],
 			"x-kinemage": "kin",
 			"x-macmolecule": "mcm",
-			"x-macromodel-input": ["mmd", "mmod"],
+			"x-macromodel-input": "mmod",
 			"x-mdl-molfile": "mol",
 			"x-mdl-rdfile": "rd",
 			"x-mdl-rxnfile": "rxn",
-			"x-mdl-sdfile": ["sd", "sdf"],
+			"x-mdl-sdfile": "sd",
 			"x-mdl-tgf": "tgf",
 			"x-mmcif": "mcif",
 			"x-mol2": "mol2",
 			"x-molconn-Z": "b",
 			"x-mopac-graph": "gpt",
-			"x-mopac-input": ["mop", "mopcrt", "mpc", "zmt"],
+			"x-mopac-input": [
+				"mop",
+				"mopcrt",
+				"zmt"
+			],
 			"x-mopac-out": "moo",
 			"x-ncbi-asn1": "asn",
-			"x-ncbi-asn1-ascii": ["prt", "ent"],
-			"x-ncbi-asn1-binary": ["val", "aso"],
-			"x-pdb": ["pdb", "ent"],
+			"x-ncbi-asn1-ascii": [
+				"prt",
+				"ent"
+			],
+			"x-ncbi-asn1-binary": "val",
 			"x-rosdal": "ros",
 			"x-swissprot": "sw",
 			"x-vamas-iso14976": "vms",
@@ -5277,15 +5685,36 @@
 			"x-xtel": "xtel",
 			"x-xyz": "xyz"
 		},
+		"font": {
+			"otf": "otf",
+			"woff": "woff",
+			"woff2": "woff2"
+		},
 		"image": {
 			"gif": "gif",
 			"ief": "ief",
-			"jpeg": ["jpeg", "jpg", "jpe"],
+			"jpeg": [
+				"jpeg",
+				"jpg",
+				"jpe",
+				"jfif",
+				"jfif-tbnl",
+				"jif"
+			],
 			"pcx": "pcx",
 			"png": "png",
-			"svg+xml": ["svg", "svgz"],
-			"tiff": ["tiff", "tif"],
-			"vnd.djvu": ["djvu", "djv"],
+			"svg+xml": [
+				"svg",
+				"svgz"
+			],
+			"tiff": [
+				"tiff",
+				"tif"
+			],
+			"vnd.djvu": [
+				"djvu",
+				"djv"
+			],
 			"vnd.wap.wbmp": "wbmp",
 			"x-canon-cr2": "cr2",
 			"x-canon-crw": "crw",
@@ -5300,7 +5729,6 @@
 			"x-jng": "jng",
 			"x-nikon-nef": "nef",
 			"x-olympus-orf": "orf",
-			"x-photoshop": "psd",
 			"x-portable-anymap": "pnm",
 			"x-portable-bitmap": "pbm",
 			"x-portable-graymap": "pgm",
@@ -5315,7 +5743,12 @@
 			"ktx": "ktx",
 			"prs.btif": "btif",
 			"sgi": "sgi",
-			"vnd.dece.graphic": ["uvi", "uvvi", "uvg", "uvvg"],
+			"vnd.dece.graphic": [
+				"uvi",
+				"uvvi",
+				"uvg",
+				"uvvg"
+			],
 			"vnd.dwg": "dwg",
 			"vnd.dxf": "dxf",
 			"vnd.fastbidsheet": "fbs",
@@ -5330,73 +5763,195 @@
 			"webp": "webp",
 			"x-3ds": "3ds",
 			"x-cmx": "cmx",
-			"x-freehand": ["fh", "fhc", "fh4", "fh5", "fh7"],
-			"x-pict": ["pic", "pct"],
+			"x-freehand": [
+				"fh",
+				"fhc",
+				"fh4",
+				"fh5",
+				"fh7"
+			],
+			"x-pict": [
+				"pic",
+				"pct"
+			],
 			"x-tga": "tga",
 			"cis-cod": "cod",
-			"pipeg": "jfif"
+			"avif": "avifs",
+			"heic": [
+				"heif",
+				"heic"
+			],
+			"pjpeg": [
+				"pjpg"
+			],
+			"vnd.adobe.photoshop": "psd",
+			"x-adobe-dng": "dng",
+			"x-fuji-raf": "raf",
+			"x-icns": "icns",
+			"x-kodak-dcr": "dcr",
+			"x-kodak-k25": "k25",
+			"x-kodak-kdc": "kdc",
+			"x-minolta-mrw": "mrw",
+			"x-panasonic-raw": [
+				"raw",
+				"rw2",
+				"rwl"
+			],
+			"x-pentax-pef": [
+				"pef",
+				"ptx"
+			],
+			"x-sigma-x3f": "x3f",
+			"x-sony-arw": "arw",
+			"x-sony-sr2": "sr2",
+			"x-sony-srf": "srf"
 		},
 		"message": {
-			"rfc822": ["eml", "mime", "mht", "mhtml", "nws"]
+			"rfc822": [
+				"eml",
+				"mime",
+				"mht",
+				"mhtml",
+				"nws"
+			]
 		},
 		"model": {
-			"iges": ["igs", "iges"],
-			"mesh": ["msh", "mesh", "silo"],
-			"vrml": ["wrl", "vrml"],
-			"x3d+vrml": ["x3dv", "x3dvz"],
-			"x3d+xml": ["x3d", "x3dz"],
-			"x3d+binary": ["x3db", "x3dbz"],
+			"iges": [
+				"igs",
+				"iges"
+			],
+			"mesh": [
+				"msh",
+				"mesh",
+				"silo"
+			],
+			"vrml": [
+				"wrl",
+				"vrml"
+			],
+			"x3d+vrml": [
+				"x3dv",
+				"x3dvz"
+			],
+			"x3d+xml": "x3dz",
+			"x3d+binary": [
+				"x3db",
+				"x3dbz"
+			],
 			"vnd.collada+xml": "dae",
 			"vnd.dwf": "dwf",
 			"vnd.gdl": "gdl",
 			"vnd.gtw": "gtw",
 			"vnd.mts": "mts",
+			"vnd.usdz+zip": "usdz",
 			"vnd.vtu": "vtu"
 		},
 		"text": {
-			"cache-manifest": ["manifest", "appcache"],
-			"calendar": ["ics", "icz", "ifb"],
+			"cache-manifest": [
+				"manifest",
+				"appcache"
+			],
+			"calendar": [
+				"ics",
+				"icz",
+				"ifb"
+			],
 			"css": "css",
 			"csv": "csv",
 			"h323": "323",
-			"html": ["html", "htm", "shtml", "stm"],
+			"html": [
+				"html",
+				"htm",
+				"shtml",
+				"stm"
+			],
 			"iuls": "uls",
-			"mathml": "mml",
-			"plain": ["txt", "text", "brf", "conf", "def", "list", "log", "in", "bas"],
+			"plain": [
+				"txt",
+				"text",
+				"brf",
+				"conf",
+				"def",
+				"list",
+				"log",
+				"in",
+				"bas",
+				"diff",
+				"ksh"
+			],
 			"richtext": "rtx",
-			"scriptlet": ["sct", "wsc"],
-			"texmacs": ["tm", "ts"],
+			"scriptlet": [
+				"sct",
+				"wsc"
+			],
+			"texmacs": "tm",
 			"tab-separated-values": "tsv",
 			"vnd.sun.j2me.app-descriptor": "jad",
 			"vnd.wap.wml": "wml",
 			"vnd.wap.wmlscript": "wmls",
 			"x-bibtex": "bib",
 			"x-boo": "boo",
-			"x-c++hdr": ["h++", "hpp", "hxx", "hh"],
-			"x-c++src": ["c++", "cpp", "cxx", "cc"],
+			"x-c++hdr": [
+				"h++",
+				"hpp",
+				"hxx",
+				"hh"
+			],
+			"x-c++src": [
+				"c++",
+				"cpp",
+				"cxx",
+				"cc"
+			],
 			"x-component": "htc",
 			"x-dsrc": "d",
-			"x-diff": ["diff", "patch"],
+			"x-diff": "patch",
 			"x-haskell": "hs",
 			"x-java": "java",
 			"x-literate-haskell": "lhs",
 			"x-moc": "moc",
-			"x-pascal": ["p", "pas"],
+			"x-pascal": [
+				"p",
+				"pas",
+				"pp",
+				"inc"
+			],
 			"x-pcs-gcd": "gcd",
-			"x-perl": ["pl", "pm"],
 			"x-python": "py",
 			"x-scala": "scala",
 			"x-setext": "etx",
-			"x-tcl": ["tcl", "tk"],
-			"x-tex": ["tex", "ltx", "sty", "cls"],
+			"x-tcl": [
+				"tcl",
+				"tk"
+			],
+			"x-tex": [
+				"tex",
+				"ltx",
+				"sty",
+				"cls"
+			],
 			"x-vcalendar": "vcs",
 			"x-vcard": "vcf",
 			"n3": "n3",
 			"prs.lines.tag": "dsc",
-			"sgml": ["sgml", "sgm"],
-			"troff": ["t", "tr", "roff", "man", "me", "ms"],
+			"sgml": [
+				"sgml",
+				"sgm"
+			],
+			"troff": [
+				"t",
+				"tr",
+				"roff",
+				"man",
+				"me",
+				"ms"
+			],
 			"turtle": "ttl",
-			"uri-list": ["uri", "uris", "urls"],
+			"uri-list": [
+				"uri",
+				"uris",
+				"urls"
+			],
 			"vcard": "vcard",
 			"vnd.curl": "curl",
 			"vnd.curl.dcurl": "dcurl",
@@ -5408,86 +5963,167 @@
 			"vnd.graphviz": "gv",
 			"vnd.in3d.3dml": "3dml",
 			"vnd.in3d.spot": "spot",
-			"x-asm": ["s", "asm"],
-			"x-c": ["c", "cc", "cxx", "cpp", "h", "hh", "dic"],
-			"x-fortran": ["f", "for", "f77", "f90"],
+			"x-asm": [
+				"s",
+				"asm"
+			],
+			"x-c": [
+				"c",
+				"h",
+				"dic"
+			],
+			"x-fortran": [
+				"f",
+				"for",
+				"f77",
+				"f90"
+			],
 			"x-opml": "opml",
 			"x-nfo": "nfo",
 			"x-sfv": "sfv",
 			"x-uuencode": "uu",
-			"webviewhtml": "htt"
+			"webviewhtml": "htt",
+			"javascript": "js",
+			"json": "json",
+			"markdown": [
+				"md",
+				"markdown",
+				"mdown",
+				"markdn"
+			],
+			"vnd.wap.si": "si",
+			"vnd.wap.sl": "sl"
 		},
 		"video": {
-			"avif": ".avif",
+			"avif": "avif",
 			"3gpp": "3gp",
 			"annodex": "axv",
 			"dl": "dl",
-			"dv": ["dif", "dv"],
+			"dv": [
+				"dif",
+				"dv"
+			],
 			"fli": "fli",
 			"gl": "gl",
-			"mpeg": ["mpeg", "mpg", "mpe", "m1v", "m2v", "mp2", "mpa", "mpv2"],
-			"mp4": ["mp4", "mp4v", "mpg4"],
-			"quicktime": ["qt", "mov"],
+			"mpeg": [
+				"mpeg",
+				"mpg",
+				"mpe",
+				"m1v",
+				"m2v",
+				"mp2",
+				"mpa",
+				"mpv2"
+			],
+			"mp4": [
+				"mp4",
+				"mp4v",
+				"mpg4"
+			],
+			"quicktime": [
+				"qt",
+				"mov"
+			],
 			"ogg": "ogv",
-			"vnd.mpegurl": ["mxu", "m4u"],
+			"vnd.mpegurl": [
+				"mxu",
+				"m4u"
+			],
 			"x-flv": "flv",
-			"x-la-asf": ["lsf", "lsx"],
+			"x-la-asf": [
+				"lsf",
+				"lsx"
+			],
 			"x-mng": "mng",
-			"x-ms-asf": ["asf", "asx", "asr"],
+			"x-ms-asf": [
+				"asf",
+				"asx",
+				"asr"
+			],
 			"x-ms-wm": "wm",
 			"x-ms-wmv": "wmv",
 			"x-ms-wmx": "wmx",
 			"x-ms-wvx": "wvx",
 			"x-msvideo": "avi",
 			"x-sgi-movie": "movie",
-			"x-matroska": ["mpv", "mkv", "mk3d", "mks"],
+			"x-matroska": [
+				"mpv",
+				"mkv",
+				"mk3d",
+				"mks"
+			],
 			"3gpp2": "3g2",
 			"h261": "h261",
 			"h263": "h263",
 			"h264": "h264",
 			"jpeg": "jpgv",
-			"jpm": ["jpm", "jpgm"],
-			"mj2": ["mj2", "mjp2"],
-			"vnd.dece.hd": ["uvh", "uvvh"],
-			"vnd.dece.mobile": ["uvm", "uvvm"],
-			"vnd.dece.pd": ["uvp", "uvvp"],
-			"vnd.dece.sd": ["uvs", "uvvs"],
-			"vnd.dece.video": ["uvv", "uvvv"],
+			"jpm": [
+				"jpm",
+				"jpgm"
+			],
+			"mj2": [
+				"mj2",
+				"mjp2"
+			],
+			"vnd.dece.hd": [
+				"uvh",
+				"uvvh"
+			],
+			"vnd.dece.mobile": [
+				"uvm",
+				"uvvm"
+			],
+			"vnd.dece.pd": [
+				"uvp",
+				"uvvp"
+			],
+			"vnd.dece.sd": [
+				"uvs",
+				"uvvs"
+			],
+			"vnd.dece.video": [
+				"uvv",
+				"uvvv"
+			],
 			"vnd.dvb.file": "dvb",
 			"vnd.fvt": "fvt",
 			"vnd.ms-playready.media.pyv": "pyv",
-			"vnd.uvvu.mp4": ["uvu", "uvvu"],
+			"vnd.uvvu.mp4": [
+				"uvu",
+				"uvvu"
+			],
 			"vnd.vivo": "viv",
 			"webm": "webm",
 			"x-f4v": "f4v",
 			"x-m4v": "m4v",
 			"x-ms-vob": "vob",
-			"x-smv": "smv"
+			"x-smv": "smv",
+			"mp2t": "ts"
 		},
 		"x-conference": {
 			"x-cooltalk": "ice"
 		},
 		"x-world": {
-			"x-vrml": ["vrm", "vrml", "wrl", "flr", "wrz", "xaf", "xof"]
+			"x-vrml": [
+				"vrm",
+				"flr",
+				"wrz",
+				"xaf",
+				"xof"
+			]
 		}
 	};
 
 	const mimeTypes = (() => {
 		const mimeTypes = {};
-		for (const type in table$1) {
-			// eslint-disable-next-line no-prototype-builtins
-			if (table$1.hasOwnProperty(type)) {
-				for (const subtype in table$1[type]) {
-					// eslint-disable-next-line no-prototype-builtins
-					if (table$1[type].hasOwnProperty(subtype)) {
-						const value = table$1[type][subtype];
-						if (typeof value == "string") {
-							mimeTypes[value] = type + "/" + subtype;
-						} else {
-							for (let indexMimeType = 0; indexMimeType < value.length; indexMimeType++) {
-								mimeTypes[value[indexMimeType]] = type + "/" + subtype;
-							}
-						}
+		for (const type of Object.keys(table$1)) {
+			for (const subtype of Object.keys(table$1[type])) {
+				const value = table$1[type][subtype];
+				if (typeof value == "string") {
+					mimeTypes[value] = type + "/" + subtype;
+				} else {
+					for (let indexMimeType = 0; indexMimeType < value.length; indexMimeType++) {
+						mimeTypes[value[indexMimeType]] = type + "/" + subtype;
 					}
 				}
 			}
@@ -5587,6 +6223,7 @@
 	 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	 */
 
+
 	class Crc32Stream extends TransformStream {
 
 		constructor() {
@@ -5636,8 +6273,9 @@
 	 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	 */
 
+
 	function encodeText(value) {
-		if (typeof TextEncoder == "undefined") {
+		if (typeof TextEncoder == UNDEFINED_TYPE) {
 			value = unescape(encodeURIComponent(value));
 			const result = new Uint8Array(value.length);
 			for (let i = 0; i < result.length; i++) {
@@ -6497,7 +7135,8 @@
 	 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	 */
 
-	const GET_RANDOM_VALUES_SUPPORTED = typeof crypto != "undefined" && typeof crypto.getRandomValues == "function";
+
+	const GET_RANDOM_VALUES_SUPPORTED = typeof crypto != UNDEFINED_TYPE && typeof crypto.getRandomValues == FUNCTION_TYPE;
 
 	const ERR_INVALID_PASSWORD = "Invalid password";
 	const ERR_INVALID_SIGNATURE = "Invalid signature";
@@ -6539,6 +7178,7 @@
 	 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	 */
 
+
 	const BLOCK_LENGTH = 16;
 	const RAW_FORMAT = "raw";
 	const PBKDF2_ALGORITHM = { name: "PBKDF2" };
@@ -6551,8 +7191,6 @@
 	const KEY_LENGTH = [16, 24, 32];
 	const SIGNATURE_LENGTH = 10;
 	const COUNTER_DEFAULT_VALUE = [0, 0, 0, 0];
-	const UNDEFINED_TYPE = "undefined";
-	const FUNCTION_TYPE = "function";
 	// deno-lint-ignore valid-typeof
 	const CRYPTO_API_SUPPORTED = typeof crypto != UNDEFINED_TYPE;
 	const subtle = CRYPTO_API_SUPPORTED && crypto.subtle;
@@ -6567,12 +7205,12 @@
 
 	class AESDecryptionStream extends TransformStream {
 
-		constructor({ password, signed, encryptionStrength, checkPasswordOnly }) {
+		constructor({ password, rawPassword, signed, encryptionStrength, checkPasswordOnly }) {
 			super({
 				start() {
 					Object.assign(this, {
 						ready: new Promise(resolve => this.resolveReady = resolve),
-						password,
+						password: encodePassword(password, rawPassword),
 						signed,
 						strength: encryptionStrength - 1,
 						pending: new Uint8Array()
@@ -6608,25 +7246,27 @@
 						pending,
 						ready
 					} = this;
-					await ready;
-					const chunkToDecrypt = subarray(pending, 0, pending.length - SIGNATURE_LENGTH);
-					const originalSignature = subarray(pending, pending.length - SIGNATURE_LENGTH);
-					let decryptedChunkArray = new Uint8Array();
-					if (chunkToDecrypt.length) {
-						const encryptedChunk = toBits(codecBytes, chunkToDecrypt);
-						hmac.update(encryptedChunk);
-						const decryptedChunk = ctr.update(encryptedChunk);
-						decryptedChunkArray = fromBits(codecBytes, decryptedChunk);
-					}
-					if (signed) {
-						const signature = subarray(fromBits(codecBytes, hmac.digest()), 0, SIGNATURE_LENGTH);
-						for (let indexSignature = 0; indexSignature < SIGNATURE_LENGTH; indexSignature++) {
-							if (signature[indexSignature] != originalSignature[indexSignature]) {
-								throw new Error(ERR_INVALID_SIGNATURE);
+					if (hmac && ctr) {
+						await ready;
+						const chunkToDecrypt = subarray(pending, 0, pending.length - SIGNATURE_LENGTH);
+						const originalSignature = subarray(pending, pending.length - SIGNATURE_LENGTH);
+						let decryptedChunkArray = new Uint8Array();
+						if (chunkToDecrypt.length) {
+							const encryptedChunk = toBits(codecBytes, chunkToDecrypt);
+							hmac.update(encryptedChunk);
+							const decryptedChunk = ctr.update(encryptedChunk);
+							decryptedChunkArray = fromBits(codecBytes, decryptedChunk);
+						}
+						if (signed) {
+							const signature = subarray(fromBits(codecBytes, hmac.digest()), 0, SIGNATURE_LENGTH);
+							for (let indexSignature = 0; indexSignature < SIGNATURE_LENGTH; indexSignature++) {
+								if (signature[indexSignature] != originalSignature[indexSignature]) {
+									throw new Error(ERR_INVALID_SIGNATURE);
+								}
 							}
 						}
+						controller.enqueue(decryptedChunkArray);
 					}
-					controller.enqueue(decryptedChunkArray);
 				}
 			});
 		}
@@ -6634,14 +7274,14 @@
 
 	class AESEncryptionStream extends TransformStream {
 
-		constructor({ password, encryptionStrength }) {
+		constructor({ password, rawPassword, encryptionStrength }) {
 			// deno-lint-ignore prefer-const
 			let stream;
 			super({
 				start() {
 					Object.assign(this, {
 						ready: new Promise(resolve => this.resolveReady = resolve),
-						password,
+						password: encodePassword(password, rawPassword),
 						strength: encryptionStrength - 1,
 						pending: new Uint8Array()
 					});
@@ -6672,15 +7312,17 @@
 						pending,
 						ready
 					} = this;
-					await ready;
-					let encryptedChunkArray = new Uint8Array();
-					if (pending.length) {
-						const encryptedChunk = ctr.update(toBits(codecBytes, pending));
-						hmac.update(encryptedChunk);
-						encryptedChunkArray = fromBits(codecBytes, encryptedChunk);
+					if (hmac && ctr) {
+						await ready;
+						let encryptedChunkArray = new Uint8Array();
+						if (pending.length) {
+							const encryptedChunk = ctr.update(toBits(codecBytes, pending));
+							hmac.update(encryptedChunk);
+							encryptedChunkArray = fromBits(codecBytes, encryptedChunk);
+						}
+						stream.signature = fromBits(codecBytes, hmac.digest()).slice(0, SIGNATURE_LENGTH);
+						controller.enqueue(concat(encryptedChunkArray, stream.signature));
 					}
-					stream.signature = fromBits(codecBytes, hmac.digest()).slice(0, SIGNATURE_LENGTH);
-					controller.enqueue(concat(encryptedChunkArray, stream.signature));
 				}
 			});
 			stream = this;
@@ -6730,8 +7372,7 @@
 
 	async function createKeys$1(aesCrypto, strength, password, salt) {
 		aesCrypto.password = null;
-		const encodedPassword = encodeText(password);
-		const baseKey = await importKey(RAW_FORMAT, encodedPassword, BASE_KEY_ALGORITHM, false, DERIVED_BITS_USAGE);
+		const baseKey = await importKey(RAW_FORMAT, password, BASE_KEY_ALGORITHM, false, DERIVED_BITS_USAGE);
 		const derivedBits = await deriveBits(Object.assign({ salt }, DERIVED_BITS_ALGORITHM), baseKey, 8 * ((KEY_LENGTH[strength] * 2) + 2));
 		const compositeKey = new Uint8Array(derivedBits);
 		const key = toBits(codecBytes, subarray(compositeKey, 0, KEY_LENGTH[strength]));
@@ -6772,6 +7413,14 @@
 			}
 		} else {
 			return misc.pbkdf2(baseKey, algorithm.salt, DERIVED_BITS_ALGORITHM.iterations, length);
+		}
+	}
+
+	function encodePassword(password, rawPassword) {
+		if (rawPassword === UNDEFINED_VALUE) {
+			return encodeText(password);
+		} else {
+			return rawPassword;
 		}
 	}
 
@@ -6832,6 +7481,7 @@
 	 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 	 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	 */
+
 
 	const HEADER_LENGTH = 12;
 
@@ -6980,6 +7630,7 @@
 	 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	 */
 
+
 	const COMPRESSION_FORMAT = "deflate-raw";
 
 	class DeflateStream extends TransformStream {
@@ -7005,7 +7656,7 @@
 					readable = pipeThrough(readable, encryptionStream);
 				}
 			}
-			setReadable(stream, readable, async () => {
+			setReadable(stream, readable, () => {
 				let signature;
 				if (encrypted && !zipCrypto) {
 					signature = encryptionStream.signature;
@@ -7040,7 +7691,7 @@
 				crc32Stream = new Crc32Stream();
 				readable = pipeThrough(readable, crc32Stream);
 			}
-			setReadable(this, readable, async () => {
+			setReadable(this, readable, () => {
 				if ((!encrypted || zipCrypto) && signed) {
 					const dataViewSignature = new DataView(crc32Stream.value.buffer);
 					if (signature != dataViewSignature.getUint32(0, false)) {
@@ -7076,9 +7727,13 @@
 			readable = pipeThrough(readable, new CompressionStream(COMPRESSION_FORMAT, options));
 		} catch (error) {
 			if (useCompressionStream) {
-				readable = pipeThrough(readable, new CodecStream(COMPRESSION_FORMAT, options));
+				try {
+					readable = pipeThrough(readable, new CodecStream(COMPRESSION_FORMAT, options));
+				} catch (error) {
+					return readable;
+				}
 			} else {
-				throw error;
+				return readable;
 			}
 		}
 		return readable;
@@ -7116,6 +7771,7 @@
 	 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	 */
 
+
 	const MESSAGE_EVENT_TYPE = "message";
 	const MESSAGE_START = "start";
 	const MESSAGE_PULL = "pull";
@@ -7137,13 +7793,27 @@
 			} else if (codecType.startsWith(CODEC_INFLATE)) {
 				Stream = InflateStream;
 			}
-			let size = 0;
+			let outputSize = 0;
+			let inputSize = 0;
 			const stream = new Stream(options, config);
 			const readable = super.readable;
-			const transformStream = new TransformStream({
+			const inputSizeStream = new TransformStream({
 				transform(chunk, controller) {
 					if (chunk && chunk.length) {
-						size += chunk.length;
+						inputSize += chunk.length;
+						controller.enqueue(chunk);
+					}
+				},
+				flush() {
+					Object.assign(codec, {
+						inputSize
+					});
+				}
+			});
+			const outputSizeStream = new TransformStream({
+				transform(chunk, controller) {
+					if (chunk && chunk.length) {
+						outputSize += chunk.length;
 						controller.enqueue(chunk);
 					}
 				},
@@ -7151,15 +7821,47 @@
 					const { signature } = stream;
 					Object.assign(codec, {
 						signature,
-						size
+						outputSize,
+						inputSize
 					});
 				}
 			});
 			Object.defineProperty(codec, "readable", {
 				get() {
-					return readable.pipeThrough(stream).pipeThrough(transformStream);
+					return readable.pipeThrough(inputSizeStream).pipeThrough(stream).pipeThrough(outputSizeStream);
 				}
 			});
+		}
+	}
+
+	class ChunkStream extends TransformStream {
+
+		constructor(chunkSize) {
+			let pendingChunk;
+			super({
+				transform,
+				flush(controller) {
+					if (pendingChunk && pendingChunk.length) {
+						controller.enqueue(pendingChunk);
+					}
+				}
+			});
+
+			function transform(chunk, controller) {
+				if (pendingChunk) {
+					const newChunk = new Uint8Array(pendingChunk.length + chunk.length);
+					newChunk.set(pendingChunk);
+					newChunk.set(chunk, pendingChunk.length);
+					chunk = newChunk;
+					pendingChunk = null;
+				}
+				if (chunk.length > chunkSize) {
+					controller.enqueue(chunk.slice(0, chunkSize));
+					transform(chunk.slice(chunkSize), controller);
+				} else {
+					pendingChunk = chunk;
+				}
+			}
 		}
 	}
 
@@ -7191,8 +7893,9 @@
 	 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	 */
 
+
 	// deno-lint-ignore valid-typeof
-	const WEB_WORKERS_SUPPORTED = typeof Worker != UNDEFINED_TYPE$1;
+	let WEB_WORKERS_SUPPORTED = typeof Worker != UNDEFINED_TYPE;
 
 	class CodecWorker {
 
@@ -7200,19 +7903,37 @@
 			const { signal } = streamOptions;
 			Object.assign(workerData, {
 				busy: true,
-				readable: readable.pipeThrough(new ProgressWatcherStream(readable, streamOptions, config), { signal }),
+				readable: readable
+					.pipeThrough(new ChunkStream(config.chunkSize))
+					.pipeThrough(new ProgressWatcherStream(readable, streamOptions), { signal }),
 				writable,
 				options: Object.assign({}, options),
 				scripts,
 				transferStreams,
 				terminate() {
-					const { worker, busy } = workerData;
-					if (worker && !busy) {
-						worker.terminate();
-						workerData.interface = null;
-					}
+					return new Promise(resolve => {
+						const { worker, busy } = workerData;
+						if (worker) {
+							if (busy) {
+								workerData.resolveTerminated = resolve;
+							} else {
+								worker.terminate();
+								resolve();
+							}
+							workerData.interface = null;
+						} else {
+							resolve();
+						}
+					});
 				},
 				onTaskFinished() {
+					const { resolveTerminated } = workerData;
+					if (resolveTerminated) {
+						workerData.resolveTerminated = null;
+						workerData.terminated = true;
+						workerData.worker.terminate();
+						resolveTerminated();
+					}
 					workerData.busy = false;
 					onTaskFinished(workerData);
 				}
@@ -7223,12 +7944,12 @@
 
 	class ProgressWatcherStream extends TransformStream {
 
-		constructor(readableSource, { onstart, onprogress, size, onend }, { chunkSize }) {
+		constructor(readableSource, { onstart, onprogress, size, onend }) {
 			let chunkOffset = 0;
 			super({
-				start() {
+				async start() {
 					if (onstart) {
-						callHandler(onstart, size);
+						await callHandler(onstart, size);
 					}
 				},
 				async transform(chunk, controller) {
@@ -7238,13 +7959,13 @@
 					}
 					controller.enqueue(chunk);
 				},
-				flush() {
+				async flush() {
 					readableSource.size = chunkOffset;
 					if (onend) {
-						callHandler(onend, chunkOffset);
+						await callHandler(onend, chunkOffset);
 					}
 				}
-			}, { highWaterMark: 1, size: () => chunkSize });
+			});
 		}
 	}
 
@@ -7262,10 +7983,18 @@
 		};
 	}
 
-	function createWebWorkerInterface(workerData, { baseURL, chunkSize }) {
+	function createWebWorkerInterface(workerData, config) {
+		const { baseURL, chunkSize } = config;
 		if (!workerData.interface) {
+			let worker;
+			try {
+				worker = getWebWorker(workerData.scripts[0], baseURL, workerData);
+			} catch (error) {
+				WEB_WORKERS_SUPPORTED = false;
+				return createWorkerInterface(workerData, config);
+			}
 			Object.assign(workerData, {
-				worker: getWebWorker(workerData.scripts[0], baseURL, workerData),
+				worker,
 				interface: {
 					run: () => runWebWorker(workerData, { chunkSize })
 				}
@@ -7275,16 +8004,18 @@
 	}
 
 	async function runWorker$1({ options, readable, writable, onTaskFinished }, config) {
-		const codecStream = new CodecStream(options, config);
 		try {
+			const codecStream = new CodecStream(options, config);
 			await readable.pipeThrough(codecStream).pipeTo(writable, { preventClose: true, preventAbort: true });
 			const {
 				signature,
-				size
+				inputSize,
+				outputSize
 			} = codecStream;
 			return {
 				signature,
-				size
+				inputSize,
+				outputSize
 			};
 		} finally {
 			onTaskFinished();
@@ -7321,29 +8052,28 @@
 			});
 		}
 		const resultValue = await result;
-		try {
+		if (!streamsTransferred) {
 			await writable.getWriter().close();
-		} catch (_error) {
-			// ignored
 		}
 		await closed;
 		return resultValue;
 	}
 
 	function watchClosedStream(writableSource) {
-		const writer = writableSource.getWriter();
 		let resolveStreamClosed;
 		const closed = new Promise(resolve => resolveStreamClosed = resolve);
 		const writable = new WritableStream({
 			async write(chunk) {
+				const writer = writableSource.getWriter();
 				await writer.ready;
 				await writer.write(chunk);
+				writer.releaseLock();
 			},
 			close() {
-				writer.releaseLock();
 				resolveStreamClosed();
 			},
 			abort(reason) {
+				const writer = writableSource.getWriter();
 				return writer.abort(reason);
 			}
 		});
@@ -7357,7 +8087,7 @@
 		const workerOptions = { type: "module" };
 		let scriptUrl, worker;
 		// deno-lint-ignore valid-typeof
-		if (typeof url == FUNCTION_TYPE$1) {
+		if (typeof url == FUNCTION_TYPE) {
 			url = url();
 		}
 		try {
@@ -7384,7 +8114,12 @@
 			let { value, readable, writable } = message;
 			const transferables = [];
 			if (value) {
-				message.value = value.buffer;
+				if (value.byteLength < value.buffer.byteLength) {
+					message.value = value.buffer.slice(0, value.byteLength);
+				}
+				else {
+					message.value = value.buffer;
+				}
 				transferables.push(message.value);
 			}
 			if (transferStreams && transferStreamsSupported) {
@@ -7442,6 +8177,7 @@
 				}
 			}
 		} catch (error) {
+			sendMessage({ type: MESSAGE_CLOSE, messageId }, workerData);
 			close(error);
 		}
 
@@ -7486,6 +8222,7 @@
 	 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	 */
 
+
 	let pool = [];
 	const pendingRequests = [];
 
@@ -7494,26 +8231,28 @@
 	async function runWorker(stream, workerOptions) {
 		const { options, config } = workerOptions;
 		const { transferStreams, useWebWorkers, useCompressionStream, codecType, compressed, signed, encrypted } = options;
-		const { workerScripts, maxWorkers, terminateWorkerTimeout } = config;
+		const { workerScripts, maxWorkers } = config;
 		workerOptions.transferStreams = transferStreams || transferStreams === UNDEFINED_VALUE;
 		const streamCopy = !compressed && !signed && !encrypted && !workerOptions.transferStreams;
 		workerOptions.useWebWorkers = !streamCopy && (useWebWorkers || (useWebWorkers === UNDEFINED_VALUE && config.useWebWorkers));
 		workerOptions.scripts = workerOptions.useWebWorkers && workerScripts ? workerScripts[codecType] : [];
 		options.useCompressionStream = useCompressionStream || (useCompressionStream === UNDEFINED_VALUE && config.useCompressionStream);
-		let worker;
-		const workerData = pool.find(workerData => !workerData.busy);
-		if (workerData) {
-			clearTerminateTimeout(workerData);
-			worker = new CodecWorker(workerData, stream, workerOptions, onTaskFinished);
-		} else if (pool.length < maxWorkers) {
-			const workerData = { indexWorker };
-			indexWorker++;
-			pool.push(workerData);
-			worker = new CodecWorker(workerData, stream, workerOptions, onTaskFinished);
-		} else {
-			worker = await new Promise(resolve => pendingRequests.push({ resolve, stream, workerOptions }));
+		return (await getWorker()).run();
+
+		async function getWorker() {
+			const workerData = pool.find(workerData => !workerData.busy);
+			if (workerData) {
+				clearTerminateTimeout(workerData);
+				return new CodecWorker(workerData, stream, workerOptions, onTaskFinished);
+			} else if (pool.length < maxWorkers) {
+				const workerData = { indexWorker };
+				indexWorker++;
+				pool.push(workerData);
+				return new CodecWorker(workerData, stream, workerOptions, onTaskFinished);
+			} else {
+				return new Promise(resolve => pendingRequests.push({ resolve, stream, workerOptions }));
+			}
 		}
-		return worker.run();
 
 		function onTaskFinished(workerData) {
 			if (pendingRequests.length) {
@@ -7521,14 +8260,28 @@
 				resolve(new CodecWorker(workerData, stream, workerOptions, onTaskFinished));
 			} else if (workerData.worker) {
 				clearTerminateTimeout(workerData);
-				if (Number.isFinite(terminateWorkerTimeout) && terminateWorkerTimeout >= 0) {
-					workerData.terminateTimeout = setTimeout(() => {
-						pool = pool.filter(data => data != workerData);
-						workerData.terminate();
-					}, terminateWorkerTimeout);
-				}
+				terminateWorker(workerData, workerOptions);
 			} else {
 				pool = pool.filter(data => data != workerData);
+			}
+		}
+	}
+
+	function terminateWorker(workerData, workerOptions) {
+		const { config } = workerOptions;
+		const { terminateWorkerTimeout } = config;
+		if (Number.isFinite(terminateWorkerTimeout) && terminateWorkerTimeout >= 0) {
+			if (workerData.terminated) {
+				workerData.terminated = false;
+			} else {
+				workerData.terminateTimeout = setTimeout(async () => {
+					pool = pool.filter(data => data != workerData);
+					try {
+						await workerData.terminate();
+					} catch (_error) {
+						// ignored
+					}
+				}, terminateWorkerTimeout);
 			}
 		}
 	}
@@ -7541,14 +8294,14 @@
 		}
 	}
 
-	function terminateWorkers() {
-		pool.forEach(workerData => {
+	async function terminateWorkers() {
+		await Promise.allSettled(pool.map(workerData => {
 			clearTerminateTimeout(workerData);
-			workerData.terminate();
-		});
+			return workerData.terminate();
+		}));
 	}
 
-	function e(e){const t=()=>URL.createObjectURL(new Blob(['const{Array:e,Object:t,Number:n,Math:r,Error:s,Uint8Array:i,Uint16Array:o,Uint32Array:c,Int32Array:f,Map:a,DataView:l,Promise:u,TextEncoder:w,crypto:h,postMessage:d,TransformStream:p,ReadableStream:y,WritableStream:m,CompressionStream:b,DecompressionStream:g}=self;class k{constructor(e){return class extends p{constructor(t,n){const r=new e(n);super({transform(e,t){t.enqueue(r.append(e))},flush(e){const t=r.flush();t&&e.enqueue(t)}})}}}}const v=[];for(let e=0;256>e;e++){let t=e;for(let e=0;8>e;e++)1&t?t=t>>>1^3988292384:t>>>=1;v[e]=t}class S{constructor(e){this.t=e||-1}append(e){let t=0|this.t;for(let n=0,r=0|e.length;r>n;n++)t=t>>>8^v[255&(t^e[n])];this.t=t}get(){return~this.t}}class z extends p{constructor(){let e;const t=new S;super({transform(e,n){t.append(e),n.enqueue(e)},flush(){const n=new i(4);new l(n.buffer).setUint32(0,t.get()),e.value=n}}),e=this}}const C={concat(e,t){if(0===e.length||0===t.length)return e.concat(t);const n=e[e.length-1],r=C.i(n);return 32===r?e.concat(t):C.o(t,r,0|n,e.slice(0,e.length-1))},l(e){const t=e.length;if(0===t)return 0;const n=e[t-1];return 32*(t-1)+C.i(n)},u(e,t){if(32*e.length<t)return e;const n=(e=e.slice(0,r.ceil(t/32))).length;return t&=31,n>0&&t&&(e[n-1]=C.h(t,e[n-1]&2147483648>>t-1,1)),e},h:(e,t,n)=>32===e?t:(n?0|t:t<<32-e)+1099511627776*e,i:e=>r.round(e/1099511627776)||32,o(e,t,n,r){for(void 0===r&&(r=[]);t>=32;t-=32)r.push(n),n=0;if(0===t)return r.concat(e);for(let s=0;s<e.length;s++)r.push(n|e[s]>>>t),n=e[s]<<32-t;const s=e.length?e[e.length-1]:0,i=C.i(s);return r.push(C.h(t+i&31,t+i>32?n:r.pop(),1)),r}},x={p:{m(e){const t=C.l(e)/8,n=new i(t);let r;for(let s=0;t>s;s++)0==(3&s)&&(r=e[s/4]),n[s]=r>>>24,r<<=8;return n},g(e){const t=[];let n,r=0;for(n=0;n<e.length;n++)r=r<<8|e[n],3==(3&n)&&(t.push(r),r=0);return 3&n&&t.push(C.h(8*(3&n),r)),t}}},_=class{constructor(e){const t=this;t.blockSize=512,t.k=[1732584193,4023233417,2562383102,271733878,3285377520],t.v=[1518500249,1859775393,2400959708,3395469782],e?(t.S=e.S.slice(0),t.C=e.C.slice(0),t._=e._):t.reset()}reset(){const e=this;return e.S=e.k.slice(0),e.C=[],e._=0,e}update(e){const t=this;"string"==typeof e&&(e=x.A.g(e));const n=t.C=C.concat(t.C,e),r=t._,i=t._=r+C.l(e);if(i>9007199254740991)throw new s("Cannot hash more than 2^53 - 1 bits");const o=new c(n);let f=0;for(let e=t.blockSize+r-(t.blockSize+r&t.blockSize-1);i>=e;e+=t.blockSize)t.I(o.subarray(16*f,16*(f+1))),f+=1;return n.splice(0,16*f),t}D(){const e=this;let t=e.C;const n=e.S;t=C.concat(t,[C.h(1,1)]);for(let e=t.length+2;15&e;e++)t.push(0);for(t.push(r.floor(e._/4294967296)),t.push(0|e._);t.length;)e.I(t.splice(0,16));return e.reset(),n}V(e,t,n,r){return e>19?e>39?e>59?e>79?void 0:t^n^r:t&n|t&r|n&r:t^n^r:t&n|~t&r}P(e,t){return t<<e|t>>>32-e}I(t){const n=this,s=n.S,i=e(80);for(let e=0;16>e;e++)i[e]=t[e];let o=s[0],c=s[1],f=s[2],a=s[3],l=s[4];for(let e=0;79>=e;e++){16>e||(i[e]=n.P(1,i[e-3]^i[e-8]^i[e-14]^i[e-16]));const t=n.P(5,o)+n.V(e,c,f,a)+l+i[e]+n.v[r.floor(e/20)]|0;l=a,a=f,f=n.P(30,c),c=o,o=t}s[0]=s[0]+o|0,s[1]=s[1]+c|0,s[2]=s[2]+f|0,s[3]=s[3]+a|0,s[4]=s[4]+l|0}},A={getRandomValues(e){const t=new c(e.buffer),n=e=>{let t=987654321;const n=4294967295;return()=>(t=36969*(65535&t)+(t>>16)&n,(((t<<16)+(e=18e3*(65535&e)+(e>>16)&n)&n)/4294967296+.5)*(r.random()>.5?1:-1))};for(let s,i=0;i<e.length;i+=4){const e=n(4294967296*(s||r.random()));s=987654071*e(),t[i/4]=4294967296*e()|0}return e}},I={importKey:e=>new I.R(x.p.g(e)),B(e,t,n,r){if(n=n||1e4,0>r||0>n)throw new s("invalid params to pbkdf2");const i=1+(r>>5)<<2;let o,c,f,a,u;const w=new ArrayBuffer(i),h=new l(w);let d=0;const p=C;for(t=x.p.g(t),u=1;(i||1)>d;u++){for(o=c=e.encrypt(p.concat(t,[u])),f=1;n>f;f++)for(c=e.encrypt(c),a=0;a<c.length;a++)o[a]^=c[a];for(f=0;(i||1)>d&&f<o.length;f++)h.setInt32(d,o[f]),d+=4}return w.slice(0,r/8)},R:class{constructor(e){const t=this,n=t.M=_,r=[[],[]];t.K=[new n,new n];const s=t.K[0].blockSize/32;e.length>s&&(e=(new n).update(e).D());for(let t=0;s>t;t++)r[0][t]=909522486^e[t],r[1][t]=1549556828^e[t];t.K[0].update(r[0]),t.K[1].update(r[1]),t.U=new n(t.K[0])}reset(){const e=this;e.U=new e.M(e.K[0]),e.N=!1}update(e){this.N=!0,this.U.update(e)}digest(){const e=this,t=e.U.D(),n=new e.M(e.K[1]).update(t).D();return e.reset(),n}encrypt(e){if(this.N)throw new s("encrypt on already updated hmac called!");return this.update(e),this.digest(e)}}},D=void 0!==h&&"function"==typeof h.getRandomValues,V="Invalid password",P="Invalid signature",R="zipjs-abort-check-password";function B(e){return D?h.getRandomValues(e):A.getRandomValues(e)}const E=16,M={name:"PBKDF2"},K=t.assign({hash:{name:"HMAC"}},M),U=t.assign({iterations:1e3,hash:{name:"SHA-1"}},M),N=["deriveBits"],O=[8,12,16],T=[16,24,32],W=10,j=[0,0,0,0],H="undefined",L="function",F=typeof h!=H,q=F&&h.subtle,G=F&&typeof q!=H,J=x.p,Q=class{constructor(e){const t=this;t.O=[[[],[],[],[],[]],[[],[],[],[],[]]],t.O[0][0][0]||t.T();const n=t.O[0][4],r=t.O[1],i=e.length;let o,c,f,a=1;if(4!==i&&6!==i&&8!==i)throw new s("invalid aes key size");for(t.v=[c=e.slice(0),f=[]],o=i;4*i+28>o;o++){let e=c[o-1];(o%i==0||8===i&&o%i==4)&&(e=n[e>>>24]<<24^n[e>>16&255]<<16^n[e>>8&255]<<8^n[255&e],o%i==0&&(e=e<<8^e>>>24^a<<24,a=a<<1^283*(a>>7))),c[o]=c[o-i]^e}for(let e=0;o;e++,o--){const t=c[3&e?o:o-4];f[e]=4>=o||4>e?t:r[0][n[t>>>24]]^r[1][n[t>>16&255]]^r[2][n[t>>8&255]]^r[3][n[255&t]]}}encrypt(e){return this.W(e,0)}decrypt(e){return this.W(e,1)}T(){const e=this.O[0],t=this.O[1],n=e[4],r=t[4],s=[],i=[];let o,c,f,a;for(let e=0;256>e;e++)i[(s[e]=e<<1^283*(e>>7))^e]=e;for(let l=o=0;!n[l];l^=c||1,o=i[o]||1){let i=o^o<<1^o<<2^o<<3^o<<4;i=i>>8^255&i^99,n[l]=i,r[i]=l,a=s[f=s[c=s[l]]];let u=16843009*a^65537*f^257*c^16843008*l,w=257*s[i]^16843008*i;for(let n=0;4>n;n++)e[n][l]=w=w<<24^w>>>8,t[n][i]=u=u<<24^u>>>8}for(let n=0;5>n;n++)e[n]=e[n].slice(0),t[n]=t[n].slice(0)}W(e,t){if(4!==e.length)throw new s("invalid aes block size");const n=this.v[t],r=n.length/4-2,i=[0,0,0,0],o=this.O[t],c=o[0],f=o[1],a=o[2],l=o[3],u=o[4];let w,h,d,p=e[0]^n[0],y=e[t?3:1]^n[1],m=e[2]^n[2],b=e[t?1:3]^n[3],g=4;for(let e=0;r>e;e++)w=c[p>>>24]^f[y>>16&255]^a[m>>8&255]^l[255&b]^n[g],h=c[y>>>24]^f[m>>16&255]^a[b>>8&255]^l[255&p]^n[g+1],d=c[m>>>24]^f[b>>16&255]^a[p>>8&255]^l[255&y]^n[g+2],b=c[b>>>24]^f[p>>16&255]^a[y>>8&255]^l[255&m]^n[g+3],g+=4,p=w,y=h,m=d;for(let e=0;4>e;e++)i[t?3&-e:e]=u[p>>>24]<<24^u[y>>16&255]<<16^u[m>>8&255]<<8^u[255&b]^n[g++],w=p,p=y,y=m,m=b,b=w;return i}},X=class{constructor(e,t){this.j=e,this.H=t,this.L=t}reset(){this.L=this.H}update(e){return this.F(this.j,e,this.L)}q(e){if(255==(e>>24&255)){let t=e>>16&255,n=e>>8&255,r=255&e;255===t?(t=0,255===n?(n=0,255===r?r=0:++r):++n):++t,e=0,e+=t<<16,e+=n<<8,e+=r}else e+=1<<24;return e}G(e){0===(e[0]=this.q(e[0]))&&(e[1]=this.q(e[1]))}F(e,t,n){let r;if(!(r=t.length))return[];const s=C.l(t);for(let s=0;r>s;s+=4){this.G(n);const r=e.encrypt(n);t[s]^=r[0],t[s+1]^=r[1],t[s+2]^=r[2],t[s+3]^=r[3]}return C.u(t,s)}},Y=I.R;let Z=F&&G&&typeof q.importKey==L,$=F&&G&&typeof q.deriveBits==L;class ee extends p{constructor({password:e,signed:n,encryptionStrength:r,checkPasswordOnly:o}){super({start(){t.assign(this,{ready:new u((e=>this.J=e)),password:e,signed:n,X:r-1,pending:new i})},async transform(e,t){const n=this,{password:r,X:c,J:f,ready:a}=n;r?(await(async(e,t,n,r)=>{const i=await re(e,t,n,ie(r,0,O[t])),o=ie(r,O[t]);if(i[0]!=o[0]||i[1]!=o[1])throw new s(V)})(n,c,r,ie(e,0,O[c]+2)),e=ie(e,O[c]+2),o?t.error(new s(R)):f()):await a;const l=new i(e.length-W-(e.length-W)%E);t.enqueue(ne(n,e,l,0,W,!0))},async flush(e){const{signed:t,Y:n,Z:r,pending:o,ready:c}=this;await c;const f=ie(o,0,o.length-W),a=ie(o,o.length-W);let l=new i;if(f.length){const e=ce(J,f);r.update(e);const t=n.update(e);l=oe(J,t)}if(t){const e=ie(oe(J,r.digest()),0,W);for(let t=0;W>t;t++)if(e[t]!=a[t])throw new s(P)}e.enqueue(l)}})}}class te extends p{constructor({password:e,encryptionStrength:n}){let r;super({start(){t.assign(this,{ready:new u((e=>this.J=e)),password:e,X:n-1,pending:new i})},async transform(e,t){const n=this,{password:r,X:s,J:o,ready:c}=n;let f=new i;r?(f=await(async(e,t,n)=>{const r=B(new i(O[t]));return se(r,await re(e,t,n,r))})(n,s,r),o()):await c;const a=new i(f.length+e.length-e.length%E);a.set(f,0),t.enqueue(ne(n,e,a,f.length,0))},async flush(e){const{Y:t,Z:n,pending:s,ready:o}=this;await o;let c=new i;if(s.length){const e=t.update(ce(J,s));n.update(e),c=oe(J,e)}r.signature=oe(J,n.digest()).slice(0,W),e.enqueue(se(c,r.signature))}}),r=this}}function ne(e,t,n,r,s,o){const{Y:c,Z:f,pending:a}=e,l=t.length-s;let u;for(a.length&&(t=se(a,t),n=((e,t)=>{if(t&&t>e.length){const n=e;(e=new i(t)).set(n,0)}return e})(n,l-l%E)),u=0;l-E>=u;u+=E){const e=ce(J,ie(t,u,u+E));o&&f.update(e);const s=c.update(e);o||f.update(s),n.set(oe(J,s),u+r)}return e.pending=ie(t,u),n}async function re(n,r,s,o){n.password=null;const c=(e=>{if(void 0===w){const t=new i((e=unescape(encodeURIComponent(e))).length);for(let n=0;n<t.length;n++)t[n]=e.charCodeAt(n);return t}return(new w).encode(e)})(s),f=await(async(e,t,n,r,s)=>{if(!Z)return I.importKey(t);try{return await q.importKey("raw",t,n,!1,s)}catch(e){return Z=!1,I.importKey(t)}})(0,c,K,0,N),a=await(async(e,t,n)=>{if(!$)return I.B(t,e.salt,U.iterations,n);try{return await q.deriveBits(e,t,n)}catch(r){return $=!1,I.B(t,e.salt,U.iterations,n)}})(t.assign({salt:o},U),f,8*(2*T[r]+2)),l=new i(a),u=ce(J,ie(l,0,T[r])),h=ce(J,ie(l,T[r],2*T[r])),d=ie(l,2*T[r]);return t.assign(n,{keys:{key:u,$:h,passwordVerification:d},Y:new X(new Q(u),e.from(j)),Z:new Y(h)}),d}function se(e,t){let n=e;return e.length+t.length&&(n=new i(e.length+t.length),n.set(e,0),n.set(t,e.length)),n}function ie(e,t,n){return e.subarray(t,n)}function oe(e,t){return e.m(t)}function ce(e,t){return e.g(t)}class fe extends p{constructor({password:e,passwordVerification:n,checkPasswordOnly:r}){super({start(){t.assign(this,{password:e,passwordVerification:n}),we(this,e)},transform(e,t){const n=this;if(n.password){const t=le(n,e.subarray(0,12));if(n.password=null,t[11]!=n.passwordVerification)throw new s(V);e=e.subarray(12)}r?t.error(new s(R)):t.enqueue(le(n,e))}})}}class ae extends p{constructor({password:e,passwordVerification:n}){super({start(){t.assign(this,{password:e,passwordVerification:n}),we(this,e)},transform(e,t){const n=this;let r,s;if(n.password){n.password=null;const t=B(new i(12));t[11]=n.passwordVerification,r=new i(e.length+t.length),r.set(ue(n,t),0),s=12}else r=new i(e.length),s=0;r.set(ue(n,e),s),t.enqueue(r)}})}}function le(e,t){const n=new i(t.length);for(let r=0;r<t.length;r++)n[r]=de(e)^t[r],he(e,n[r]);return n}function ue(e,t){const n=new i(t.length);for(let r=0;r<t.length;r++)n[r]=de(e)^t[r],he(e,t[r]);return n}function we(e,n){const r=[305419896,591751049,878082192];t.assign(e,{keys:r,ee:new S(r[0]),te:new S(r[2])});for(let t=0;t<n.length;t++)he(e,n.charCodeAt(t))}function he(e,t){let[n,s,i]=e.keys;e.ee.append([t]),n=~e.ee.get(),s=ye(r.imul(ye(s+pe(n)),134775813)+1),e.te.append([s>>>24]),i=~e.te.get(),e.keys=[n,s,i]}function de(e){const t=2|e.keys[2];return pe(r.imul(t,1^t)>>>8)}function pe(e){return 255&e}function ye(e){return 4294967295&e}const me="deflate-raw";class be extends p{constructor(e,{chunkSize:t,CompressionStream:n,CompressionStreamNative:r}){super({});const{compressed:s,encrypted:i,useCompressionStream:o,zipCrypto:c,signed:f,level:a}=e,u=this;let w,h,d=ke(super.readable);i&&!c||!f||(w=new z,d=ze(d,w)),s&&(d=Se(d,o,{level:a,chunkSize:t},r,n)),i&&(c?d=ze(d,new ae(e)):(h=new te(e),d=ze(d,h))),ve(u,d,(async()=>{let e;i&&!c&&(e=h.signature),i&&!c||!f||(e=new l(w.value.buffer).getUint32(0)),u.signature=e}))}}class ge extends p{constructor(e,{chunkSize:t,DecompressionStream:n,DecompressionStreamNative:r}){super({});const{zipCrypto:i,encrypted:o,signed:c,signature:f,compressed:a,useCompressionStream:u}=e;let w,h,d=ke(super.readable);o&&(i?d=ze(d,new fe(e)):(h=new ee(e),d=ze(d,h))),a&&(d=Se(d,u,{chunkSize:t},r,n)),o&&!i||!c||(w=new z,d=ze(d,w)),ve(this,d,(async()=>{if((!o||i)&&c){const e=new l(w.value.buffer);if(f!=e.getUint32(0,!1))throw new s(P)}}))}}function ke(e){return ze(e,new p({transform(e,t){e&&e.length&&t.enqueue(e)}}))}function ve(e,n,r){n=ze(n,new p({flush:r})),t.defineProperty(e,"readable",{get:()=>n})}function Se(e,t,n,r,s){try{e=ze(e,new(t&&r?r:s)(me,n))}catch(r){if(!t)throw r;e=ze(e,new s(me,n))}return e}function ze(e,t){return e.pipeThrough(t)}const Ce="data";class xe extends p{constructor(e,n){super({});const r=this,{codecType:s}=e;let i;s.startsWith("deflate")?i=be:s.startsWith("inflate")&&(i=ge);let o=0;const c=new i(e,n),f=super.readable,a=new p({transform(e,t){e&&e.length&&(o+=e.length,t.enqueue(e))},flush(){const{signature:e}=c;t.assign(r,{signature:e,size:o})}});t.defineProperty(r,"readable",{get:()=>f.pipeThrough(c).pipeThrough(a)})}}const _e=new a,Ae=new a;let Ie=0;async function De(e){try{const{options:t,scripts:r,config:s}=e;r&&r.length&&importScripts.apply(void 0,r),self.initCodec&&self.initCodec(),s.CompressionStreamNative=self.CompressionStream,s.DecompressionStreamNative=self.DecompressionStream,self.Deflate&&(s.CompressionStream=new k(self.Deflate)),self.Inflate&&(s.DecompressionStream=new k(self.Inflate));const i={highWaterMark:1,size:()=>s.chunkSize},o=e.readable||new y({async pull(e){const t=new u((e=>_e.set(Ie,e)));Ve({type:"pull",messageId:Ie}),Ie=(Ie+1)%n.MAX_SAFE_INTEGER;const{value:r,done:s}=await t;e.enqueue(r),s&&e.close()}},i),c=e.writable||new m({async write(e){let t;const r=new u((e=>t=e));Ae.set(Ie,t),Ve({type:Ce,value:e,messageId:Ie}),Ie=(Ie+1)%n.MAX_SAFE_INTEGER,await r}},i),f=new xe(t,s);await o.pipeThrough(f).pipeTo(c,{preventClose:!0,preventAbort:!0});try{await c.getWriter().close()}catch(e){}const{signature:a,size:l}=f;Ve({type:"close",result:{signature:a,size:l}})}catch(e){Pe(e)}}function Ve(e){let{value:t}=e;if(t)if(t.length)try{t=new i(t),e.value=t.buffer,d(e,[e.value])}catch(t){d(e)}else d(e);else d(e)}function Pe(e){const{message:t,stack:n,code:r,name:s}=e;d({error:{message:t,stack:n,code:r,name:s}})}addEventListener("message",(({data:e})=>{const{type:t,messageId:n,value:r,done:s}=e;try{if("start"==t&&De(e),t==Ce){const e=_e.get(n);_e.delete(n),e({value:new i(r),done:s})}if("ack"==t){const e=Ae.get(n);Ae.delete(n),e()}}catch(e){Pe(e)}}));const Re=-2;function Be(t){return Ee(t.map((([t,n])=>new e(t).fill(n,0,t))))}function Ee(t){return t.reduce(((t,n)=>t.concat(e.isArray(n)?Ee(n):n)),[])}const Me=[0,1,2,3].concat(...Be([[2,4],[2,5],[4,6],[4,7],[8,8],[8,9],[16,10],[16,11],[32,12],[32,13],[64,14],[64,15],[2,0],[1,16],[1,17],[2,18],[2,19],[4,20],[4,21],[8,22],[8,23],[16,24],[16,25],[32,26],[32,27],[64,28],[64,29]]));function Ke(){const e=this;function t(e,t){let n=0;do{n|=1&e,e>>>=1,n<<=1}while(--t>0);return n>>>1}e.ne=n=>{const s=e.re,i=e.ie.se,o=e.ie.oe;let c,f,a,l=-1;for(n.ce=0,n.fe=573,c=0;o>c;c++)0!==s[2*c]?(n.ae[++n.ce]=l=c,n.le[c]=0):s[2*c+1]=0;for(;2>n.ce;)a=n.ae[++n.ce]=2>l?++l:0,s[2*a]=1,n.le[a]=0,n.ue--,i&&(n.we-=i[2*a+1]);for(e.he=l,c=r.floor(n.ce/2);c>=1;c--)n.de(s,c);a=o;do{c=n.ae[1],n.ae[1]=n.ae[n.ce--],n.de(s,1),f=n.ae[1],n.ae[--n.fe]=c,n.ae[--n.fe]=f,s[2*a]=s[2*c]+s[2*f],n.le[a]=r.max(n.le[c],n.le[f])+1,s[2*c+1]=s[2*f+1]=a,n.ae[1]=a++,n.de(s,1)}while(n.ce>=2);n.ae[--n.fe]=n.ae[1],(t=>{const n=e.re,r=e.ie.se,s=e.ie.pe,i=e.ie.ye,o=e.ie.me;let c,f,a,l,u,w,h=0;for(l=0;15>=l;l++)t.be[l]=0;for(n[2*t.ae[t.fe]+1]=0,c=t.fe+1;573>c;c++)f=t.ae[c],l=n[2*n[2*f+1]+1]+1,l>o&&(l=o,h++),n[2*f+1]=l,f>e.he||(t.be[l]++,u=0,i>f||(u=s[f-i]),w=n[2*f],t.ue+=w*(l+u),r&&(t.we+=w*(r[2*f+1]+u)));if(0!==h){do{for(l=o-1;0===t.be[l];)l--;t.be[l]--,t.be[l+1]+=2,t.be[o]--,h-=2}while(h>0);for(l=o;0!==l;l--)for(f=t.be[l];0!==f;)a=t.ae[--c],a>e.he||(n[2*a+1]!=l&&(t.ue+=(l-n[2*a+1])*n[2*a],n[2*a+1]=l),f--)}})(n),((e,n,r)=>{const s=[];let i,o,c,f=0;for(i=1;15>=i;i++)s[i]=f=f+r[i-1]<<1;for(o=0;n>=o;o++)c=e[2*o+1],0!==c&&(e[2*o]=t(s[c]++,c))})(s,e.he,n.be)}}function Ue(e,t,n,r,s){const i=this;i.se=e,i.pe=t,i.ye=n,i.oe=r,i.me=s}Ke.ge=[0,1,2,3,4,5,6,7].concat(...Be([[2,8],[2,9],[2,10],[2,11],[4,12],[4,13],[4,14],[4,15],[8,16],[8,17],[8,18],[8,19],[16,20],[16,21],[16,22],[16,23],[32,24],[32,25],[32,26],[31,27],[1,28]])),Ke.ke=[0,1,2,3,4,5,6,7,8,10,12,14,16,20,24,28,32,40,48,56,64,80,96,112,128,160,192,224,0],Ke.ve=[0,1,2,3,4,6,8,12,16,24,32,48,64,96,128,192,256,384,512,768,1024,1536,2048,3072,4096,6144,8192,12288,16384,24576],Ke.Se=e=>256>e?Me[e]:Me[256+(e>>>7)],Ke.ze=[0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0],Ke.Ce=[0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13],Ke.xe=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,7],Ke._e=[16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];const Ne=Be([[144,8],[112,9],[24,7],[8,8]]);Ue.Ae=Ee([12,140,76,204,44,172,108,236,28,156,92,220,60,188,124,252,2,130,66,194,34,162,98,226,18,146,82,210,50,178,114,242,10,138,74,202,42,170,106,234,26,154,90,218,58,186,122,250,6,134,70,198,38,166,102,230,22,150,86,214,54,182,118,246,14,142,78,206,46,174,110,238,30,158,94,222,62,190,126,254,1,129,65,193,33,161,97,225,17,145,81,209,49,177,113,241,9,137,73,201,41,169,105,233,25,153,89,217,57,185,121,249,5,133,69,197,37,165,101,229,21,149,85,213,53,181,117,245,13,141,77,205,45,173,109,237,29,157,93,221,61,189,125,253,19,275,147,403,83,339,211,467,51,307,179,435,115,371,243,499,11,267,139,395,75,331,203,459,43,299,171,427,107,363,235,491,27,283,155,411,91,347,219,475,59,315,187,443,123,379,251,507,7,263,135,391,71,327,199,455,39,295,167,423,103,359,231,487,23,279,151,407,87,343,215,471,55,311,183,439,119,375,247,503,15,271,143,399,79,335,207,463,47,303,175,431,111,367,239,495,31,287,159,415,95,351,223,479,63,319,191,447,127,383,255,511,0,64,32,96,16,80,48,112,8,72,40,104,24,88,56,120,4,68,36,100,20,84,52,116,3,131,67,195,35,163,99,227].map(((e,t)=>[e,Ne[t]])));const Oe=Be([[30,5]]);function Te(e,t,n,r,s){const i=this;i.Ie=e,i.De=t,i.Ve=n,i.Pe=r,i.Re=s}Ue.Be=Ee([0,16,8,24,4,20,12,28,2,18,10,26,6,22,14,30,1,17,9,25,5,21,13,29,3,19,11,27,7,23].map(((e,t)=>[e,Oe[t]]))),Ue.Ee=new Ue(Ue.Ae,Ke.ze,257,286,15),Ue.Me=new Ue(Ue.Be,Ke.Ce,0,30,15),Ue.Ke=new Ue(null,Ke.xe,0,19,7);const We=[new Te(0,0,0,0,0),new Te(4,4,8,4,1),new Te(4,5,16,8,1),new Te(4,6,32,32,1),new Te(4,4,16,16,2),new Te(8,16,32,32,2),new Te(8,16,128,128,2),new Te(8,32,128,256,2),new Te(32,128,258,1024,2),new Te(32,258,258,4096,2)],je=["need dictionary","stream end","","","stream error","data error","","buffer error","",""],He=113,Le=666,Fe=262;function qe(e,t,n,r){const s=e[2*t],i=e[2*n];return i>s||s==i&&r[t]<=r[n]}function Ge(){const e=this;let t,n,s,c,f,a,l,u,w,h,d,p,y,m,b,g,k,v,S,z,C,x,_,A,I,D,V,P,R,B,E,M,K;const U=new Ke,N=new Ke,O=new Ke;let T,W,j,H,L,F;function q(){let t;for(t=0;286>t;t++)E[2*t]=0;for(t=0;30>t;t++)M[2*t]=0;for(t=0;19>t;t++)K[2*t]=0;E[512]=1,e.ue=e.we=0,W=j=0}function G(e,t){let n,r=-1,s=e[1],i=0,o=7,c=4;0===s&&(o=138,c=3),e[2*(t+1)+1]=65535;for(let f=0;t>=f;f++)n=s,s=e[2*(f+1)+1],++i<o&&n==s||(c>i?K[2*n]+=i:0!==n?(n!=r&&K[2*n]++,K[32]++):i>10?K[36]++:K[34]++,i=0,r=n,0===s?(o=138,c=3):n==s?(o=6,c=3):(o=7,c=4))}function J(t){e.Ue[e.pending++]=t}function Q(e){J(255&e),J(e>>>8&255)}function X(e,t){let n;const r=t;F>16-r?(n=e,L|=n<<F&65535,Q(L),L=n>>>16-F,F+=r-16):(L|=e<<F&65535,F+=r)}function Y(e,t){const n=2*e;X(65535&t[n],65535&t[n+1])}function Z(e,t){let n,r,s=-1,i=e[1],o=0,c=7,f=4;for(0===i&&(c=138,f=3),n=0;t>=n;n++)if(r=i,i=e[2*(n+1)+1],++o>=c||r!=i){if(f>o)do{Y(r,K)}while(0!=--o);else 0!==r?(r!=s&&(Y(r,K),o--),Y(16,K),X(o-3,2)):o>10?(Y(18,K),X(o-11,7)):(Y(17,K),X(o-3,3));o=0,s=r,0===i?(c=138,f=3):r==i?(c=6,f=3):(c=7,f=4)}}function $(){16==F?(Q(L),L=0,F=0):8>F||(J(255&L),L>>>=8,F-=8)}function ee(t,n){let s,i,o;if(e.Ne[W]=t,e.Oe[W]=255&n,W++,0===t?E[2*n]++:(j++,t--,E[2*(Ke.ge[n]+256+1)]++,M[2*Ke.Se(t)]++),0==(8191&W)&&V>2){for(s=8*W,i=C-k,o=0;30>o;o++)s+=M[2*o]*(5+Ke.Ce[o]);if(s>>>=3,j<r.floor(W/2)&&s<r.floor(i/2))return!0}return W==T-1}function te(t,n){let r,s,i,o,c=0;if(0!==W)do{r=e.Ne[c],s=e.Oe[c],c++,0===r?Y(s,t):(i=Ke.ge[s],Y(i+256+1,t),o=Ke.ze[i],0!==o&&(s-=Ke.ke[i],X(s,o)),r--,i=Ke.Se(r),Y(i,n),o=Ke.Ce[i],0!==o&&(r-=Ke.ve[i],X(r,o)))}while(W>c);Y(256,t),H=t[513]}function ne(){F>8?Q(L):F>0&&J(255&L),L=0,F=0}function re(t,n,r){X(0+(r?1:0),3),((t,n)=>{ne(),H=8,Q(n),Q(~n),e.Ue.set(u.subarray(t,t+n),e.pending),e.pending+=n})(t,n)}function se(n){((t,n,r)=>{let s,i,o=0;V>0?(U.ne(e),N.ne(e),o=(()=>{let t;for(G(E,U.he),G(M,N.he),O.ne(e),t=18;t>=3&&0===K[2*Ke._e[t]+1];t--);return e.ue+=14+3*(t+1),t})(),s=e.ue+3+7>>>3,i=e.we+3+7>>>3,i>s||(s=i)):s=i=n+5,n+4>s||-1==t?i==s?(X(2+(r?1:0),3),te(Ue.Ae,Ue.Be)):(X(4+(r?1:0),3),((e,t,n)=>{let r;for(X(e-257,5),X(t-1,5),X(n-4,4),r=0;n>r;r++)X(K[2*Ke._e[r]+1],3);Z(E,e-1),Z(M,t-1)})(U.he+1,N.he+1,o+1),te(E,M)):re(t,n,r),q(),r&&ne()})(0>k?-1:k,C-k,n),k=C,t.Te()}function ie(){let e,n,r,s;do{if(s=w-_-C,0===s&&0===C&&0===_)s=f;else if(-1==s)s--;else if(C>=f+f-Fe){u.set(u.subarray(f,f+f),0),x-=f,C-=f,k-=f,e=y,r=e;do{n=65535&d[--r],d[r]=f>n?0:n-f}while(0!=--e);e=f,r=e;do{n=65535&h[--r],h[r]=f>n?0:n-f}while(0!=--e);s+=f}if(0===t.We)return;e=t.je(u,C+_,s),_+=e,3>_||(p=255&u[C],p=(p<<g^255&u[C+1])&b)}while(Fe>_&&0!==t.We)}function oe(e){let t,n,r=I,s=C,i=A;const o=C>f-Fe?C-(f-Fe):0;let c=B;const a=l,w=C+258;let d=u[s+i-1],p=u[s+i];R>A||(r>>=2),c>_&&(c=_);do{if(t=e,u[t+i]==p&&u[t+i-1]==d&&u[t]==u[s]&&u[++t]==u[s+1]){s+=2,t++;do{}while(u[++s]==u[++t]&&u[++s]==u[++t]&&u[++s]==u[++t]&&u[++s]==u[++t]&&u[++s]==u[++t]&&u[++s]==u[++t]&&u[++s]==u[++t]&&u[++s]==u[++t]&&w>s);if(n=258-(w-s),s=w-258,n>i){if(x=e,i=n,n>=c)break;d=u[s+i-1],p=u[s+i]}}}while((e=65535&h[e&a])>o&&0!=--r);return i>_?_:i}e.le=[],e.be=[],e.ae=[],E=[],M=[],K=[],e.de=(t,n)=>{const r=e.ae,s=r[n];let i=n<<1;for(;i<=e.ce&&(i<e.ce&&qe(t,r[i+1],r[i],e.le)&&i++,!qe(t,s,r[i],e.le));)r[n]=r[i],n=i,i<<=1;r[n]=s},e.He=(t,S,x,W,j,G)=>(W||(W=8),j||(j=8),G||(G=0),t.Le=null,-1==S&&(S=6),1>j||j>9||8!=W||9>x||x>15||0>S||S>9||0>G||G>2?Re:(t.Fe=e,a=x,f=1<<a,l=f-1,m=j+7,y=1<<m,b=y-1,g=r.floor((m+3-1)/3),u=new i(2*f),h=[],d=[],T=1<<j+6,e.Ue=new i(4*T),s=4*T,e.Ne=new o(T),e.Oe=new i(T),V=S,P=G,(t=>(t.qe=t.Ge=0,t.Le=null,e.pending=0,e.Je=0,n=He,c=0,U.re=E,U.ie=Ue.Ee,N.re=M,N.ie=Ue.Me,O.re=K,O.ie=Ue.Ke,L=0,F=0,H=8,q(),(()=>{w=2*f,d[y-1]=0;for(let e=0;y-1>e;e++)d[e]=0;D=We[V].De,R=We[V].Ie,B=We[V].Ve,I=We[V].Pe,C=0,k=0,_=0,v=A=2,z=0,p=0})(),0))(t))),e.Qe=()=>42!=n&&n!=He&&n!=Le?Re:(e.Oe=null,e.Ne=null,e.Ue=null,d=null,h=null,u=null,e.Fe=null,n==He?-3:0),e.Xe=(e,t,n)=>{let r=0;return-1==t&&(t=6),0>t||t>9||0>n||n>2?Re:(We[V].Re!=We[t].Re&&0!==e.qe&&(r=e.Ye(1)),V!=t&&(V=t,D=We[V].De,R=We[V].Ie,B=We[V].Ve,I=We[V].Pe),P=n,r)},e.Ze=(e,t,r)=>{let s,i=r,o=0;if(!t||42!=n)return Re;if(3>i)return 0;for(i>f-Fe&&(i=f-Fe,o=r-i),u.set(t.subarray(o,o+i),0),C=i,k=i,p=255&u[0],p=(p<<g^255&u[1])&b,s=0;i-3>=s;s++)p=(p<<g^255&u[s+2])&b,h[s&l]=d[p],d[p]=s;return 0},e.Ye=(r,i)=>{let o,w,m,I,R;if(i>4||0>i)return Re;if(!r.$e||!r.et&&0!==r.We||n==Le&&4!=i)return r.Le=je[4],Re;if(0===r.tt)return r.Le=je[7],-5;var B;if(t=r,I=c,c=i,42==n&&(w=8+(a-8<<4)<<8,m=(V-1&255)>>1,m>3&&(m=3),w|=m<<6,0!==C&&(w|=32),w+=31-w%31,n=He,J((B=w)>>8&255),J(255&B)),0!==e.pending){if(t.Te(),0===t.tt)return c=-1,0}else if(0===t.We&&I>=i&&4!=i)return t.Le=je[7],-5;if(n==Le&&0!==t.We)return r.Le=je[7],-5;if(0!==t.We||0!==_||0!=i&&n!=Le){switch(R=-1,We[V].Re){case 0:R=(e=>{let n,r=65535;for(r>s-5&&(r=s-5);;){if(1>=_){if(ie(),0===_&&0==e)return 0;if(0===_)break}if(C+=_,_=0,n=k+r,(0===C||C>=n)&&(_=C-n,C=n,se(!1),0===t.tt))return 0;if(C-k>=f-Fe&&(se(!1),0===t.tt))return 0}return se(4==e),0===t.tt?4==e?2:0:4==e?3:1})(i);break;case 1:R=(e=>{let n,r=0;for(;;){if(Fe>_){if(ie(),Fe>_&&0==e)return 0;if(0===_)break}if(3>_||(p=(p<<g^255&u[C+2])&b,r=65535&d[p],h[C&l]=d[p],d[p]=C),0===r||(C-r&65535)>f-Fe||2!=P&&(v=oe(r)),3>v)n=ee(0,255&u[C]),_--,C++;else if(n=ee(C-x,v-3),_-=v,v>D||3>_)C+=v,v=0,p=255&u[C],p=(p<<g^255&u[C+1])&b;else{v--;do{C++,p=(p<<g^255&u[C+2])&b,r=65535&d[p],h[C&l]=d[p],d[p]=C}while(0!=--v);C++}if(n&&(se(!1),0===t.tt))return 0}return se(4==e),0===t.tt?4==e?2:0:4==e?3:1})(i);break;case 2:R=(e=>{let n,r,s=0;for(;;){if(Fe>_){if(ie(),Fe>_&&0==e)return 0;if(0===_)break}if(3>_||(p=(p<<g^255&u[C+2])&b,s=65535&d[p],h[C&l]=d[p],d[p]=C),A=v,S=x,v=2,0!==s&&D>A&&f-Fe>=(C-s&65535)&&(2!=P&&(v=oe(s)),5>=v&&(1==P||3==v&&C-x>4096)&&(v=2)),3>A||v>A)if(0!==z){if(n=ee(0,255&u[C-1]),n&&se(!1),C++,_--,0===t.tt)return 0}else z=1,C++,_--;else{r=C+_-3,n=ee(C-1-S,A-3),_-=A-1,A-=2;do{++C>r||(p=(p<<g^255&u[C+2])&b,s=65535&d[p],h[C&l]=d[p],d[p]=C)}while(0!=--A);if(z=0,v=2,C++,n&&(se(!1),0===t.tt))return 0}}return 0!==z&&(n=ee(0,255&u[C-1]),z=0),se(4==e),0===t.tt?4==e?2:0:4==e?3:1})(i)}if(2!=R&&3!=R||(n=Le),0==R||2==R)return 0===t.tt&&(c=-1),0;if(1==R){if(1==i)X(2,3),Y(256,Ue.Ae),$(),9>1+H+10-F&&(X(2,3),Y(256,Ue.Ae),$()),H=7;else if(re(0,0,!1),3==i)for(o=0;y>o;o++)d[o]=0;if(t.Te(),0===t.tt)return c=-1,0}}return 4!=i?0:1}}function Je(){const e=this;e.nt=0,e.rt=0,e.We=0,e.qe=0,e.tt=0,e.Ge=0}function Qe(e){const t=new Je,n=(o=e&&e.chunkSize?e.chunkSize:65536)+5*(r.floor(o/16383)+1);var o;const c=new i(n);let f=e?e.level:-1;void 0===f&&(f=-1),t.He(f),t.$e=c,this.append=(e,r)=>{let o,f,a=0,l=0,u=0;const w=[];if(e.length){t.nt=0,t.et=e,t.We=e.length;do{if(t.rt=0,t.tt=n,o=t.Ye(0),0!=o)throw new s("deflating: "+t.Le);t.rt&&(t.rt==n?w.push(new i(c)):w.push(c.subarray(0,t.rt))),u+=t.rt,r&&t.nt>0&&t.nt!=a&&(r(t.nt),a=t.nt)}while(t.We>0||0===t.tt);return w.length>1?(f=new i(u),w.forEach((e=>{f.set(e,l),l+=e.length}))):f=w[0]?new i(w[0]):new i,f}},this.flush=()=>{let e,r,o=0,f=0;const a=[];do{if(t.rt=0,t.tt=n,e=t.Ye(4),1!=e&&0!=e)throw new s("deflating: "+t.Le);n-t.tt>0&&a.push(c.slice(0,t.rt)),f+=t.rt}while(t.We>0||0===t.tt);return t.Qe(),r=new i(f),a.forEach((e=>{r.set(e,o),o+=e.length})),r}}Je.prototype={He(e,t){const n=this;return n.Fe=new Ge,t||(t=15),n.Fe.He(n,e,t)},Ye(e){const t=this;return t.Fe?t.Fe.Ye(t,e):Re},Qe(){const e=this;if(!e.Fe)return Re;const t=e.Fe.Qe();return e.Fe=null,t},Xe(e,t){const n=this;return n.Fe?n.Fe.Xe(n,e,t):Re},Ze(e,t){const n=this;return n.Fe?n.Fe.Ze(n,e,t):Re},je(e,t,n){const r=this;let s=r.We;return s>n&&(s=n),0===s?0:(r.We-=s,e.set(r.et.subarray(r.nt,r.nt+s),t),r.nt+=s,r.qe+=s,s)},Te(){const e=this;let t=e.Fe.pending;t>e.tt&&(t=e.tt),0!==t&&(e.$e.set(e.Fe.Ue.subarray(e.Fe.Je,e.Fe.Je+t),e.rt),e.rt+=t,e.Fe.Je+=t,e.Ge+=t,e.tt-=t,e.Fe.pending-=t,0===e.Fe.pending&&(e.Fe.Je=0))}};const Xe=-2,Ye=-3,Ze=-5,$e=[0,1,3,7,15,31,63,127,255,511,1023,2047,4095,8191,16383,32767,65535],et=[96,7,256,0,8,80,0,8,16,84,8,115,82,7,31,0,8,112,0,8,48,0,9,192,80,7,10,0,8,96,0,8,32,0,9,160,0,8,0,0,8,128,0,8,64,0,9,224,80,7,6,0,8,88,0,8,24,0,9,144,83,7,59,0,8,120,0,8,56,0,9,208,81,7,17,0,8,104,0,8,40,0,9,176,0,8,8,0,8,136,0,8,72,0,9,240,80,7,4,0,8,84,0,8,20,85,8,227,83,7,43,0,8,116,0,8,52,0,9,200,81,7,13,0,8,100,0,8,36,0,9,168,0,8,4,0,8,132,0,8,68,0,9,232,80,7,8,0,8,92,0,8,28,0,9,152,84,7,83,0,8,124,0,8,60,0,9,216,82,7,23,0,8,108,0,8,44,0,9,184,0,8,12,0,8,140,0,8,76,0,9,248,80,7,3,0,8,82,0,8,18,85,8,163,83,7,35,0,8,114,0,8,50,0,9,196,81,7,11,0,8,98,0,8,34,0,9,164,0,8,2,0,8,130,0,8,66,0,9,228,80,7,7,0,8,90,0,8,26,0,9,148,84,7,67,0,8,122,0,8,58,0,9,212,82,7,19,0,8,106,0,8,42,0,9,180,0,8,10,0,8,138,0,8,74,0,9,244,80,7,5,0,8,86,0,8,22,192,8,0,83,7,51,0,8,118,0,8,54,0,9,204,81,7,15,0,8,102,0,8,38,0,9,172,0,8,6,0,8,134,0,8,70,0,9,236,80,7,9,0,8,94,0,8,30,0,9,156,84,7,99,0,8,126,0,8,62,0,9,220,82,7,27,0,8,110,0,8,46,0,9,188,0,8,14,0,8,142,0,8,78,0,9,252,96,7,256,0,8,81,0,8,17,85,8,131,82,7,31,0,8,113,0,8,49,0,9,194,80,7,10,0,8,97,0,8,33,0,9,162,0,8,1,0,8,129,0,8,65,0,9,226,80,7,6,0,8,89,0,8,25,0,9,146,83,7,59,0,8,121,0,8,57,0,9,210,81,7,17,0,8,105,0,8,41,0,9,178,0,8,9,0,8,137,0,8,73,0,9,242,80,7,4,0,8,85,0,8,21,80,8,258,83,7,43,0,8,117,0,8,53,0,9,202,81,7,13,0,8,101,0,8,37,0,9,170,0,8,5,0,8,133,0,8,69,0,9,234,80,7,8,0,8,93,0,8,29,0,9,154,84,7,83,0,8,125,0,8,61,0,9,218,82,7,23,0,8,109,0,8,45,0,9,186,0,8,13,0,8,141,0,8,77,0,9,250,80,7,3,0,8,83,0,8,19,85,8,195,83,7,35,0,8,115,0,8,51,0,9,198,81,7,11,0,8,99,0,8,35,0,9,166,0,8,3,0,8,131,0,8,67,0,9,230,80,7,7,0,8,91,0,8,27,0,9,150,84,7,67,0,8,123,0,8,59,0,9,214,82,7,19,0,8,107,0,8,43,0,9,182,0,8,11,0,8,139,0,8,75,0,9,246,80,7,5,0,8,87,0,8,23,192,8,0,83,7,51,0,8,119,0,8,55,0,9,206,81,7,15,0,8,103,0,8,39,0,9,174,0,8,7,0,8,135,0,8,71,0,9,238,80,7,9,0,8,95,0,8,31,0,9,158,84,7,99,0,8,127,0,8,63,0,9,222,82,7,27,0,8,111,0,8,47,0,9,190,0,8,15,0,8,143,0,8,79,0,9,254,96,7,256,0,8,80,0,8,16,84,8,115,82,7,31,0,8,112,0,8,48,0,9,193,80,7,10,0,8,96,0,8,32,0,9,161,0,8,0,0,8,128,0,8,64,0,9,225,80,7,6,0,8,88,0,8,24,0,9,145,83,7,59,0,8,120,0,8,56,0,9,209,81,7,17,0,8,104,0,8,40,0,9,177,0,8,8,0,8,136,0,8,72,0,9,241,80,7,4,0,8,84,0,8,20,85,8,227,83,7,43,0,8,116,0,8,52,0,9,201,81,7,13,0,8,100,0,8,36,0,9,169,0,8,4,0,8,132,0,8,68,0,9,233,80,7,8,0,8,92,0,8,28,0,9,153,84,7,83,0,8,124,0,8,60,0,9,217,82,7,23,0,8,108,0,8,44,0,9,185,0,8,12,0,8,140,0,8,76,0,9,249,80,7,3,0,8,82,0,8,18,85,8,163,83,7,35,0,8,114,0,8,50,0,9,197,81,7,11,0,8,98,0,8,34,0,9,165,0,8,2,0,8,130,0,8,66,0,9,229,80,7,7,0,8,90,0,8,26,0,9,149,84,7,67,0,8,122,0,8,58,0,9,213,82,7,19,0,8,106,0,8,42,0,9,181,0,8,10,0,8,138,0,8,74,0,9,245,80,7,5,0,8,86,0,8,22,192,8,0,83,7,51,0,8,118,0,8,54,0,9,205,81,7,15,0,8,102,0,8,38,0,9,173,0,8,6,0,8,134,0,8,70,0,9,237,80,7,9,0,8,94,0,8,30,0,9,157,84,7,99,0,8,126,0,8,62,0,9,221,82,7,27,0,8,110,0,8,46,0,9,189,0,8,14,0,8,142,0,8,78,0,9,253,96,7,256,0,8,81,0,8,17,85,8,131,82,7,31,0,8,113,0,8,49,0,9,195,80,7,10,0,8,97,0,8,33,0,9,163,0,8,1,0,8,129,0,8,65,0,9,227,80,7,6,0,8,89,0,8,25,0,9,147,83,7,59,0,8,121,0,8,57,0,9,211,81,7,17,0,8,105,0,8,41,0,9,179,0,8,9,0,8,137,0,8,73,0,9,243,80,7,4,0,8,85,0,8,21,80,8,258,83,7,43,0,8,117,0,8,53,0,9,203,81,7,13,0,8,101,0,8,37,0,9,171,0,8,5,0,8,133,0,8,69,0,9,235,80,7,8,0,8,93,0,8,29,0,9,155,84,7,83,0,8,125,0,8,61,0,9,219,82,7,23,0,8,109,0,8,45,0,9,187,0,8,13,0,8,141,0,8,77,0,9,251,80,7,3,0,8,83,0,8,19,85,8,195,83,7,35,0,8,115,0,8,51,0,9,199,81,7,11,0,8,99,0,8,35,0,9,167,0,8,3,0,8,131,0,8,67,0,9,231,80,7,7,0,8,91,0,8,27,0,9,151,84,7,67,0,8,123,0,8,59,0,9,215,82,7,19,0,8,107,0,8,43,0,9,183,0,8,11,0,8,139,0,8,75,0,9,247,80,7,5,0,8,87,0,8,23,192,8,0,83,7,51,0,8,119,0,8,55,0,9,207,81,7,15,0,8,103,0,8,39,0,9,175,0,8,7,0,8,135,0,8,71,0,9,239,80,7,9,0,8,95,0,8,31,0,9,159,84,7,99,0,8,127,0,8,63,0,9,223,82,7,27,0,8,111,0,8,47,0,9,191,0,8,15,0,8,143,0,8,79,0,9,255],tt=[80,5,1,87,5,257,83,5,17,91,5,4097,81,5,5,89,5,1025,85,5,65,93,5,16385,80,5,3,88,5,513,84,5,33,92,5,8193,82,5,9,90,5,2049,86,5,129,192,5,24577,80,5,2,87,5,385,83,5,25,91,5,6145,81,5,7,89,5,1537,85,5,97,93,5,24577,80,5,4,88,5,769,84,5,49,92,5,12289,82,5,13,90,5,3073,86,5,193,192,5,24577],nt=[3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258,0,0],rt=[0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0,112,112],st=[1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577],it=[0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];function ot(){let e,t,n,r,s,i;function o(e,t,o,c,f,a,l,u,w,h,d){let p,y,m,b,g,k,v,S,z,C,x,_,A,I,D;C=0,g=o;do{n[e[t+C]]++,C++,g--}while(0!==g);if(n[0]==o)return l[0]=-1,u[0]=0,0;for(S=u[0],k=1;15>=k&&0===n[k];k++);for(v=k,k>S&&(S=k),g=15;0!==g&&0===n[g];g--);for(m=g,S>g&&(S=g),u[0]=S,I=1<<k;g>k;k++,I<<=1)if(0>(I-=n[k]))return Ye;if(0>(I-=n[g]))return Ye;for(n[g]+=I,i[1]=k=0,C=1,A=2;0!=--g;)i[A]=k+=n[C],A++,C++;g=0,C=0;do{0!==(k=e[t+C])&&(d[i[k]++]=g),C++}while(++g<o);for(o=i[m],i[0]=g=0,C=0,b=-1,_=-S,s[0]=0,x=0,D=0;m>=v;v++)for(p=n[v];0!=p--;){for(;v>_+S;){if(b++,_+=S,D=m-_,D=D>S?S:D,(y=1<<(k=v-_))>p+1&&(y-=p+1,A=v,D>k))for(;++k<D&&(y<<=1)>n[++A];)y-=n[A];if(D=1<<k,h[0]+D>1440)return Ye;s[b]=x=h[0],h[0]+=D,0!==b?(i[b]=g,r[0]=k,r[1]=S,k=g>>>_-S,r[2]=x-s[b-1]-k,w.set(r,3*(s[b-1]+k))):l[0]=x}for(r[1]=v-_,o>C?d[C]<c?(r[0]=256>d[C]?0:96,r[2]=d[C++]):(r[0]=a[d[C]-c]+16+64,r[2]=f[d[C++]-c]):r[0]=192,y=1<<v-_,k=g>>>_;D>k;k+=y)w.set(r,3*(x+k));for(k=1<<v-1;0!=(g&k);k>>>=1)g^=k;for(g^=k,z=(1<<_)-1;(g&z)!=i[b];)b--,_-=S,z=(1<<_)-1}return 0!==I&&1!=m?Ze:0}function c(o){let c;for(e||(e=[],t=[],n=new f(16),r=[],s=new f(15),i=new f(16)),t.length<o&&(t=[]),c=0;o>c;c++)t[c]=0;for(c=0;16>c;c++)n[c]=0;for(c=0;3>c;c++)r[c]=0;s.set(n.subarray(0,15),0),i.set(n.subarray(0,16),0)}this.st=(n,r,s,i,f)=>{let a;return c(19),e[0]=0,a=o(n,0,19,19,null,null,s,r,i,e,t),a==Ye?f.Le="oversubscribed dynamic bit lengths tree":a!=Ze&&0!==r[0]||(f.Le="incomplete dynamic bit lengths tree",a=Ye),a},this.it=(n,r,s,i,f,a,l,u,w)=>{let h;return c(288),e[0]=0,h=o(s,0,n,257,nt,rt,a,i,u,e,t),0!=h||0===i[0]?(h==Ye?w.Le="oversubscribed literal/length tree":-4!=h&&(w.Le="incomplete literal/length tree",h=Ye),h):(c(288),h=o(s,n,r,0,st,it,l,f,u,e,t),0!=h||0===f[0]&&n>257?(h==Ye?w.Le="oversubscribed distance tree":h==Ze?(w.Le="incomplete distance tree",h=Ye):-4!=h&&(w.Le="empty distance tree with lengths",h=Ye),h):0)}}function ct(){const e=this;let t,n,r,s,i=0,o=0,c=0,f=0,a=0,l=0,u=0,w=0,h=0,d=0;function p(e,t,n,r,s,i,o,c){let f,a,l,u,w,h,d,p,y,m,b,g,k,v,S,z;d=c.nt,p=c.We,w=o.ot,h=o.ct,y=o.write,m=y<o.read?o.read-y-1:o.end-y,b=$e[e],g=$e[t];do{for(;20>h;)p--,w|=(255&c.ft(d++))<<h,h+=8;if(f=w&b,a=n,l=r,z=3*(l+f),0!==(u=a[z]))for(;;){if(w>>=a[z+1],h-=a[z+1],0!=(16&u)){for(u&=15,k=a[z+2]+(w&$e[u]),w>>=u,h-=u;15>h;)p--,w|=(255&c.ft(d++))<<h,h+=8;for(f=w&g,a=s,l=i,z=3*(l+f),u=a[z];;){if(w>>=a[z+1],h-=a[z+1],0!=(16&u)){for(u&=15;u>h;)p--,w|=(255&c.ft(d++))<<h,h+=8;if(v=a[z+2]+(w&$e[u]),w>>=u,h-=u,m-=k,v>y){S=y-v;do{S+=o.end}while(0>S);if(u=o.end-S,k>u){if(k-=u,y-S>0&&u>y-S)do{o.lt[y++]=o.lt[S++]}while(0!=--u);else o.lt.set(o.lt.subarray(S,S+u),y),y+=u,S+=u,u=0;S=0}}else S=y-v,y-S>0&&2>y-S?(o.lt[y++]=o.lt[S++],o.lt[y++]=o.lt[S++],k-=2):(o.lt.set(o.lt.subarray(S,S+2),y),y+=2,S+=2,k-=2);if(y-S>0&&k>y-S)do{o.lt[y++]=o.lt[S++]}while(0!=--k);else o.lt.set(o.lt.subarray(S,S+k),y),y+=k,S+=k,k=0;break}if(0!=(64&u))return c.Le="invalid distance code",k=c.We-p,k=k>h>>3?h>>3:k,p+=k,d-=k,h-=k<<3,o.ot=w,o.ct=h,c.We=p,c.qe+=d-c.nt,c.nt=d,o.write=y,Ye;f+=a[z+2],f+=w&$e[u],z=3*(l+f),u=a[z]}break}if(0!=(64&u))return 0!=(32&u)?(k=c.We-p,k=k>h>>3?h>>3:k,p+=k,d-=k,h-=k<<3,o.ot=w,o.ct=h,c.We=p,c.qe+=d-c.nt,c.nt=d,o.write=y,1):(c.Le="invalid literal/length code",k=c.We-p,k=k>h>>3?h>>3:k,p+=k,d-=k,h-=k<<3,o.ot=w,o.ct=h,c.We=p,c.qe+=d-c.nt,c.nt=d,o.write=y,Ye);if(f+=a[z+2],f+=w&$e[u],z=3*(l+f),0===(u=a[z])){w>>=a[z+1],h-=a[z+1],o.lt[y++]=a[z+2],m--;break}}else w>>=a[z+1],h-=a[z+1],o.lt[y++]=a[z+2],m--}while(m>=258&&p>=10);return k=c.We-p,k=k>h>>3?h>>3:k,p+=k,d-=k,h-=k<<3,o.ot=w,o.ct=h,c.We=p,c.qe+=d-c.nt,c.nt=d,o.write=y,0}e.init=(e,i,o,c,f,a)=>{t=0,u=e,w=i,r=o,h=c,s=f,d=a,n=null},e.ut=(e,y,m)=>{let b,g,k,v,S,z,C,x=0,_=0,A=0;for(A=y.nt,v=y.We,x=e.ot,_=e.ct,S=e.write,z=S<e.read?e.read-S-1:e.end-S;;)switch(t){case 0:if(z>=258&&v>=10&&(e.ot=x,e.ct=_,y.We=v,y.qe+=A-y.nt,y.nt=A,e.write=S,m=p(u,w,r,h,s,d,e,y),A=y.nt,v=y.We,x=e.ot,_=e.ct,S=e.write,z=S<e.read?e.read-S-1:e.end-S,0!=m)){t=1==m?7:9;break}c=u,n=r,o=h,t=1;case 1:for(b=c;b>_;){if(0===v)return e.ot=x,e.ct=_,y.We=v,y.qe+=A-y.nt,y.nt=A,e.write=S,e.wt(y,m);m=0,v--,x|=(255&y.ft(A++))<<_,_+=8}if(g=3*(o+(x&$e[b])),x>>>=n[g+1],_-=n[g+1],k=n[g],0===k){f=n[g+2],t=6;break}if(0!=(16&k)){a=15&k,i=n[g+2],t=2;break}if(0==(64&k)){c=k,o=g/3+n[g+2];break}if(0!=(32&k)){t=7;break}return t=9,y.Le="invalid literal/length code",m=Ye,e.ot=x,e.ct=_,y.We=v,y.qe+=A-y.nt,y.nt=A,e.write=S,e.wt(y,m);case 2:for(b=a;b>_;){if(0===v)return e.ot=x,e.ct=_,y.We=v,y.qe+=A-y.nt,y.nt=A,e.write=S,e.wt(y,m);m=0,v--,x|=(255&y.ft(A++))<<_,_+=8}i+=x&$e[b],x>>=b,_-=b,c=w,n=s,o=d,t=3;case 3:for(b=c;b>_;){if(0===v)return e.ot=x,e.ct=_,y.We=v,y.qe+=A-y.nt,y.nt=A,e.write=S,e.wt(y,m);m=0,v--,x|=(255&y.ft(A++))<<_,_+=8}if(g=3*(o+(x&$e[b])),x>>=n[g+1],_-=n[g+1],k=n[g],0!=(16&k)){a=15&k,l=n[g+2],t=4;break}if(0==(64&k)){c=k,o=g/3+n[g+2];break}return t=9,y.Le="invalid distance code",m=Ye,e.ot=x,e.ct=_,y.We=v,y.qe+=A-y.nt,y.nt=A,e.write=S,e.wt(y,m);case 4:for(b=a;b>_;){if(0===v)return e.ot=x,e.ct=_,y.We=v,y.qe+=A-y.nt,y.nt=A,e.write=S,e.wt(y,m);m=0,v--,x|=(255&y.ft(A++))<<_,_+=8}l+=x&$e[b],x>>=b,_-=b,t=5;case 5:for(C=S-l;0>C;)C+=e.end;for(;0!==i;){if(0===z&&(S==e.end&&0!==e.read&&(S=0,z=S<e.read?e.read-S-1:e.end-S),0===z&&(e.write=S,m=e.wt(y,m),S=e.write,z=S<e.read?e.read-S-1:e.end-S,S==e.end&&0!==e.read&&(S=0,z=S<e.read?e.read-S-1:e.end-S),0===z)))return e.ot=x,e.ct=_,y.We=v,y.qe+=A-y.nt,y.nt=A,e.write=S,e.wt(y,m);e.lt[S++]=e.lt[C++],z--,C==e.end&&(C=0),i--}t=0;break;case 6:if(0===z&&(S==e.end&&0!==e.read&&(S=0,z=S<e.read?e.read-S-1:e.end-S),0===z&&(e.write=S,m=e.wt(y,m),S=e.write,z=S<e.read?e.read-S-1:e.end-S,S==e.end&&0!==e.read&&(S=0,z=S<e.read?e.read-S-1:e.end-S),0===z)))return e.ot=x,e.ct=_,y.We=v,y.qe+=A-y.nt,y.nt=A,e.write=S,e.wt(y,m);m=0,e.lt[S++]=f,z--,t=0;break;case 7:if(_>7&&(_-=8,v++,A--),e.write=S,m=e.wt(y,m),S=e.write,z=S<e.read?e.read-S-1:e.end-S,e.read!=e.write)return e.ot=x,e.ct=_,y.We=v,y.qe+=A-y.nt,y.nt=A,e.write=S,e.wt(y,m);t=8;case 8:return m=1,e.ot=x,e.ct=_,y.We=v,y.qe+=A-y.nt,y.nt=A,e.write=S,e.wt(y,m);case 9:return m=Ye,e.ot=x,e.ct=_,y.We=v,y.qe+=A-y.nt,y.nt=A,e.write=S,e.wt(y,m);default:return m=Xe,e.ot=x,e.ct=_,y.We=v,y.qe+=A-y.nt,y.nt=A,e.write=S,e.wt(y,m)}},e.ht=()=>{}}ot.dt=(e,t,n,r)=>(e[0]=9,t[0]=5,n[0]=et,r[0]=tt,0);const ft=[16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];function at(e,t){const n=this;let r,s=0,o=0,c=0,a=0;const l=[0],u=[0],w=new ct;let h=0,d=new f(4320);const p=new ot;n.ct=0,n.ot=0,n.lt=new i(t),n.end=t,n.read=0,n.write=0,n.reset=(e,t)=>{t&&(t[0]=0),6==s&&w.ht(e),s=0,n.ct=0,n.ot=0,n.read=n.write=0},n.reset(e,null),n.wt=(e,t)=>{let r,s,i;return s=e.rt,i=n.read,r=(i>n.write?n.end:n.write)-i,r>e.tt&&(r=e.tt),0!==r&&t==Ze&&(t=0),e.tt-=r,e.Ge+=r,e.$e.set(n.lt.subarray(i,i+r),s),s+=r,i+=r,i==n.end&&(i=0,n.write==n.end&&(n.write=0),r=n.write-i,r>e.tt&&(r=e.tt),0!==r&&t==Ze&&(t=0),e.tt-=r,e.Ge+=r,e.$e.set(n.lt.subarray(i,i+r),s),s+=r,i+=r),e.rt=s,n.read=i,t},n.ut=(e,t)=>{let i,f,y,m,b,g,k,v;for(m=e.nt,b=e.We,f=n.ot,y=n.ct,g=n.write,k=g<n.read?n.read-g-1:n.end-g;;){let S,z,C,x,_,A,I,D;switch(s){case 0:for(;3>y;){if(0===b)return n.ot=f,n.ct=y,e.We=b,e.qe+=m-e.nt,e.nt=m,n.write=g,n.wt(e,t);t=0,b--,f|=(255&e.ft(m++))<<y,y+=8}switch(i=7&f,h=1&i,i>>>1){case 0:f>>>=3,y-=3,i=7&y,f>>>=i,y-=i,s=1;break;case 1:S=[],z=[],C=[[]],x=[[]],ot.dt(S,z,C,x),w.init(S[0],z[0],C[0],0,x[0],0),f>>>=3,y-=3,s=6;break;case 2:f>>>=3,y-=3,s=3;break;case 3:return f>>>=3,y-=3,s=9,e.Le="invalid block type",t=Ye,n.ot=f,n.ct=y,e.We=b,e.qe+=m-e.nt,e.nt=m,n.write=g,n.wt(e,t)}break;case 1:for(;32>y;){if(0===b)return n.ot=f,n.ct=y,e.We=b,e.qe+=m-e.nt,e.nt=m,n.write=g,n.wt(e,t);t=0,b--,f|=(255&e.ft(m++))<<y,y+=8}if((~f>>>16&65535)!=(65535&f))return s=9,e.Le="invalid stored block lengths",t=Ye,n.ot=f,n.ct=y,e.We=b,e.qe+=m-e.nt,e.nt=m,n.write=g,n.wt(e,t);o=65535&f,f=y=0,s=0!==o?2:0!==h?7:0;break;case 2:if(0===b)return n.ot=f,n.ct=y,e.We=b,e.qe+=m-e.nt,e.nt=m,n.write=g,n.wt(e,t);if(0===k&&(g==n.end&&0!==n.read&&(g=0,k=g<n.read?n.read-g-1:n.end-g),0===k&&(n.write=g,t=n.wt(e,t),g=n.write,k=g<n.read?n.read-g-1:n.end-g,g==n.end&&0!==n.read&&(g=0,k=g<n.read?n.read-g-1:n.end-g),0===k)))return n.ot=f,n.ct=y,e.We=b,e.qe+=m-e.nt,e.nt=m,n.write=g,n.wt(e,t);if(t=0,i=o,i>b&&(i=b),i>k&&(i=k),n.lt.set(e.je(m,i),g),m+=i,b-=i,g+=i,k-=i,0!=(o-=i))break;s=0!==h?7:0;break;case 3:for(;14>y;){if(0===b)return n.ot=f,n.ct=y,e.We=b,e.qe+=m-e.nt,e.nt=m,n.write=g,n.wt(e,t);t=0,b--,f|=(255&e.ft(m++))<<y,y+=8}if(c=i=16383&f,(31&i)>29||(i>>5&31)>29)return s=9,e.Le="too many length or distance symbols",t=Ye,n.ot=f,n.ct=y,e.We=b,e.qe+=m-e.nt,e.nt=m,n.write=g,n.wt(e,t);if(i=258+(31&i)+(i>>5&31),!r||r.length<i)r=[];else for(v=0;i>v;v++)r[v]=0;f>>>=14,y-=14,a=0,s=4;case 4:for(;4+(c>>>10)>a;){for(;3>y;){if(0===b)return n.ot=f,n.ct=y,e.We=b,e.qe+=m-e.nt,e.nt=m,n.write=g,n.wt(e,t);t=0,b--,f|=(255&e.ft(m++))<<y,y+=8}r[ft[a++]]=7&f,f>>>=3,y-=3}for(;19>a;)r[ft[a++]]=0;if(l[0]=7,i=p.st(r,l,u,d,e),0!=i)return(t=i)==Ye&&(r=null,s=9),n.ot=f,n.ct=y,e.We=b,e.qe+=m-e.nt,e.nt=m,n.write=g,n.wt(e,t);a=0,s=5;case 5:for(;i=c,258+(31&i)+(i>>5&31)>a;){let o,w;for(i=l[0];i>y;){if(0===b)return n.ot=f,n.ct=y,e.We=b,e.qe+=m-e.nt,e.nt=m,n.write=g,n.wt(e,t);t=0,b--,f|=(255&e.ft(m++))<<y,y+=8}if(i=d[3*(u[0]+(f&$e[i]))+1],w=d[3*(u[0]+(f&$e[i]))+2],16>w)f>>>=i,y-=i,r[a++]=w;else{for(v=18==w?7:w-14,o=18==w?11:3;i+v>y;){if(0===b)return n.ot=f,n.ct=y,e.We=b,e.qe+=m-e.nt,e.nt=m,n.write=g,n.wt(e,t);t=0,b--,f|=(255&e.ft(m++))<<y,y+=8}if(f>>>=i,y-=i,o+=f&$e[v],f>>>=v,y-=v,v=a,i=c,v+o>258+(31&i)+(i>>5&31)||16==w&&1>v)return r=null,s=9,e.Le="invalid bit length repeat",t=Ye,n.ot=f,n.ct=y,e.We=b,e.qe+=m-e.nt,e.nt=m,n.write=g,n.wt(e,t);w=16==w?r[v-1]:0;do{r[v++]=w}while(0!=--o);a=v}}if(u[0]=-1,_=[],A=[],I=[],D=[],_[0]=9,A[0]=6,i=c,i=p.it(257+(31&i),1+(i>>5&31),r,_,A,I,D,d,e),0!=i)return i==Ye&&(r=null,s=9),t=i,n.ot=f,n.ct=y,e.We=b,e.qe+=m-e.nt,e.nt=m,n.write=g,n.wt(e,t);w.init(_[0],A[0],d,I[0],d,D[0]),s=6;case 6:if(n.ot=f,n.ct=y,e.We=b,e.qe+=m-e.nt,e.nt=m,n.write=g,1!=(t=w.ut(n,e,t)))return n.wt(e,t);if(t=0,w.ht(e),m=e.nt,b=e.We,f=n.ot,y=n.ct,g=n.write,k=g<n.read?n.read-g-1:n.end-g,0===h){s=0;break}s=7;case 7:if(n.write=g,t=n.wt(e,t),g=n.write,k=g<n.read?n.read-g-1:n.end-g,n.read!=n.write)return n.ot=f,n.ct=y,e.We=b,e.qe+=m-e.nt,e.nt=m,n.write=g,n.wt(e,t);s=8;case 8:return t=1,n.ot=f,n.ct=y,e.We=b,e.qe+=m-e.nt,e.nt=m,n.write=g,n.wt(e,t);case 9:return t=Ye,n.ot=f,n.ct=y,e.We=b,e.qe+=m-e.nt,e.nt=m,n.write=g,n.wt(e,t);default:return t=Xe,n.ot=f,n.ct=y,e.We=b,e.qe+=m-e.nt,e.nt=m,n.write=g,n.wt(e,t)}}},n.ht=e=>{n.reset(e,null),n.lt=null,d=null},n.yt=(e,t,r)=>{n.lt.set(e.subarray(t,t+r),0),n.read=n.write=r},n.bt=()=>1==s?1:0}const lt=13,ut=[0,0,255,255];function wt(){const e=this;function t(e){return e&&e.gt?(e.qe=e.Ge=0,e.Le=null,e.gt.mode=7,e.gt.kt.reset(e,null),0):Xe}e.mode=0,e.method=0,e.vt=[0],e.St=0,e.marker=0,e.zt=0,e.Ct=t=>(e.kt&&e.kt.ht(t),e.kt=null,0),e.xt=(n,r)=>(n.Le=null,e.kt=null,8>r||r>15?(e.Ct(n),Xe):(e.zt=r,n.gt.kt=new at(n,1<<r),t(n),0)),e._t=(e,t)=>{let n,r;if(!e||!e.gt||!e.et)return Xe;const s=e.gt;for(t=4==t?Ze:0,n=Ze;;)switch(s.mode){case 0:if(0===e.We)return n;if(n=t,e.We--,e.qe++,8!=(15&(s.method=e.ft(e.nt++)))){s.mode=lt,e.Le="unknown compression method",s.marker=5;break}if(8+(s.method>>4)>s.zt){s.mode=lt,e.Le="invalid win size",s.marker=5;break}s.mode=1;case 1:if(0===e.We)return n;if(n=t,e.We--,e.qe++,r=255&e.ft(e.nt++),((s.method<<8)+r)%31!=0){s.mode=lt,e.Le="incorrect header check",s.marker=5;break}if(0==(32&r)){s.mode=7;break}s.mode=2;case 2:if(0===e.We)return n;n=t,e.We--,e.qe++,s.St=(255&e.ft(e.nt++))<<24&4278190080,s.mode=3;case 3:if(0===e.We)return n;n=t,e.We--,e.qe++,s.St+=(255&e.ft(e.nt++))<<16&16711680,s.mode=4;case 4:if(0===e.We)return n;n=t,e.We--,e.qe++,s.St+=(255&e.ft(e.nt++))<<8&65280,s.mode=5;case 5:return 0===e.We?n:(n=t,e.We--,e.qe++,s.St+=255&e.ft(e.nt++),s.mode=6,2);case 6:return s.mode=lt,e.Le="need dictionary",s.marker=0,Xe;case 7:if(n=s.kt.ut(e,n),n==Ye){s.mode=lt,s.marker=0;break}if(0==n&&(n=t),1!=n)return n;n=t,s.kt.reset(e,s.vt),s.mode=12;case 12:return e.We=0,1;case lt:return Ye;default:return Xe}},e.At=(e,t,n)=>{let r=0,s=n;if(!e||!e.gt||6!=e.gt.mode)return Xe;const i=e.gt;return s<1<<i.zt||(s=(1<<i.zt)-1,r=n-s),i.kt.yt(t,r,s),i.mode=7,0},e.It=e=>{let n,r,s,i,o;if(!e||!e.gt)return Xe;const c=e.gt;if(c.mode!=lt&&(c.mode=lt,c.marker=0),0===(n=e.We))return Ze;for(r=e.nt,s=c.marker;0!==n&&4>s;)e.ft(r)==ut[s]?s++:s=0!==e.ft(r)?0:4-s,r++,n--;return e.qe+=r-e.nt,e.nt=r,e.We=n,c.marker=s,4!=s?Ye:(i=e.qe,o=e.Ge,t(e),e.qe=i,e.Ge=o,c.mode=7,0)},e.Dt=e=>e&&e.gt&&e.gt.kt?e.gt.kt.bt():Xe}function ht(){}function dt(e){const t=new ht,n=e&&e.chunkSize?r.floor(2*e.chunkSize):131072,o=new i(n);let c=!1;t.xt(),t.$e=o,this.append=(e,r)=>{const f=[];let a,l,u=0,w=0,h=0;if(0!==e.length){t.nt=0,t.et=e,t.We=e.length;do{if(t.rt=0,t.tt=n,0!==t.We||c||(t.nt=0,c=!0),a=t._t(0),c&&a===Ze){if(0!==t.We)throw new s("inflating: bad input")}else if(0!==a&&1!==a)throw new s("inflating: "+t.Le);if((c||1===a)&&t.We===e.length)throw new s("inflating: bad input");t.rt&&(t.rt===n?f.push(new i(o)):f.push(o.subarray(0,t.rt))),h+=t.rt,r&&t.nt>0&&t.nt!=u&&(r(t.nt),u=t.nt)}while(t.We>0||0===t.tt);return f.length>1?(l=new i(h),f.forEach((e=>{l.set(e,w),w+=e.length}))):l=f[0]?new i(f[0]):new i,l}},this.flush=()=>{t.Ct()}}ht.prototype={xt(e){const t=this;return t.gt=new wt,e||(e=15),t.gt.xt(t,e)},_t(e){const t=this;return t.gt?t.gt._t(t,e):Xe},Ct(){const e=this;if(!e.gt)return Xe;const t=e.gt.Ct(e);return e.gt=null,t},It(){const e=this;return e.gt?e.gt.It(e):Xe},At(e,t){const n=this;return n.gt?n.gt.At(n,e,t):Xe},ft(e){return this.et[e]},je(e,t){return this.et.subarray(e,e+t)}},self.initCodec=()=>{self.Deflate=Qe,self.Inflate=dt};\n'],{type:"text/javascript"}));e({workerScripts:{inflate:[t],deflate:[t]}});}
+	function e(e,t={}){const n='const{Array:e,Object:t,Number:n,Math:r,Error:s,Uint8Array:i,Uint16Array:o,Uint32Array:c,Int32Array:f,Map:a,DataView:l,Promise:u,TextEncoder:w,crypto:h,postMessage:d,TransformStream:p,ReadableStream:y,WritableStream:m,CompressionStream:b,DecompressionStream:g}=self,k=void 0,v="undefined",S="function";class z{constructor(e){return class extends p{constructor(t,n){const r=new e(n);super({transform(e,t){t.enqueue(r.append(e))},flush(e){const t=r.flush();t&&e.enqueue(t)}})}}}}const C=[];for(let e=0;256>e;e++){let t=e;for(let e=0;8>e;e++)1&t?t=t>>>1^3988292384:t>>>=1;C[e]=t}class x{constructor(e){this.t=e||-1}append(e){let t=0|this.t;for(let n=0,r=0|e.length;r>n;n++)t=t>>>8^C[255&(t^e[n])];this.t=t}get(){return~this.t}}class A extends p{constructor(){let e;const t=new x;super({transform(e,n){t.append(e),n.enqueue(e)},flush(){const n=new i(4);new l(n.buffer).setUint32(0,t.get()),e.value=n}}),e=this}}const _={concat(e,t){if(0===e.length||0===t.length)return e.concat(t);const n=e[e.length-1],r=_.i(n);return 32===r?e.concat(t):_.o(t,r,0|n,e.slice(0,e.length-1))},l(e){const t=e.length;if(0===t)return 0;const n=e[t-1];return 32*(t-1)+_.i(n)},u(e,t){if(32*e.length<t)return e;const n=(e=e.slice(0,r.ceil(t/32))).length;return t&=31,n>0&&t&&(e[n-1]=_.h(t,e[n-1]&2147483648>>t-1,1)),e},h:(e,t,n)=>32===e?t:(n?0|t:t<<32-e)+1099511627776*e,i:e=>r.round(e/1099511627776)||32,o(e,t,n,r){for(void 0===r&&(r=[]);t>=32;t-=32)r.push(n),n=0;if(0===t)return r.concat(e);for(let s=0;s<e.length;s++)r.push(n|e[s]>>>t),n=e[s]<<32-t;const s=e.length?e[e.length-1]:0,i=_.i(s);return r.push(_.h(t+i&31,t+i>32?n:r.pop(),1)),r}},I={p:{m(e){const t=_.l(e)/8,n=new i(t);let r;for(let s=0;t>s;s++)3&s||(r=e[s/4]),n[s]=r>>>24,r<<=8;return n},k(e){const t=[];let n,r=0;for(n=0;n<e.length;n++)r=r<<8|e[n],3&~n||(t.push(r),r=0);return 3&n&&t.push(_.h(8*(3&n),r)),t}}},P=class{constructor(e){const t=this;t.blockSize=512,t.v=[1732584193,4023233417,2562383102,271733878,3285377520],t.S=[1518500249,1859775393,2400959708,3395469782],e?(t.C=e.C.slice(0),t.A=e.A.slice(0),t._=e._):t.reset()}reset(){const e=this;return e.C=e.v.slice(0),e.A=[],e._=0,e}update(e){const t=this;"string"==typeof e&&(e=I.I.k(e));const n=t.A=_.concat(t.A,e),r=t._,i=t._=r+_.l(e);if(i>9007199254740991)throw new s("Cannot hash more than 2^53 - 1 bits");const o=new c(n);let f=0;for(let e=t.blockSize+r-(t.blockSize+r&t.blockSize-1);i>=e;e+=t.blockSize)t.P(o.subarray(16*f,16*(f+1))),f+=1;return n.splice(0,16*f),t}D(){const e=this;let t=e.A;const n=e.C;t=_.concat(t,[_.h(1,1)]);for(let e=t.length+2;15&e;e++)t.push(0);for(t.push(r.floor(e._/4294967296)),t.push(0|e._);t.length;)e.P(t.splice(0,16));return e.reset(),n}V(e,t,n,r){return e>19?e>39?e>59?e>79?void 0:t^n^r:t&n|t&r|n&r:t^n^r:t&n|~t&r}R(e,t){return t<<e|t>>>32-e}P(t){const n=this,s=n.C,i=e(80);for(let e=0;16>e;e++)i[e]=t[e];let o=s[0],c=s[1],f=s[2],a=s[3],l=s[4];for(let e=0;79>=e;e++){16>e||(i[e]=n.R(1,i[e-3]^i[e-8]^i[e-14]^i[e-16]));const t=n.R(5,o)+n.V(e,c,f,a)+l+i[e]+n.S[r.floor(e/20)]|0;l=a,a=f,f=n.R(30,c),c=o,o=t}s[0]=s[0]+o|0,s[1]=s[1]+c|0,s[2]=s[2]+f|0,s[3]=s[3]+a|0,s[4]=s[4]+l|0}},D={getRandomValues(e){const t=new c(e.buffer),n=e=>{let t=987654321;const n=4294967295;return()=>(t=36969*(65535&t)+(t>>16)&n,(((t<<16)+(e=18e3*(65535&e)+(e>>16)&n)&n)/4294967296+.5)*(r.random()>.5?1:-1))};for(let s,i=0;i<e.length;i+=4){const e=n(4294967296*(s||r.random()));s=987654071*e(),t[i/4]=4294967296*e()|0}return e}},V={importKey:e=>new V.B(I.p.k(e)),M(e,t,n,r){if(n=n||1e4,0>r||0>n)throw new s("invalid params to pbkdf2");const i=1+(r>>5)<<2;let o,c,f,a,u;const w=new ArrayBuffer(i),h=new l(w);let d=0;const p=_;for(t=I.p.k(t),u=1;(i||1)>d;u++){for(o=c=e.encrypt(p.concat(t,[u])),f=1;n>f;f++)for(c=e.encrypt(c),a=0;a<c.length;a++)o[a]^=c[a];for(f=0;(i||1)>d&&f<o.length;f++)h.setInt32(d,o[f]),d+=4}return w.slice(0,r/8)},B:class{constructor(e){const t=this,n=t.U=P,r=[[],[]];t.K=[new n,new n];const s=t.K[0].blockSize/32;e.length>s&&(e=(new n).update(e).D());for(let t=0;s>t;t++)r[0][t]=909522486^e[t],r[1][t]=1549556828^e[t];t.K[0].update(r[0]),t.K[1].update(r[1]),t.N=new n(t.K[0])}reset(){const e=this;e.N=new e.U(e.K[0]),e.O=!1}update(e){this.O=!0,this.N.update(e)}digest(){const e=this,t=e.N.D(),n=new e.U(e.K[1]).update(t).D();return e.reset(),n}encrypt(e){if(this.O)throw new s("encrypt on already updated hmac called!");return this.update(e),this.digest(e)}}},R=typeof h!=v&&typeof h.getRandomValues==S,B="Invalid password",E="Invalid signature",M="zipjs-abort-check-password";function U(e){return R?h.getRandomValues(e):D.getRandomValues(e)}const K=16,N={name:"PBKDF2"},O=t.assign({hash:{name:"HMAC"}},N),T=t.assign({iterations:1e3,hash:{name:"SHA-1"}},N),W=["deriveBits"],j=[8,12,16],H=[16,24,32],L=10,F=[0,0,0,0],q=typeof h!=v,G=q&&h.subtle,J=q&&typeof G!=v,Q=I.p,X=class{constructor(e){const t=this;t.T=[[[],[],[],[],[]],[[],[],[],[],[]]],t.T[0][0][0]||t.W();const n=t.T[0][4],r=t.T[1],i=e.length;let o,c,f,a=1;if(4!==i&&6!==i&&8!==i)throw new s("invalid aes key size");for(t.S=[c=e.slice(0),f=[]],o=i;4*i+28>o;o++){let e=c[o-1];(o%i==0||8===i&&o%i==4)&&(e=n[e>>>24]<<24^n[e>>16&255]<<16^n[e>>8&255]<<8^n[255&e],o%i==0&&(e=e<<8^e>>>24^a<<24,a=a<<1^283*(a>>7))),c[o]=c[o-i]^e}for(let e=0;o;e++,o--){const t=c[3&e?o:o-4];f[e]=4>=o||4>e?t:r[0][n[t>>>24]]^r[1][n[t>>16&255]]^r[2][n[t>>8&255]]^r[3][n[255&t]]}}encrypt(e){return this.j(e,0)}decrypt(e){return this.j(e,1)}W(){const e=this.T[0],t=this.T[1],n=e[4],r=t[4],s=[],i=[];let o,c,f,a;for(let e=0;256>e;e++)i[(s[e]=e<<1^283*(e>>7))^e]=e;for(let l=o=0;!n[l];l^=c||1,o=i[o]||1){let i=o^o<<1^o<<2^o<<3^o<<4;i=i>>8^255&i^99,n[l]=i,r[i]=l,a=s[f=s[c=s[l]]];let u=16843009*a^65537*f^257*c^16843008*l,w=257*s[i]^16843008*i;for(let n=0;4>n;n++)e[n][l]=w=w<<24^w>>>8,t[n][i]=u=u<<24^u>>>8}for(let n=0;5>n;n++)e[n]=e[n].slice(0),t[n]=t[n].slice(0)}j(e,t){if(4!==e.length)throw new s("invalid aes block size");const n=this.S[t],r=n.length/4-2,i=[0,0,0,0],o=this.T[t],c=o[0],f=o[1],a=o[2],l=o[3],u=o[4];let w,h,d,p=e[0]^n[0],y=e[t?3:1]^n[1],m=e[2]^n[2],b=e[t?1:3]^n[3],g=4;for(let e=0;r>e;e++)w=c[p>>>24]^f[y>>16&255]^a[m>>8&255]^l[255&b]^n[g],h=c[y>>>24]^f[m>>16&255]^a[b>>8&255]^l[255&p]^n[g+1],d=c[m>>>24]^f[b>>16&255]^a[p>>8&255]^l[255&y]^n[g+2],b=c[b>>>24]^f[p>>16&255]^a[y>>8&255]^l[255&m]^n[g+3],g+=4,p=w,y=h,m=d;for(let e=0;4>e;e++)i[t?3&-e:e]=u[p>>>24]<<24^u[y>>16&255]<<16^u[m>>8&255]<<8^u[255&b]^n[g++],w=p,p=y,y=m,m=b,b=w;return i}},Y=class{constructor(e,t){this.H=e,this.L=t,this.F=t}reset(){this.F=this.L}update(e){return this.q(this.H,e,this.F)}G(e){if(255&~(e>>24))e+=1<<24;else{let t=e>>16&255,n=e>>8&255,r=255&e;255===t?(t=0,255===n?(n=0,255===r?r=0:++r):++n):++t,e=0,e+=t<<16,e+=n<<8,e+=r}return e}J(e){0===(e[0]=this.G(e[0]))&&(e[1]=this.G(e[1]))}q(e,t,n){let r;if(!(r=t.length))return[];const s=_.l(t);for(let s=0;r>s;s+=4){this.J(n);const r=e.encrypt(n);t[s]^=r[0],t[s+1]^=r[1],t[s+2]^=r[2],t[s+3]^=r[3]}return _.u(t,s)}},Z=V.B;let $=q&&J&&typeof G.importKey==S,ee=q&&J&&typeof G.deriveBits==S;class te extends p{constructor({password:e,rawPassword:n,signed:r,encryptionStrength:o,checkPasswordOnly:c}){super({start(){t.assign(this,{ready:new u((e=>this.X=e)),password:ie(e,n),signed:r,Y:o-1,pending:new i})},async transform(e,t){const n=this,{password:r,Y:o,X:f,ready:a}=n;r?(await(async(e,t,n,r)=>{const i=await se(e,t,n,ce(r,0,j[t])),o=ce(r,j[t]);if(i[0]!=o[0]||i[1]!=o[1])throw new s(B)})(n,o,r,ce(e,0,j[o]+2)),e=ce(e,j[o]+2),c?t.error(new s(M)):f()):await a;const l=new i(e.length-L-(e.length-L)%K);t.enqueue(re(n,e,l,0,L,!0))},async flush(e){const{signed:t,Z:n,$:r,pending:o,ready:c}=this;if(r&&n){await c;const f=ce(o,0,o.length-L),a=ce(o,o.length-L);let l=new i;if(f.length){const e=ae(Q,f);r.update(e);const t=n.update(e);l=fe(Q,t)}if(t){const e=ce(fe(Q,r.digest()),0,L);for(let t=0;L>t;t++)if(e[t]!=a[t])throw new s(E)}e.enqueue(l)}}})}}class ne extends p{constructor({password:e,rawPassword:n,encryptionStrength:r}){let s;super({start(){t.assign(this,{ready:new u((e=>this.X=e)),password:ie(e,n),Y:r-1,pending:new i})},async transform(e,t){const n=this,{password:r,Y:s,X:o,ready:c}=n;let f=new i;r?(f=await(async(e,t,n)=>{const r=U(new i(j[t]));return oe(r,await se(e,t,n,r))})(n,s,r),o()):await c;const a=new i(f.length+e.length-e.length%K);a.set(f,0),t.enqueue(re(n,e,a,f.length,0))},async flush(e){const{Z:t,$:n,pending:r,ready:o}=this;if(n&&t){await o;let c=new i;if(r.length){const e=t.update(ae(Q,r));n.update(e),c=fe(Q,e)}s.signature=fe(Q,n.digest()).slice(0,L),e.enqueue(oe(c,s.signature))}}}),s=this}}function re(e,t,n,r,s,o){const{Z:c,$:f,pending:a}=e,l=t.length-s;let u;for(a.length&&(t=oe(a,t),n=((e,t)=>{if(t&&t>e.length){const n=e;(e=new i(t)).set(n,0)}return e})(n,l-l%K)),u=0;l-K>=u;u+=K){const e=ae(Q,ce(t,u,u+K));o&&f.update(e);const s=c.update(e);o||f.update(s),n.set(fe(Q,s),u+r)}return e.pending=ce(t,u),n}async function se(n,r,s,o){n.password=null;const c=await(async(e,t,n,r,s)=>{if(!$)return V.importKey(t);try{return await G.importKey("raw",t,n,!1,s)}catch(e){return $=!1,V.importKey(t)}})(0,s,O,0,W),f=await(async(e,t,n)=>{if(!ee)return V.M(t,e.salt,T.iterations,n);try{return await G.deriveBits(e,t,n)}catch(r){return ee=!1,V.M(t,e.salt,T.iterations,n)}})(t.assign({salt:o},T),c,8*(2*H[r]+2)),a=new i(f),l=ae(Q,ce(a,0,H[r])),u=ae(Q,ce(a,H[r],2*H[r])),w=ce(a,2*H[r]);return t.assign(n,{keys:{key:l,ee:u,passwordVerification:w},Z:new Y(new X(l),e.from(F)),$:new Z(u)}),w}function ie(e,t){return t===k?(e=>{if(typeof w==v){const t=new i((e=unescape(encodeURIComponent(e))).length);for(let n=0;n<t.length;n++)t[n]=e.charCodeAt(n);return t}return(new w).encode(e)})(e):t}function oe(e,t){let n=e;return e.length+t.length&&(n=new i(e.length+t.length),n.set(e,0),n.set(t,e.length)),n}function ce(e,t,n){return e.subarray(t,n)}function fe(e,t){return e.m(t)}function ae(e,t){return e.k(t)}class le extends p{constructor({password:e,passwordVerification:n,checkPasswordOnly:r}){super({start(){t.assign(this,{password:e,passwordVerification:n}),de(this,e)},transform(e,t){const n=this;if(n.password){const t=we(n,e.subarray(0,12));if(n.password=null,t[11]!=n.passwordVerification)throw new s(B);e=e.subarray(12)}r?t.error(new s(M)):t.enqueue(we(n,e))}})}}class ue extends p{constructor({password:e,passwordVerification:n}){super({start(){t.assign(this,{password:e,passwordVerification:n}),de(this,e)},transform(e,t){const n=this;let r,s;if(n.password){n.password=null;const t=U(new i(12));t[11]=n.passwordVerification,r=new i(e.length+t.length),r.set(he(n,t),0),s=12}else r=new i(e.length),s=0;r.set(he(n,e),s),t.enqueue(r)}})}}function we(e,t){const n=new i(t.length);for(let r=0;r<t.length;r++)n[r]=ye(e)^t[r],pe(e,n[r]);return n}function he(e,t){const n=new i(t.length);for(let r=0;r<t.length;r++)n[r]=ye(e)^t[r],pe(e,t[r]);return n}function de(e,n){const r=[305419896,591751049,878082192];t.assign(e,{keys:r,te:new x(r[0]),ne:new x(r[2])});for(let t=0;t<n.length;t++)pe(e,n.charCodeAt(t))}function pe(e,t){let[n,s,i]=e.keys;e.te.append([t]),n=~e.te.get(),s=be(r.imul(be(s+me(n)),134775813)+1),e.ne.append([s>>>24]),i=~e.ne.get(),e.keys=[n,s,i]}function ye(e){const t=2|e.keys[2];return me(r.imul(t,1^t)>>>8)}function me(e){return 255&e}function be(e){return 4294967295&e}const ge="deflate-raw";class ke extends p{constructor(e,{chunkSize:t,CompressionStream:n,CompressionStreamNative:r}){super({});const{compressed:s,encrypted:i,useCompressionStream:o,zipCrypto:c,signed:f,level:a}=e,u=this;let w,h,d=Se(super.readable);i&&!c||!f||(w=new A,d=xe(d,w)),s&&(d=Ce(d,o,{level:a,chunkSize:t},r,n)),i&&(c?d=xe(d,new ue(e)):(h=new ne(e),d=xe(d,h))),ze(u,d,(()=>{let e;i&&!c&&(e=h.signature),i&&!c||!f||(e=new l(w.value.buffer).getUint32(0)),u.signature=e}))}}class ve extends p{constructor(e,{chunkSize:t,DecompressionStream:n,DecompressionStreamNative:r}){super({});const{zipCrypto:i,encrypted:o,signed:c,signature:f,compressed:a,useCompressionStream:u}=e;let w,h,d=Se(super.readable);o&&(i?d=xe(d,new le(e)):(h=new te(e),d=xe(d,h))),a&&(d=Ce(d,u,{chunkSize:t},r,n)),o&&!i||!c||(w=new A,d=xe(d,w)),ze(this,d,(()=>{if((!o||i)&&c){const e=new l(w.value.buffer);if(f!=e.getUint32(0,!1))throw new s(E)}}))}}function Se(e){return xe(e,new p({transform(e,t){e&&e.length&&t.enqueue(e)}}))}function ze(e,n,r){n=xe(n,new p({flush:r})),t.defineProperty(e,"readable",{get:()=>n})}function Ce(e,t,n,r,s){try{e=xe(e,new(t&&r?r:s)(ge,n))}catch(r){if(!t)return e;try{e=xe(e,new s(ge,n))}catch(t){return e}}return e}function xe(e,t){return e.pipeThrough(t)}const Ae="data",_e="close";class Ie extends p{constructor(e,n){super({});const r=this,{codecType:s}=e;let i;s.startsWith("deflate")?i=ke:s.startsWith("inflate")&&(i=ve);let o=0,c=0;const f=new i(e,n),a=super.readable,l=new p({transform(e,t){e&&e.length&&(c+=e.length,t.enqueue(e))},flush(){t.assign(r,{inputSize:c})}}),u=new p({transform(e,t){e&&e.length&&(o+=e.length,t.enqueue(e))},flush(){const{signature:e}=f;t.assign(r,{signature:e,outputSize:o,inputSize:c})}});t.defineProperty(r,"readable",{get:()=>a.pipeThrough(l).pipeThrough(f).pipeThrough(u)})}}class Pe extends p{constructor(e){let t;super({transform:function n(r,s){if(t){const e=new i(t.length+r.length);e.set(t),e.set(r,t.length),r=e,t=null}r.length>e?(s.enqueue(r.slice(0,e)),n(r.slice(e),s)):t=r},flush(e){t&&t.length&&e.enqueue(t)}})}}const De=new a,Ve=new a;let Re,Be=0,Ee=!0;async function Me(e){try{const{options:t,scripts:r,config:s}=e;if(r&&r.length)try{Ee?importScripts.apply(k,r):await Ue(r)}catch(e){Ee=!1,await Ue(r)}self.initCodec&&self.initCodec(),s.CompressionStreamNative=self.CompressionStream,s.DecompressionStreamNative=self.DecompressionStream,self.Deflate&&(s.CompressionStream=new z(self.Deflate)),self.Inflate&&(s.DecompressionStream=new z(self.Inflate));const i={highWaterMark:1},o=e.readable||new y({async pull(e){const t=new u((e=>De.set(Be,e)));Ke({type:"pull",messageId:Be}),Be=(Be+1)%n.MAX_SAFE_INTEGER;const{value:r,done:s}=await t;e.enqueue(r),s&&e.close()}},i),c=e.writable||new m({async write(e){let t;const r=new u((e=>t=e));Ve.set(Be,t),Ke({type:Ae,value:e,messageId:Be}),Be=(Be+1)%n.MAX_SAFE_INTEGER,await r}},i),f=new Ie(t,s);Re=new AbortController;const{signal:a}=Re;await o.pipeThrough(f).pipeThrough(new Pe(s.chunkSize)).pipeTo(c,{signal:a,preventClose:!0,preventAbort:!0}),await c.getWriter().close();const{signature:l,inputSize:w,outputSize:h}=f;Ke({type:_e,result:{signature:l,inputSize:w,outputSize:h}})}catch(e){Ne(e)}}async function Ue(e){for(const t of e)await import(t)}function Ke(e){let{value:t}=e;if(t)if(t.length)try{t=new i(t),e.value=t.buffer,d(e,[e.value])}catch(t){d(e)}else d(e);else d(e)}function Ne(e=new s("Unknown error")){const{message:t,stack:n,code:r,name:i}=e;d({error:{message:t,stack:n,code:r,name:i}})}addEventListener("message",(({data:e})=>{const{type:t,messageId:n,value:r,done:s}=e;try{if("start"==t&&Me(e),t==Ae){const e=De.get(n);De.delete(n),e({value:new i(r),done:s})}if("ack"==t){const e=Ve.get(n);Ve.delete(n),e()}t==_e&&Re.abort()}catch(e){Ne(e)}}));const Oe=15,Te=573,We=-2;function je(t){return He(t.map((([t,n])=>new e(t).fill(n,0,t))))}function He(t){return t.reduce(((t,n)=>t.concat(e.isArray(n)?He(n):n)),[])}const Le=[0,1,2,3].concat(...je([[2,4],[2,5],[4,6],[4,7],[8,8],[8,9],[16,10],[16,11],[32,12],[32,13],[64,14],[64,15],[2,0],[1,16],[1,17],[2,18],[2,19],[4,20],[4,21],[8,22],[8,23],[16,24],[16,25],[32,26],[32,27],[64,28],[64,29]]));function Fe(){const e=this;function t(e,t){let n=0;do{n|=1&e,e>>>=1,n<<=1}while(--t>0);return n>>>1}e.re=n=>{const s=e.se,i=e.oe.ie,o=e.oe.ce;let c,f,a,l=-1;for(n.fe=0,n.ae=Te,c=0;o>c;c++)0!==s[2*c]?(n.le[++n.fe]=l=c,n.ue[c]=0):s[2*c+1]=0;for(;2>n.fe;)a=n.le[++n.fe]=2>l?++l:0,s[2*a]=1,n.ue[a]=0,n.we--,i&&(n.he-=i[2*a+1]);for(e.de=l,c=r.floor(n.fe/2);c>=1;c--)n.pe(s,c);a=o;do{c=n.le[1],n.le[1]=n.le[n.fe--],n.pe(s,1),f=n.le[1],n.le[--n.ae]=c,n.le[--n.ae]=f,s[2*a]=s[2*c]+s[2*f],n.ue[a]=r.max(n.ue[c],n.ue[f])+1,s[2*c+1]=s[2*f+1]=a,n.le[1]=a++,n.pe(s,1)}while(n.fe>=2);n.le[--n.ae]=n.le[1],(t=>{const n=e.se,r=e.oe.ie,s=e.oe.ye,i=e.oe.me,o=e.oe.be;let c,f,a,l,u,w,h=0;for(l=0;Oe>=l;l++)t.ge[l]=0;for(n[2*t.le[t.ae]+1]=0,c=t.ae+1;Te>c;c++)f=t.le[c],l=n[2*n[2*f+1]+1]+1,l>o&&(l=o,h++),n[2*f+1]=l,f>e.de||(t.ge[l]++,u=0,i>f||(u=s[f-i]),w=n[2*f],t.we+=w*(l+u),r&&(t.he+=w*(r[2*f+1]+u)));if(0!==h){do{for(l=o-1;0===t.ge[l];)l--;t.ge[l]--,t.ge[l+1]+=2,t.ge[o]--,h-=2}while(h>0);for(l=o;0!==l;l--)for(f=t.ge[l];0!==f;)a=t.le[--c],a>e.de||(n[2*a+1]!=l&&(t.we+=(l-n[2*a+1])*n[2*a],n[2*a+1]=l),f--)}})(n),((e,n,r)=>{const s=[];let i,o,c,f=0;for(i=1;Oe>=i;i++)s[i]=f=f+r[i-1]<<1;for(o=0;n>=o;o++)c=e[2*o+1],0!==c&&(e[2*o]=t(s[c]++,c))})(s,e.de,n.ge)}}function qe(e,t,n,r,s){const i=this;i.ie=e,i.ye=t,i.me=n,i.ce=r,i.be=s}Fe.ke=[0,1,2,3,4,5,6,7].concat(...je([[2,8],[2,9],[2,10],[2,11],[4,12],[4,13],[4,14],[4,15],[8,16],[8,17],[8,18],[8,19],[16,20],[16,21],[16,22],[16,23],[32,24],[32,25],[32,26],[31,27],[1,28]])),Fe.ve=[0,1,2,3,4,5,6,7,8,10,12,14,16,20,24,28,32,40,48,56,64,80,96,112,128,160,192,224,0],Fe.Se=[0,1,2,3,4,6,8,12,16,24,32,48,64,96,128,192,256,384,512,768,1024,1536,2048,3072,4096,6144,8192,12288,16384,24576],Fe.ze=e=>256>e?Le[e]:Le[256+(e>>>7)],Fe.Ce=[0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0],Fe.xe=[0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13],Fe.Ae=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,7],Fe._e=[16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];const Ge=je([[144,8],[112,9],[24,7],[8,8]]);qe.Ie=He([12,140,76,204,44,172,108,236,28,156,92,220,60,188,124,252,2,130,66,194,34,162,98,226,18,146,82,210,50,178,114,242,10,138,74,202,42,170,106,234,26,154,90,218,58,186,122,250,6,134,70,198,38,166,102,230,22,150,86,214,54,182,118,246,14,142,78,206,46,174,110,238,30,158,94,222,62,190,126,254,1,129,65,193,33,161,97,225,17,145,81,209,49,177,113,241,9,137,73,201,41,169,105,233,25,153,89,217,57,185,121,249,5,133,69,197,37,165,101,229,21,149,85,213,53,181,117,245,13,141,77,205,45,173,109,237,29,157,93,221,61,189,125,253,19,275,147,403,83,339,211,467,51,307,179,435,115,371,243,499,11,267,139,395,75,331,203,459,43,299,171,427,107,363,235,491,27,283,155,411,91,347,219,475,59,315,187,443,123,379,251,507,7,263,135,391,71,327,199,455,39,295,167,423,103,359,231,487,23,279,151,407,87,343,215,471,55,311,183,439,119,375,247,503,15,271,143,399,79,335,207,463,47,303,175,431,111,367,239,495,31,287,159,415,95,351,223,479,63,319,191,447,127,383,255,511,0,64,32,96,16,80,48,112,8,72,40,104,24,88,56,120,4,68,36,100,20,84,52,116,3,131,67,195,35,163,99,227].map(((e,t)=>[e,Ge[t]])));const Je=je([[30,5]]);function Qe(e,t,n,r,s){const i=this;i.Pe=e,i.De=t,i.Ve=n,i.Re=r,i.Be=s}qe.Ee=He([0,16,8,24,4,20,12,28,2,18,10,26,6,22,14,30,1,17,9,25,5,21,13,29,3,19,11,27,7,23].map(((e,t)=>[e,Je[t]]))),qe.Me=new qe(qe.Ie,Fe.Ce,257,286,Oe),qe.Ue=new qe(qe.Ee,Fe.xe,0,30,Oe),qe.Ke=new qe(null,Fe.Ae,0,19,7);const Xe=[new Qe(0,0,0,0,0),new Qe(4,4,8,4,1),new Qe(4,5,16,8,1),new Qe(4,6,32,32,1),new Qe(4,4,16,16,2),new Qe(8,16,32,32,2),new Qe(8,16,128,128,2),new Qe(8,32,128,256,2),new Qe(32,128,258,1024,2),new Qe(32,258,258,4096,2)],Ye=["need dictionary","stream end","","","stream error","data error","","buffer error","",""],Ze=113,$e=666,et=262;function tt(e,t,n,r){const s=e[2*t],i=e[2*n];return i>s||s==i&&r[t]<=r[n]}function nt(){const e=this;let t,n,s,c,f,a,l,u,w,h,d,p,y,m,b,g,k,v,S,z,C,x,A,_,I,P,D,V,R,B,E,M,U;const K=new Fe,N=new Fe,O=new Fe;let T,W,j,H,L,F;function q(){let t;for(t=0;286>t;t++)E[2*t]=0;for(t=0;30>t;t++)M[2*t]=0;for(t=0;19>t;t++)U[2*t]=0;E[512]=1,e.we=e.he=0,W=j=0}function G(e,t){let n,r=-1,s=e[1],i=0,o=7,c=4;0===s&&(o=138,c=3),e[2*(t+1)+1]=65535;for(let f=0;t>=f;f++)n=s,s=e[2*(f+1)+1],++i<o&&n==s||(c>i?U[2*n]+=i:0!==n?(n!=r&&U[2*n]++,U[32]++):i>10?U[36]++:U[34]++,i=0,r=n,0===s?(o=138,c=3):n==s?(o=6,c=3):(o=7,c=4))}function J(t){e.Ne[e.pending++]=t}function Q(e){J(255&e),J(e>>>8&255)}function X(e,t){let n;const r=t;F>16-r?(n=e,L|=n<<F&65535,Q(L),L=n>>>16-F,F+=r-16):(L|=e<<F&65535,F+=r)}function Y(e,t){const n=2*e;X(65535&t[n],65535&t[n+1])}function Z(e,t){let n,r,s=-1,i=e[1],o=0,c=7,f=4;for(0===i&&(c=138,f=3),n=0;t>=n;n++)if(r=i,i=e[2*(n+1)+1],++o>=c||r!=i){if(f>o)do{Y(r,U)}while(0!=--o);else 0!==r?(r!=s&&(Y(r,U),o--),Y(16,U),X(o-3,2)):o>10?(Y(18,U),X(o-11,7)):(Y(17,U),X(o-3,3));o=0,s=r,0===i?(c=138,f=3):r==i?(c=6,f=3):(c=7,f=4)}}function $(){16==F?(Q(L),L=0,F=0):8>F||(J(255&L),L>>>=8,F-=8)}function ee(t,n){let s,i,o;if(e.Oe[W]=t,e.Te[W]=255&n,W++,0===t?E[2*n]++:(j++,t--,E[2*(Fe.ke[n]+256+1)]++,M[2*Fe.ze(t)]++),!(8191&W)&&D>2){for(s=8*W,i=C-k,o=0;30>o;o++)s+=M[2*o]*(5+Fe.xe[o]);if(s>>>=3,j<r.floor(W/2)&&s<r.floor(i/2))return!0}return W==T-1}function te(t,n){let r,s,i,o,c=0;if(0!==W)do{r=e.Oe[c],s=e.Te[c],c++,0===r?Y(s,t):(i=Fe.ke[s],Y(i+256+1,t),o=Fe.Ce[i],0!==o&&(s-=Fe.ve[i],X(s,o)),r--,i=Fe.ze(r),Y(i,n),o=Fe.xe[i],0!==o&&(r-=Fe.Se[i],X(r,o)))}while(W>c);Y(256,t),H=t[513]}function ne(){F>8?Q(L):F>0&&J(255&L),L=0,F=0}function re(t,n,r){X(0+(r?1:0),3),((t,n)=>{ne(),H=8,Q(n),Q(~n),e.Ne.set(u.subarray(t,t+n),e.pending),e.pending+=n})(t,n)}function se(n){((t,n,r)=>{let s,i,o=0;D>0?(K.re(e),N.re(e),o=(()=>{let t;for(G(E,K.de),G(M,N.de),O.re(e),t=18;t>=3&&0===U[2*Fe._e[t]+1];t--);return e.we+=14+3*(t+1),t})(),s=e.we+3+7>>>3,i=e.he+3+7>>>3,i>s||(s=i)):s=i=n+5,n+4>s||-1==t?i==s?(X(2+(r?1:0),3),te(qe.Ie,qe.Ee)):(X(4+(r?1:0),3),((e,t,n)=>{let r;for(X(e-257,5),X(t-1,5),X(n-4,4),r=0;n>r;r++)X(U[2*Fe._e[r]+1],3);Z(E,e-1),Z(M,t-1)})(K.de+1,N.de+1,o+1),te(E,M)):re(t,n,r),q(),r&&ne()})(0>k?-1:k,C-k,n),k=C,t.We()}function ie(){let e,n,r,s;do{if(s=w-A-C,0===s&&0===C&&0===A)s=f;else if(-1==s)s--;else if(C>=f+f-et){u.set(u.subarray(f,f+f),0),x-=f,C-=f,k-=f,e=y,r=e;do{n=65535&d[--r],d[r]=f>n?0:n-f}while(0!=--e);e=f,r=e;do{n=65535&h[--r],h[r]=f>n?0:n-f}while(0!=--e);s+=f}if(0===t.je)return;e=t.He(u,C+A,s),A+=e,3>A||(p=255&u[C],p=(p<<g^255&u[C+1])&b)}while(et>A&&0!==t.je)}function oe(e){let t,n,r=I,s=C,i=_;const o=C>f-et?C-(f-et):0;let c=B;const a=l,w=C+258;let d=u[s+i-1],p=u[s+i];R>_||(r>>=2),c>A&&(c=A);do{if(t=e,u[t+i]==p&&u[t+i-1]==d&&u[t]==u[s]&&u[++t]==u[s+1]){s+=2,t++;do{}while(u[++s]==u[++t]&&u[++s]==u[++t]&&u[++s]==u[++t]&&u[++s]==u[++t]&&u[++s]==u[++t]&&u[++s]==u[++t]&&u[++s]==u[++t]&&u[++s]==u[++t]&&w>s);if(n=258-(w-s),s=w-258,n>i){if(x=e,i=n,n>=c)break;d=u[s+i-1],p=u[s+i]}}}while((e=65535&h[e&a])>o&&0!=--r);return i>A?A:i}e.ue=[],e.ge=[],e.le=[],E=[],M=[],U=[],e.pe=(t,n)=>{const r=e.le,s=r[n];let i=n<<1;for(;i<=e.fe&&(i<e.fe&&tt(t,r[i+1],r[i],e.ue)&&i++,!tt(t,s,r[i],e.ue));)r[n]=r[i],n=i,i<<=1;r[n]=s},e.Le=(t,S,x,W,j,G)=>(W||(W=8),j||(j=8),G||(G=0),t.Fe=null,-1==S&&(S=6),1>j||j>9||8!=W||9>x||x>15||0>S||S>9||0>G||G>2?We:(t.qe=e,a=x,f=1<<a,l=f-1,m=j+7,y=1<<m,b=y-1,g=r.floor((m+3-1)/3),u=new i(2*f),h=[],d=[],T=1<<j+6,e.Ne=new i(4*T),s=4*T,e.Oe=new o(T),e.Te=new i(T),D=S,V=G,(t=>(t.Ge=t.Je=0,t.Fe=null,e.pending=0,e.Qe=0,n=Ze,c=0,K.se=E,K.oe=qe.Me,N.se=M,N.oe=qe.Ue,O.se=U,O.oe=qe.Ke,L=0,F=0,H=8,q(),(()=>{w=2*f,d[y-1]=0;for(let e=0;y-1>e;e++)d[e]=0;P=Xe[D].De,R=Xe[D].Pe,B=Xe[D].Ve,I=Xe[D].Re,C=0,k=0,A=0,v=_=2,z=0,p=0})(),0))(t))),e.Xe=()=>42!=n&&n!=Ze&&n!=$e?We:(e.Te=null,e.Oe=null,e.Ne=null,d=null,h=null,u=null,e.qe=null,n==Ze?-3:0),e.Ye=(e,t,n)=>{let r=0;return-1==t&&(t=6),0>t||t>9||0>n||n>2?We:(Xe[D].Be!=Xe[t].Be&&0!==e.Ge&&(r=e.Ze(1)),D!=t&&(D=t,P=Xe[D].De,R=Xe[D].Pe,B=Xe[D].Ve,I=Xe[D].Re),V=n,r)},e.$e=(e,t,r)=>{let s,i=r,o=0;if(!t||42!=n)return We;if(3>i)return 0;for(i>f-et&&(i=f-et,o=r-i),u.set(t.subarray(o,o+i),0),C=i,k=i,p=255&u[0],p=(p<<g^255&u[1])&b,s=0;i-3>=s;s++)p=(p<<g^255&u[s+2])&b,h[s&l]=d[p],d[p]=s;return 0},e.Ze=(r,i)=>{let o,w,m,I,R;if(i>4||0>i)return We;if(!r.et||!r.tt&&0!==r.je||n==$e&&4!=i)return r.Fe=Ye[4],We;if(0===r.nt)return r.Fe=Ye[7],-5;var B;if(t=r,I=c,c=i,42==n&&(w=8+(a-8<<4)<<8,m=(D-1&255)>>1,m>3&&(m=3),w|=m<<6,0!==C&&(w|=32),w+=31-w%31,n=Ze,J((B=w)>>8&255),J(255&B)),0!==e.pending){if(t.We(),0===t.nt)return c=-1,0}else if(0===t.je&&I>=i&&4!=i)return t.Fe=Ye[7],-5;if(n==$e&&0!==t.je)return r.Fe=Ye[7],-5;if(0!==t.je||0!==A||0!=i&&n!=$e){switch(R=-1,Xe[D].Be){case 0:R=(e=>{let n,r=65535;for(r>s-5&&(r=s-5);;){if(1>=A){if(ie(),0===A&&0==e)return 0;if(0===A)break}if(C+=A,A=0,n=k+r,(0===C||C>=n)&&(A=C-n,C=n,se(!1),0===t.nt))return 0;if(C-k>=f-et&&(se(!1),0===t.nt))return 0}return se(4==e),0===t.nt?4==e?2:0:4==e?3:1})(i);break;case 1:R=(e=>{let n,r=0;for(;;){if(et>A){if(ie(),et>A&&0==e)return 0;if(0===A)break}if(3>A||(p=(p<<g^255&u[C+2])&b,r=65535&d[p],h[C&l]=d[p],d[p]=C),0===r||(C-r&65535)>f-et||2!=V&&(v=oe(r)),3>v)n=ee(0,255&u[C]),A--,C++;else if(n=ee(C-x,v-3),A-=v,v>P||3>A)C+=v,v=0,p=255&u[C],p=(p<<g^255&u[C+1])&b;else{v--;do{C++,p=(p<<g^255&u[C+2])&b,r=65535&d[p],h[C&l]=d[p],d[p]=C}while(0!=--v);C++}if(n&&(se(!1),0===t.nt))return 0}return se(4==e),0===t.nt?4==e?2:0:4==e?3:1})(i);break;case 2:R=(e=>{let n,r,s=0;for(;;){if(et>A){if(ie(),et>A&&0==e)return 0;if(0===A)break}if(3>A||(p=(p<<g^255&u[C+2])&b,s=65535&d[p],h[C&l]=d[p],d[p]=C),_=v,S=x,v=2,0!==s&&P>_&&f-et>=(C-s&65535)&&(2!=V&&(v=oe(s)),5>=v&&(1==V||3==v&&C-x>4096)&&(v=2)),3>_||v>_)if(0!==z){if(n=ee(0,255&u[C-1]),n&&se(!1),C++,A--,0===t.nt)return 0}else z=1,C++,A--;else{r=C+A-3,n=ee(C-1-S,_-3),A-=_-1,_-=2;do{++C>r||(p=(p<<g^255&u[C+2])&b,s=65535&d[p],h[C&l]=d[p],d[p]=C)}while(0!=--_);if(z=0,v=2,C++,n&&(se(!1),0===t.nt))return 0}}return 0!==z&&(n=ee(0,255&u[C-1]),z=0),se(4==e),0===t.nt?4==e?2:0:4==e?3:1})(i)}if(2!=R&&3!=R||(n=$e),0==R||2==R)return 0===t.nt&&(c=-1),0;if(1==R){if(1==i)X(2,3),Y(256,qe.Ie),$(),9>1+H+10-F&&(X(2,3),Y(256,qe.Ie),$()),H=7;else if(re(0,0,!1),3==i)for(o=0;y>o;o++)d[o]=0;if(t.We(),0===t.nt)return c=-1,0}}return 4!=i?0:1}}function rt(){const e=this;e.rt=0,e.st=0,e.je=0,e.Ge=0,e.nt=0,e.Je=0}function st(e){const t=new rt,n=(o=e&&e.chunkSize?e.chunkSize:65536)+5*(r.floor(o/16383)+1);var o;const c=new i(n);let f=e?e.level:-1;void 0===f&&(f=-1),t.Le(f),t.et=c,this.append=(e,r)=>{let o,f,a=0,l=0,u=0;const w=[];if(e.length){t.rt=0,t.tt=e,t.je=e.length;do{if(t.st=0,t.nt=n,o=t.Ze(0),0!=o)throw new s("deflating: "+t.Fe);t.st&&(t.st==n?w.push(new i(c)):w.push(c.subarray(0,t.st))),u+=t.st,r&&t.rt>0&&t.rt!=a&&(r(t.rt),a=t.rt)}while(t.je>0||0===t.nt);return w.length>1?(f=new i(u),w.forEach((e=>{f.set(e,l),l+=e.length}))):f=w[0]?new i(w[0]):new i,f}},this.flush=()=>{let e,r,o=0,f=0;const a=[];do{if(t.st=0,t.nt=n,e=t.Ze(4),1!=e&&0!=e)throw new s("deflating: "+t.Fe);n-t.nt>0&&a.push(c.slice(0,t.st)),f+=t.st}while(t.je>0||0===t.nt);return t.Xe(),r=new i(f),a.forEach((e=>{r.set(e,o),o+=e.length})),r}}rt.prototype={Le(e,t){const n=this;return n.qe=new nt,t||(t=Oe),n.qe.Le(n,e,t)},Ze(e){const t=this;return t.qe?t.qe.Ze(t,e):We},Xe(){const e=this;if(!e.qe)return We;const t=e.qe.Xe();return e.qe=null,t},Ye(e,t){const n=this;return n.qe?n.qe.Ye(n,e,t):We},$e(e,t){const n=this;return n.qe?n.qe.$e(n,e,t):We},He(e,t,n){const r=this;let s=r.je;return s>n&&(s=n),0===s?0:(r.je-=s,e.set(r.tt.subarray(r.rt,r.rt+s),t),r.rt+=s,r.Ge+=s,s)},We(){const e=this;let t=e.qe.pending;t>e.nt&&(t=e.nt),0!==t&&(e.et.set(e.qe.Ne.subarray(e.qe.Qe,e.qe.Qe+t),e.st),e.st+=t,e.qe.Qe+=t,e.Je+=t,e.nt-=t,e.qe.pending-=t,0===e.qe.pending&&(e.qe.Qe=0))}};const it=0,ot=1,ct=-2,ft=-3,at=-4,lt=-5,ut=[0,1,3,7,15,31,63,127,255,511,1023,2047,4095,8191,16383,32767,65535],wt=1440,ht=[96,7,256,0,8,80,0,8,16,84,8,115,82,7,31,0,8,112,0,8,48,0,9,192,80,7,10,0,8,96,0,8,32,0,9,160,0,8,0,0,8,128,0,8,64,0,9,224,80,7,6,0,8,88,0,8,24,0,9,144,83,7,59,0,8,120,0,8,56,0,9,208,81,7,17,0,8,104,0,8,40,0,9,176,0,8,8,0,8,136,0,8,72,0,9,240,80,7,4,0,8,84,0,8,20,85,8,227,83,7,43,0,8,116,0,8,52,0,9,200,81,7,13,0,8,100,0,8,36,0,9,168,0,8,4,0,8,132,0,8,68,0,9,232,80,7,8,0,8,92,0,8,28,0,9,152,84,7,83,0,8,124,0,8,60,0,9,216,82,7,23,0,8,108,0,8,44,0,9,184,0,8,12,0,8,140,0,8,76,0,9,248,80,7,3,0,8,82,0,8,18,85,8,163,83,7,35,0,8,114,0,8,50,0,9,196,81,7,11,0,8,98,0,8,34,0,9,164,0,8,2,0,8,130,0,8,66,0,9,228,80,7,7,0,8,90,0,8,26,0,9,148,84,7,67,0,8,122,0,8,58,0,9,212,82,7,19,0,8,106,0,8,42,0,9,180,0,8,10,0,8,138,0,8,74,0,9,244,80,7,5,0,8,86,0,8,22,192,8,0,83,7,51,0,8,118,0,8,54,0,9,204,81,7,15,0,8,102,0,8,38,0,9,172,0,8,6,0,8,134,0,8,70,0,9,236,80,7,9,0,8,94,0,8,30,0,9,156,84,7,99,0,8,126,0,8,62,0,9,220,82,7,27,0,8,110,0,8,46,0,9,188,0,8,14,0,8,142,0,8,78,0,9,252,96,7,256,0,8,81,0,8,17,85,8,131,82,7,31,0,8,113,0,8,49,0,9,194,80,7,10,0,8,97,0,8,33,0,9,162,0,8,1,0,8,129,0,8,65,0,9,226,80,7,6,0,8,89,0,8,25,0,9,146,83,7,59,0,8,121,0,8,57,0,9,210,81,7,17,0,8,105,0,8,41,0,9,178,0,8,9,0,8,137,0,8,73,0,9,242,80,7,4,0,8,85,0,8,21,80,8,258,83,7,43,0,8,117,0,8,53,0,9,202,81,7,13,0,8,101,0,8,37,0,9,170,0,8,5,0,8,133,0,8,69,0,9,234,80,7,8,0,8,93,0,8,29,0,9,154,84,7,83,0,8,125,0,8,61,0,9,218,82,7,23,0,8,109,0,8,45,0,9,186,0,8,13,0,8,141,0,8,77,0,9,250,80,7,3,0,8,83,0,8,19,85,8,195,83,7,35,0,8,115,0,8,51,0,9,198,81,7,11,0,8,99,0,8,35,0,9,166,0,8,3,0,8,131,0,8,67,0,9,230,80,7,7,0,8,91,0,8,27,0,9,150,84,7,67,0,8,123,0,8,59,0,9,214,82,7,19,0,8,107,0,8,43,0,9,182,0,8,11,0,8,139,0,8,75,0,9,246,80,7,5,0,8,87,0,8,23,192,8,0,83,7,51,0,8,119,0,8,55,0,9,206,81,7,15,0,8,103,0,8,39,0,9,174,0,8,7,0,8,135,0,8,71,0,9,238,80,7,9,0,8,95,0,8,31,0,9,158,84,7,99,0,8,127,0,8,63,0,9,222,82,7,27,0,8,111,0,8,47,0,9,190,0,8,15,0,8,143,0,8,79,0,9,254,96,7,256,0,8,80,0,8,16,84,8,115,82,7,31,0,8,112,0,8,48,0,9,193,80,7,10,0,8,96,0,8,32,0,9,161,0,8,0,0,8,128,0,8,64,0,9,225,80,7,6,0,8,88,0,8,24,0,9,145,83,7,59,0,8,120,0,8,56,0,9,209,81,7,17,0,8,104,0,8,40,0,9,177,0,8,8,0,8,136,0,8,72,0,9,241,80,7,4,0,8,84,0,8,20,85,8,227,83,7,43,0,8,116,0,8,52,0,9,201,81,7,13,0,8,100,0,8,36,0,9,169,0,8,4,0,8,132,0,8,68,0,9,233,80,7,8,0,8,92,0,8,28,0,9,153,84,7,83,0,8,124,0,8,60,0,9,217,82,7,23,0,8,108,0,8,44,0,9,185,0,8,12,0,8,140,0,8,76,0,9,249,80,7,3,0,8,82,0,8,18,85,8,163,83,7,35,0,8,114,0,8,50,0,9,197,81,7,11,0,8,98,0,8,34,0,9,165,0,8,2,0,8,130,0,8,66,0,9,229,80,7,7,0,8,90,0,8,26,0,9,149,84,7,67,0,8,122,0,8,58,0,9,213,82,7,19,0,8,106,0,8,42,0,9,181,0,8,10,0,8,138,0,8,74,0,9,245,80,7,5,0,8,86,0,8,22,192,8,0,83,7,51,0,8,118,0,8,54,0,9,205,81,7,15,0,8,102,0,8,38,0,9,173,0,8,6,0,8,134,0,8,70,0,9,237,80,7,9,0,8,94,0,8,30,0,9,157,84,7,99,0,8,126,0,8,62,0,9,221,82,7,27,0,8,110,0,8,46,0,9,189,0,8,14,0,8,142,0,8,78,0,9,253,96,7,256,0,8,81,0,8,17,85,8,131,82,7,31,0,8,113,0,8,49,0,9,195,80,7,10,0,8,97,0,8,33,0,9,163,0,8,1,0,8,129,0,8,65,0,9,227,80,7,6,0,8,89,0,8,25,0,9,147,83,7,59,0,8,121,0,8,57,0,9,211,81,7,17,0,8,105,0,8,41,0,9,179,0,8,9,0,8,137,0,8,73,0,9,243,80,7,4,0,8,85,0,8,21,80,8,258,83,7,43,0,8,117,0,8,53,0,9,203,81,7,13,0,8,101,0,8,37,0,9,171,0,8,5,0,8,133,0,8,69,0,9,235,80,7,8,0,8,93,0,8,29,0,9,155,84,7,83,0,8,125,0,8,61,0,9,219,82,7,23,0,8,109,0,8,45,0,9,187,0,8,13,0,8,141,0,8,77,0,9,251,80,7,3,0,8,83,0,8,19,85,8,195,83,7,35,0,8,115,0,8,51,0,9,199,81,7,11,0,8,99,0,8,35,0,9,167,0,8,3,0,8,131,0,8,67,0,9,231,80,7,7,0,8,91,0,8,27,0,9,151,84,7,67,0,8,123,0,8,59,0,9,215,82,7,19,0,8,107,0,8,43,0,9,183,0,8,11,0,8,139,0,8,75,0,9,247,80,7,5,0,8,87,0,8,23,192,8,0,83,7,51,0,8,119,0,8,55,0,9,207,81,7,15,0,8,103,0,8,39,0,9,175,0,8,7,0,8,135,0,8,71,0,9,239,80,7,9,0,8,95,0,8,31,0,9,159,84,7,99,0,8,127,0,8,63,0,9,223,82,7,27,0,8,111,0,8,47,0,9,191,0,8,15,0,8,143,0,8,79,0,9,255],dt=[80,5,1,87,5,257,83,5,17,91,5,4097,81,5,5,89,5,1025,85,5,65,93,5,16385,80,5,3,88,5,513,84,5,33,92,5,8193,82,5,9,90,5,2049,86,5,129,192,5,24577,80,5,2,87,5,385,83,5,25,91,5,6145,81,5,7,89,5,1537,85,5,97,93,5,24577,80,5,4,88,5,769,84,5,49,92,5,12289,82,5,13,90,5,3073,86,5,193,192,5,24577],pt=[3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258,0,0],yt=[0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0,112,112],mt=[1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577],bt=[0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13],gt=15;function kt(){let e,t,n,r,s,i;function o(e,t,o,c,f,a,l,u,w,h,d){let p,y,m,b,g,k,v,S,z,C,x,A,_,I,P;C=0,g=o;do{n[e[t+C]]++,C++,g--}while(0!==g);if(n[0]==o)return l[0]=-1,u[0]=0,it;for(S=u[0],k=1;gt>=k&&0===n[k];k++);for(v=k,k>S&&(S=k),g=gt;0!==g&&0===n[g];g--);for(m=g,S>g&&(S=g),u[0]=S,I=1<<k;g>k;k++,I<<=1)if(0>(I-=n[k]))return ft;if(0>(I-=n[g]))return ft;for(n[g]+=I,i[1]=k=0,C=1,_=2;0!=--g;)i[_]=k+=n[C],_++,C++;g=0,C=0;do{0!==(k=e[t+C])&&(d[i[k]++]=g),C++}while(++g<o);for(o=i[m],i[0]=g=0,C=0,b=-1,A=-S,s[0]=0,x=0,P=0;m>=v;v++)for(p=n[v];0!=p--;){for(;v>A+S;){if(b++,A+=S,P=m-A,P=P>S?S:P,(y=1<<(k=v-A))>p+1&&(y-=p+1,_=v,P>k))for(;++k<P&&(y<<=1)>n[++_];)y-=n[_];if(P=1<<k,h[0]+P>wt)return ft;s[b]=x=h[0],h[0]+=P,0!==b?(i[b]=g,r[0]=k,r[1]=S,k=g>>>A-S,r[2]=x-s[b-1]-k,w.set(r,3*(s[b-1]+k))):l[0]=x}for(r[1]=v-A,o>C?d[C]<c?(r[0]=256>d[C]?0:96,r[2]=d[C++]):(r[0]=a[d[C]-c]+16+64,r[2]=f[d[C++]-c]):r[0]=192,y=1<<v-A,k=g>>>A;P>k;k+=y)w.set(r,3*(x+k));for(k=1<<v-1;g&k;k>>>=1)g^=k;for(g^=k,z=(1<<A)-1;(g&z)!=i[b];)b--,A-=S,z=(1<<A)-1}return 0!==I&&1!=m?lt:it}function c(o){let c;for(e||(e=[],t=[],n=new f(gt+1),r=[],s=new f(gt),i=new f(gt+1)),t.length<o&&(t=[]),c=0;o>c;c++)t[c]=0;for(c=0;gt+1>c;c++)n[c]=0;for(c=0;3>c;c++)r[c]=0;s.set(n.subarray(0,gt),0),i.set(n.subarray(0,gt+1),0)}this.it=(n,r,s,i,f)=>{let a;return c(19),e[0]=0,a=o(n,0,19,19,null,null,s,r,i,e,t),a==ft?f.Fe="oversubscribed dynamic bit lengths tree":a!=lt&&0!==r[0]||(f.Fe="incomplete dynamic bit lengths tree",a=ft),a},this.ot=(n,r,s,i,f,a,l,u,w)=>{let h;return c(288),e[0]=0,h=o(s,0,n,257,pt,yt,a,i,u,e,t),h!=it||0===i[0]?(h==ft?w.Fe="oversubscribed literal/length tree":h!=at&&(w.Fe="incomplete literal/length tree",h=ft),h):(c(288),h=o(s,n,r,0,mt,bt,l,f,u,e,t),h!=it||0===f[0]&&n>257?(h==ft?w.Fe="oversubscribed distance tree":h==lt?(w.Fe="incomplete distance tree",h=ft):h!=at&&(w.Fe="empty distance tree with lengths",h=ft),h):it)}}kt.ct=(e,t,n,r)=>(e[0]=9,t[0]=5,n[0]=ht,r[0]=dt,it);const vt=0,St=1,zt=2,Ct=3,xt=4,At=5,_t=6,It=7,Pt=8,Dt=9;function Vt(){const e=this;let t,n,r,s,i=0,o=0,c=0,f=0,a=0,l=0,u=0,w=0,h=0,d=0;function p(e,t,n,r,s,i,o,c){let f,a,l,u,w,h,d,p,y,m,b,g,k,v,S,z;d=c.rt,p=c.je,w=o.ft,h=o.lt,y=o.write,m=y<o.read?o.read-y-1:o.end-y,b=ut[e],g=ut[t];do{for(;20>h;)p--,w|=(255&c.ut(d++))<<h,h+=8;if(f=w&b,a=n,l=r,z=3*(l+f),0!==(u=a[z]))for(;;){if(w>>=a[z+1],h-=a[z+1],16&u){for(u&=15,k=a[z+2]+(w&ut[u]),w>>=u,h-=u;15>h;)p--,w|=(255&c.ut(d++))<<h,h+=8;for(f=w&g,a=s,l=i,z=3*(l+f),u=a[z];;){if(w>>=a[z+1],h-=a[z+1],16&u){for(u&=15;u>h;)p--,w|=(255&c.ut(d++))<<h,h+=8;if(v=a[z+2]+(w&ut[u]),w>>=u,h-=u,m-=k,v>y){S=y-v;do{S+=o.end}while(0>S);if(u=o.end-S,k>u){if(k-=u,y-S>0&&u>y-S)do{o.wt[y++]=o.wt[S++]}while(0!=--u);else o.wt.set(o.wt.subarray(S,S+u),y),y+=u,S+=u,u=0;S=0}}else S=y-v,y-S>0&&2>y-S?(o.wt[y++]=o.wt[S++],o.wt[y++]=o.wt[S++],k-=2):(o.wt.set(o.wt.subarray(S,S+2),y),y+=2,S+=2,k-=2);if(y-S>0&&k>y-S)do{o.wt[y++]=o.wt[S++]}while(0!=--k);else o.wt.set(o.wt.subarray(S,S+k),y),y+=k,S+=k,k=0;break}if(64&u)return c.Fe="invalid distance code",k=c.je-p,k=k>h>>3?h>>3:k,p+=k,d-=k,h-=k<<3,o.ft=w,o.lt=h,c.je=p,c.Ge+=d-c.rt,c.rt=d,o.write=y,ft;f+=a[z+2],f+=w&ut[u],z=3*(l+f),u=a[z]}break}if(64&u)return 32&u?(k=c.je-p,k=k>h>>3?h>>3:k,p+=k,d-=k,h-=k<<3,o.ft=w,o.lt=h,c.je=p,c.Ge+=d-c.rt,c.rt=d,o.write=y,ot):(c.Fe="invalid literal/length code",k=c.je-p,k=k>h>>3?h>>3:k,p+=k,d-=k,h-=k<<3,o.ft=w,o.lt=h,c.je=p,c.Ge+=d-c.rt,c.rt=d,o.write=y,ft);if(f+=a[z+2],f+=w&ut[u],z=3*(l+f),0===(u=a[z])){w>>=a[z+1],h-=a[z+1],o.wt[y++]=a[z+2],m--;break}}else w>>=a[z+1],h-=a[z+1],o.wt[y++]=a[z+2],m--}while(m>=258&&p>=10);return k=c.je-p,k=k>h>>3?h>>3:k,p+=k,d-=k,h-=k<<3,o.ft=w,o.lt=h,c.je=p,c.Ge+=d-c.rt,c.rt=d,o.write=y,it}e.init=(e,i,o,c,f,a)=>{t=vt,u=e,w=i,r=o,h=c,s=f,d=a,n=null},e.ht=(e,y,m)=>{let b,g,k,v,S,z,C,x=0,A=0,_=0;for(_=y.rt,v=y.je,x=e.ft,A=e.lt,S=e.write,z=S<e.read?e.read-S-1:e.end-S;;)switch(t){case vt:if(z>=258&&v>=10&&(e.ft=x,e.lt=A,y.je=v,y.Ge+=_-y.rt,y.rt=_,e.write=S,m=p(u,w,r,h,s,d,e,y),_=y.rt,v=y.je,x=e.ft,A=e.lt,S=e.write,z=S<e.read?e.read-S-1:e.end-S,m!=it)){t=m==ot?It:Dt;break}c=u,n=r,o=h,t=St;case St:for(b=c;b>A;){if(0===v)return e.ft=x,e.lt=A,y.je=v,y.Ge+=_-y.rt,y.rt=_,e.write=S,e.dt(y,m);m=it,v--,x|=(255&y.ut(_++))<<A,A+=8}if(g=3*(o+(x&ut[b])),x>>>=n[g+1],A-=n[g+1],k=n[g],0===k){f=n[g+2],t=_t;break}if(16&k){a=15&k,i=n[g+2],t=zt;break}if(!(64&k)){c=k,o=g/3+n[g+2];break}if(32&k){t=It;break}return t=Dt,y.Fe="invalid literal/length code",m=ft,e.ft=x,e.lt=A,y.je=v,y.Ge+=_-y.rt,y.rt=_,e.write=S,e.dt(y,m);case zt:for(b=a;b>A;){if(0===v)return e.ft=x,e.lt=A,y.je=v,y.Ge+=_-y.rt,y.rt=_,e.write=S,e.dt(y,m);m=it,v--,x|=(255&y.ut(_++))<<A,A+=8}i+=x&ut[b],x>>=b,A-=b,c=w,n=s,o=d,t=Ct;case Ct:for(b=c;b>A;){if(0===v)return e.ft=x,e.lt=A,y.je=v,y.Ge+=_-y.rt,y.rt=_,e.write=S,e.dt(y,m);m=it,v--,x|=(255&y.ut(_++))<<A,A+=8}if(g=3*(o+(x&ut[b])),x>>=n[g+1],A-=n[g+1],k=n[g],16&k){a=15&k,l=n[g+2],t=xt;break}if(!(64&k)){c=k,o=g/3+n[g+2];break}return t=Dt,y.Fe="invalid distance code",m=ft,e.ft=x,e.lt=A,y.je=v,y.Ge+=_-y.rt,y.rt=_,e.write=S,e.dt(y,m);case xt:for(b=a;b>A;){if(0===v)return e.ft=x,e.lt=A,y.je=v,y.Ge+=_-y.rt,y.rt=_,e.write=S,e.dt(y,m);m=it,v--,x|=(255&y.ut(_++))<<A,A+=8}l+=x&ut[b],x>>=b,A-=b,t=At;case At:for(C=S-l;0>C;)C+=e.end;for(;0!==i;){if(0===z&&(S==e.end&&0!==e.read&&(S=0,z=S<e.read?e.read-S-1:e.end-S),0===z&&(e.write=S,m=e.dt(y,m),S=e.write,z=S<e.read?e.read-S-1:e.end-S,S==e.end&&0!==e.read&&(S=0,z=S<e.read?e.read-S-1:e.end-S),0===z)))return e.ft=x,e.lt=A,y.je=v,y.Ge+=_-y.rt,y.rt=_,e.write=S,e.dt(y,m);e.wt[S++]=e.wt[C++],z--,C==e.end&&(C=0),i--}t=vt;break;case _t:if(0===z&&(S==e.end&&0!==e.read&&(S=0,z=S<e.read?e.read-S-1:e.end-S),0===z&&(e.write=S,m=e.dt(y,m),S=e.write,z=S<e.read?e.read-S-1:e.end-S,S==e.end&&0!==e.read&&(S=0,z=S<e.read?e.read-S-1:e.end-S),0===z)))return e.ft=x,e.lt=A,y.je=v,y.Ge+=_-y.rt,y.rt=_,e.write=S,e.dt(y,m);m=it,e.wt[S++]=f,z--,t=vt;break;case It:if(A>7&&(A-=8,v++,_--),e.write=S,m=e.dt(y,m),S=e.write,z=S<e.read?e.read-S-1:e.end-S,e.read!=e.write)return e.ft=x,e.lt=A,y.je=v,y.Ge+=_-y.rt,y.rt=_,e.write=S,e.dt(y,m);t=Pt;case Pt:return m=ot,e.ft=x,e.lt=A,y.je=v,y.Ge+=_-y.rt,y.rt=_,e.write=S,e.dt(y,m);case Dt:return m=ft,e.ft=x,e.lt=A,y.je=v,y.Ge+=_-y.rt,y.rt=_,e.write=S,e.dt(y,m);default:return m=ct,e.ft=x,e.lt=A,y.je=v,y.Ge+=_-y.rt,y.rt=_,e.write=S,e.dt(y,m)}},e.yt=()=>{}}const Rt=[16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15],Bt=0,Et=1,Mt=2,Ut=3,Kt=4,Nt=5,Ot=6,Tt=7,Wt=8,jt=9;function Ht(e,t){const n=this;let r,s=Bt,o=0,c=0,a=0;const l=[0],u=[0],w=new Vt;let h=0,d=new f(3*wt);const p=new kt;n.lt=0,n.ft=0,n.wt=new i(t),n.end=t,n.read=0,n.write=0,n.reset=(e,t)=>{t&&(t[0]=0),s==Ot&&w.yt(e),s=Bt,n.lt=0,n.ft=0,n.read=n.write=0},n.reset(e,null),n.dt=(e,t)=>{let r,s,i;return s=e.st,i=n.read,r=(i>n.write?n.end:n.write)-i,r>e.nt&&(r=e.nt),0!==r&&t==lt&&(t=it),e.nt-=r,e.Je+=r,e.et.set(n.wt.subarray(i,i+r),s),s+=r,i+=r,i==n.end&&(i=0,n.write==n.end&&(n.write=0),r=n.write-i,r>e.nt&&(r=e.nt),0!==r&&t==lt&&(t=it),e.nt-=r,e.Je+=r,e.et.set(n.wt.subarray(i,i+r),s),s+=r,i+=r),e.st=s,n.read=i,t},n.ht=(e,t)=>{let i,f,y,m,b,g,k,v;for(m=e.rt,b=e.je,f=n.ft,y=n.lt,g=n.write,k=g<n.read?n.read-g-1:n.end-g;;){let S,z,C,x,A,_,I,P;switch(s){case Bt:for(;3>y;){if(0===b)return n.ft=f,n.lt=y,e.je=b,e.Ge+=m-e.rt,e.rt=m,n.write=g,n.dt(e,t);t=it,b--,f|=(255&e.ut(m++))<<y,y+=8}switch(i=7&f,h=1&i,i>>>1){case 0:f>>>=3,y-=3,i=7&y,f>>>=i,y-=i,s=Et;break;case 1:S=[],z=[],C=[[]],x=[[]],kt.ct(S,z,C,x),w.init(S[0],z[0],C[0],0,x[0],0),f>>>=3,y-=3,s=Ot;break;case 2:f>>>=3,y-=3,s=Ut;break;case 3:return f>>>=3,y-=3,s=jt,e.Fe="invalid block type",t=ft,n.ft=f,n.lt=y,e.je=b,e.Ge+=m-e.rt,e.rt=m,n.write=g,n.dt(e,t)}break;case Et:for(;32>y;){if(0===b)return n.ft=f,n.lt=y,e.je=b,e.Ge+=m-e.rt,e.rt=m,n.write=g,n.dt(e,t);t=it,b--,f|=(255&e.ut(m++))<<y,y+=8}if((~f>>>16&65535)!=(65535&f))return s=jt,e.Fe="invalid stored block lengths",t=ft,n.ft=f,n.lt=y,e.je=b,e.Ge+=m-e.rt,e.rt=m,n.write=g,n.dt(e,t);o=65535&f,f=y=0,s=0!==o?Mt:0!==h?Tt:Bt;break;case Mt:if(0===b)return n.ft=f,n.lt=y,e.je=b,e.Ge+=m-e.rt,e.rt=m,n.write=g,n.dt(e,t);if(0===k&&(g==n.end&&0!==n.read&&(g=0,k=g<n.read?n.read-g-1:n.end-g),0===k&&(n.write=g,t=n.dt(e,t),g=n.write,k=g<n.read?n.read-g-1:n.end-g,g==n.end&&0!==n.read&&(g=0,k=g<n.read?n.read-g-1:n.end-g),0===k)))return n.ft=f,n.lt=y,e.je=b,e.Ge+=m-e.rt,e.rt=m,n.write=g,n.dt(e,t);if(t=it,i=o,i>b&&(i=b),i>k&&(i=k),n.wt.set(e.He(m,i),g),m+=i,b-=i,g+=i,k-=i,0!=(o-=i))break;s=0!==h?Tt:Bt;break;case Ut:for(;14>y;){if(0===b)return n.ft=f,n.lt=y,e.je=b,e.Ge+=m-e.rt,e.rt=m,n.write=g,n.dt(e,t);t=it,b--,f|=(255&e.ut(m++))<<y,y+=8}if(c=i=16383&f,(31&i)>29||(i>>5&31)>29)return s=jt,e.Fe="too many length or distance symbols",t=ft,n.ft=f,n.lt=y,e.je=b,e.Ge+=m-e.rt,e.rt=m,n.write=g,n.dt(e,t);if(i=258+(31&i)+(i>>5&31),!r||r.length<i)r=[];else for(v=0;i>v;v++)r[v]=0;f>>>=14,y-=14,a=0,s=Kt;case Kt:for(;4+(c>>>10)>a;){for(;3>y;){if(0===b)return n.ft=f,n.lt=y,e.je=b,e.Ge+=m-e.rt,e.rt=m,n.write=g,n.dt(e,t);t=it,b--,f|=(255&e.ut(m++))<<y,y+=8}r[Rt[a++]]=7&f,f>>>=3,y-=3}for(;19>a;)r[Rt[a++]]=0;if(l[0]=7,i=p.it(r,l,u,d,e),i!=it)return(t=i)==ft&&(r=null,s=jt),n.ft=f,n.lt=y,e.je=b,e.Ge+=m-e.rt,e.rt=m,n.write=g,n.dt(e,t);a=0,s=Nt;case Nt:for(;i=c,258+(31&i)+(i>>5&31)>a;){let o,w;for(i=l[0];i>y;){if(0===b)return n.ft=f,n.lt=y,e.je=b,e.Ge+=m-e.rt,e.rt=m,n.write=g,n.dt(e,t);t=it,b--,f|=(255&e.ut(m++))<<y,y+=8}if(i=d[3*(u[0]+(f&ut[i]))+1],w=d[3*(u[0]+(f&ut[i]))+2],16>w)f>>>=i,y-=i,r[a++]=w;else{for(v=18==w?7:w-14,o=18==w?11:3;i+v>y;){if(0===b)return n.ft=f,n.lt=y,e.je=b,e.Ge+=m-e.rt,e.rt=m,n.write=g,n.dt(e,t);t=it,b--,f|=(255&e.ut(m++))<<y,y+=8}if(f>>>=i,y-=i,o+=f&ut[v],f>>>=v,y-=v,v=a,i=c,v+o>258+(31&i)+(i>>5&31)||16==w&&1>v)return r=null,s=jt,e.Fe="invalid bit length repeat",t=ft,n.ft=f,n.lt=y,e.je=b,e.Ge+=m-e.rt,e.rt=m,n.write=g,n.dt(e,t);w=16==w?r[v-1]:0;do{r[v++]=w}while(0!=--o);a=v}}if(u[0]=-1,A=[],_=[],I=[],P=[],A[0]=9,_[0]=6,i=c,i=p.ot(257+(31&i),1+(i>>5&31),r,A,_,I,P,d,e),i!=it)return i==ft&&(r=null,s=jt),t=i,n.ft=f,n.lt=y,e.je=b,e.Ge+=m-e.rt,e.rt=m,n.write=g,n.dt(e,t);w.init(A[0],_[0],d,I[0],d,P[0]),s=Ot;case Ot:if(n.ft=f,n.lt=y,e.je=b,e.Ge+=m-e.rt,e.rt=m,n.write=g,(t=w.ht(n,e,t))!=ot)return n.dt(e,t);if(t=it,w.yt(e),m=e.rt,b=e.je,f=n.ft,y=n.lt,g=n.write,k=g<n.read?n.read-g-1:n.end-g,0===h){s=Bt;break}s=Tt;case Tt:if(n.write=g,t=n.dt(e,t),g=n.write,k=g<n.read?n.read-g-1:n.end-g,n.read!=n.write)return n.ft=f,n.lt=y,e.je=b,e.Ge+=m-e.rt,e.rt=m,n.write=g,n.dt(e,t);s=Wt;case Wt:return t=ot,n.ft=f,n.lt=y,e.je=b,e.Ge+=m-e.rt,e.rt=m,n.write=g,n.dt(e,t);case jt:return t=ft,n.ft=f,n.lt=y,e.je=b,e.Ge+=m-e.rt,e.rt=m,n.write=g,n.dt(e,t);default:return t=ct,n.ft=f,n.lt=y,e.je=b,e.Ge+=m-e.rt,e.rt=m,n.write=g,n.dt(e,t)}}},n.yt=e=>{n.reset(e,null),n.wt=null,d=null},n.bt=(e,t,r)=>{n.wt.set(e.subarray(t,t+r),0),n.read=n.write=r},n.gt=()=>s==Et?1:0}const Lt=13,Ft=[0,0,255,255];function qt(){const e=this;function t(e){return e&&e.kt?(e.Ge=e.Je=0,e.Fe=null,e.kt.mode=7,e.kt.vt.reset(e,null),it):ct}e.mode=0,e.method=0,e.St=[0],e.zt=0,e.marker=0,e.Ct=0,e.xt=t=>(e.vt&&e.vt.yt(t),e.vt=null,it),e.At=(n,r)=>(n.Fe=null,e.vt=null,8>r||r>15?(e.xt(n),ct):(e.Ct=r,n.kt.vt=new Ht(n,1<<r),t(n),it)),e._t=(e,t)=>{let n,r;if(!e||!e.kt||!e.tt)return ct;const s=e.kt;for(t=4==t?lt:it,n=lt;;)switch(s.mode){case 0:if(0===e.je)return n;if(n=t,e.je--,e.Ge++,8!=(15&(s.method=e.ut(e.rt++)))){s.mode=Lt,e.Fe="unknown compression method",s.marker=5;break}if(8+(s.method>>4)>s.Ct){s.mode=Lt,e.Fe="invalid win size",s.marker=5;break}s.mode=1;case 1:if(0===e.je)return n;if(n=t,e.je--,e.Ge++,r=255&e.ut(e.rt++),((s.method<<8)+r)%31!=0){s.mode=Lt,e.Fe="incorrect header check",s.marker=5;break}if(!(32&r)){s.mode=7;break}s.mode=2;case 2:if(0===e.je)return n;n=t,e.je--,e.Ge++,s.zt=(255&e.ut(e.rt++))<<24&4278190080,s.mode=3;case 3:if(0===e.je)return n;n=t,e.je--,e.Ge++,s.zt+=(255&e.ut(e.rt++))<<16&16711680,s.mode=4;case 4:if(0===e.je)return n;n=t,e.je--,e.Ge++,s.zt+=(255&e.ut(e.rt++))<<8&65280,s.mode=5;case 5:return 0===e.je?n:(n=t,e.je--,e.Ge++,s.zt+=255&e.ut(e.rt++),s.mode=6,2);case 6:return s.mode=Lt,e.Fe="need dictionary",s.marker=0,ct;case 7:if(n=s.vt.ht(e,n),n==ft){s.mode=Lt,s.marker=0;break}if(n==it&&(n=t),n!=ot)return n;n=t,s.vt.reset(e,s.St),s.mode=12;case 12:return e.je=0,ot;case Lt:return ft;default:return ct}},e.It=(e,t,n)=>{let r=0,s=n;if(!e||!e.kt||6!=e.kt.mode)return ct;const i=e.kt;return s<1<<i.Ct||(s=(1<<i.Ct)-1,r=n-s),i.vt.bt(t,r,s),i.mode=7,it},e.Pt=e=>{let n,r,s,i,o;if(!e||!e.kt)return ct;const c=e.kt;if(c.mode!=Lt&&(c.mode=Lt,c.marker=0),0===(n=e.je))return lt;for(r=e.rt,s=c.marker;0!==n&&4>s;)e.ut(r)==Ft[s]?s++:s=0!==e.ut(r)?0:4-s,r++,n--;return e.Ge+=r-e.rt,e.rt=r,e.je=n,c.marker=s,4!=s?ft:(i=e.Ge,o=e.Je,t(e),e.Ge=i,e.Je=o,c.mode=7,it)},e.Dt=e=>e&&e.kt&&e.kt.vt?e.kt.vt.gt():ct}function Gt(){}function Jt(e){const t=new Gt,n=e&&e.chunkSize?r.floor(2*e.chunkSize):131072,o=new i(n);let c=!1;t.At(),t.et=o,this.append=(e,r)=>{const f=[];let a,l,u=0,w=0,h=0;if(0!==e.length){t.rt=0,t.tt=e,t.je=e.length;do{if(t.st=0,t.nt=n,0!==t.je||c||(t.rt=0,c=!0),a=t._t(0),c&&a===lt){if(0!==t.je)throw new s("inflating: bad input")}else if(a!==it&&a!==ot)throw new s("inflating: "+t.Fe);if((c||a===ot)&&t.je===e.length)throw new s("inflating: bad input");t.st&&(t.st===n?f.push(new i(o)):f.push(o.subarray(0,t.st))),h+=t.st,r&&t.rt>0&&t.rt!=u&&(r(t.rt),u=t.rt)}while(t.je>0||0===t.nt);return f.length>1?(l=new i(h),f.forEach((e=>{l.set(e,w),w+=e.length}))):l=f[0]?new i(f[0]):new i,l}},this.flush=()=>{t.xt()}}Gt.prototype={At(e){const t=this;return t.kt=new qt,e||(e=15),t.kt.At(t,e)},_t(e){const t=this;return t.kt?t.kt._t(t,e):ct},xt(){const e=this;if(!e.kt)return ct;const t=e.kt.xt(e);return e.kt=null,t},Pt(){const e=this;return e.kt?e.kt.Pt(e):ct},It(e,t){const n=this;return n.kt?n.kt.It(n,e,t):ct},ut(e){return this.tt[e]},He(e,t){return this.tt.subarray(e,e+t)}},self.initCodec=()=>{self.Deflate=st,self.Inflate=Jt};\n',r=()=>t.useDataURI?"data:text/javascript,"+encodeURIComponent(n):URL.createObjectURL(new Blob([n],{type:"text/javascript"}));e({workerScripts:{inflate:[r],deflate:[r]}});}
 
 	function initShimAsyncCodec(library, options = {}, registerDataHandler) {
 		return {
@@ -7559,7 +8312,7 @@
 
 	function objectHasOwn(object, propertyName) {
 		// eslint-disable-next-line no-prototype-builtins
-		return typeof Object.hasOwn === "function" ? Object.hasOwn(object, propertyName) : object.hasOwnProperty(propertyName);
+		return typeof Object.hasOwn === FUNCTION_TYPE ? Object.hasOwn(object, propertyName) : object.hasOwnProperty(propertyName);
 	}
 
 	function createCodecClass(constructor, constructorOptions, registerDataHandler) {
@@ -7578,7 +8331,7 @@
 						codecAdapter.pendingData = new Uint8Array(data);
 					}
 				};
-				if (objectHasOwn(options, "level") && options.level === undefined) {
+				if (objectHasOwn(options, "level") && options.level === UNDEFINED_VALUE) {
 					delete options.level;
 				}
 				codecAdapter.codec = new constructor(Object.assign({}, constructorOptions, options));
@@ -7632,6 +8385,7 @@
 	 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 	 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	 */
+
 
 	const ERR_HTTP_STATUS = "HTTP error ";
 	const ERR_HTTP_RANGE = "HTTP Range not supported";
@@ -7787,7 +8541,11 @@
 			const reader = this;
 			const offsetEnd = offset + length;
 			const blob = offset || offsetEnd < reader.size ? reader.blob.slice(offset, offsetEnd) : reader.blob;
-			return new Uint8Array(await blob.arrayBuffer());
+			let arrayBuffer = await blob.arrayBuffer();
+			if (arrayBuffer.byteLength > length) {
+				arrayBuffer = arrayBuffer.slice(offset, offsetEnd);
+			}
+			return new Uint8Array(arrayBuffer);
 		}
 	}
 
@@ -7856,7 +8614,7 @@
 
 		constructor(url, options) {
 			super();
-			createHtpReader(this, url, options);
+			createHttpReader(this, url, options);
 		}
 
 		async init() {
@@ -7873,7 +8631,7 @@
 
 		constructor(url, options) {
 			super();
-			createHtpReader(this, url, options);
+			createHttpReader(this, url, options);
 		}
 
 		async init() {
@@ -7886,39 +8644,47 @@
 		}
 	}
 
-	function createHtpReader(httpReader, url, options) {
+	function createHttpReader(httpReader, url, options) {
 		const {
 			preventHeadRequest,
 			useRangeHeader,
-			forceRangeRequests
+			forceRangeRequests,
+			combineSizeEocd
 		} = options;
 		options = Object.assign({}, options);
 		delete options.preventHeadRequest;
 		delete options.useRangeHeader;
 		delete options.forceRangeRequests;
+		delete options.combineSizeEocd;
 		delete options.useXHR;
 		Object.assign(httpReader, {
 			url,
 			options,
 			preventHeadRequest,
 			useRangeHeader,
-			forceRangeRequests
+			forceRangeRequests,
+			combineSizeEocd
 		});
 	}
 
 	async function initHttpReader(httpReader, sendRequest, getRequestData) {
 		const {
 			url,
+			preventHeadRequest,
 			useRangeHeader,
-			forceRangeRequests
+			forceRangeRequests,
+			combineSizeEocd
 		} = httpReader;
-		if (isHttpFamily(url) && (useRangeHeader || forceRangeRequests)) {
-			const { headers } = await sendRequest(HTTP_METHOD_GET, httpReader, getRangeHeaders(httpReader));
-			if (!forceRangeRequests && headers.get(HTTP_HEADER_ACCEPT_RANGES) != HTTP_RANGE_UNIT) {
+		if (isHttpFamily(url) && (useRangeHeader || forceRangeRequests) && (typeof preventHeadRequest == "undefined" || preventHeadRequest)) {
+			const response = await sendRequest(HTTP_METHOD_GET, httpReader, getRangeHeaders(httpReader, combineSizeEocd ? -END_OF_CENTRAL_DIR_LENGTH : undefined));
+			if (!forceRangeRequests && response.headers.get(HTTP_HEADER_ACCEPT_RANGES) != HTTP_RANGE_UNIT) {
 				throw new Error(ERR_HTTP_RANGE);
 			} else {
+				if (combineSizeEocd) {
+					httpReader.eocdCache = new Uint8Array(await response.arrayBuffer());
+				}
 				let contentSize;
-				const contentRangeHeader = headers.get(HTTP_HEADER_CONTENT_RANGE);
+				const contentRangeHeader = response.headers.get(HTTP_HEADER_CONTENT_RANGE);
 				if (contentRangeHeader) {
 					const splitHeader = contentRangeHeader.trim().split(/\s*\/\s*/);
 					if (splitHeader.length) {
@@ -7943,9 +8709,14 @@
 		const {
 			useRangeHeader,
 			forceRangeRequests,
+			eocdCache,
+			size,
 			options
 		} = httpReader;
 		if (useRangeHeader || forceRangeRequests) {
+			if (eocdCache && index == size - END_OF_CENTRAL_DIR_LENGTH && length == END_OF_CENTRAL_DIR_LENGTH) {
+				return eocdCache;
+			}
 			const response = await sendRequest(HTTP_METHOD_GET, httpReader, getRangeHeaders(httpReader, index, length));
 			if (response.status != 206) {
 				throw new Error(ERR_HTTP_RANGE);
@@ -7961,7 +8732,7 @@
 	}
 
 	function getRangeHeaders(httpReader, index = 0, length = 1) {
-		return Object.assign({}, getHeaders(httpReader), { [HTTP_HEADER_RANGE]: HTTP_RANGE_UNIT + "=" + index + "-" + (index + length - 1) });
+		return Object.assign({}, getHeaders(httpReader), { [HTTP_HEADER_RANGE]: HTTP_RANGE_UNIT + "=" + (index < 0 ? index : index + "-" + (index + length - 1)) });
 	}
 
 	function getHeaders({ options }) {
@@ -8178,8 +8949,8 @@
 
 		constructor(writerGenerator, maxSize = 4294967295) {
 			super();
-			const zipWriter = this;
-			Object.assign(zipWriter, {
+			const writer = this;
+			Object.assign(writer, {
 				diskNumber: 0,
 				diskOffset: 0,
 				size: 0,
@@ -8189,7 +8960,7 @@
 			let diskSourceWriter, diskWritable, diskWriter;
 			const writable = new WritableStream({
 				async write(chunk) {
-					const { availableSize } = zipWriter;
+					const { availableSize } = writer;
 					if (!diskWriter) {
 						const { value, done } = await writerGenerator.next();
 						if (done && !value) {
@@ -8198,9 +8969,9 @@
 							diskSourceWriter = value;
 							diskSourceWriter.size = 0;
 							if (diskSourceWriter.maxSize) {
-								zipWriter.maxSize = diskSourceWriter.maxSize;
+								writer.maxSize = diskSourceWriter.maxSize;
 							}
-							zipWriter.availableSize = zipWriter.maxSize;
+							writer.availableSize = writer.maxSize;
 							await initStream(diskSourceWriter);
 							diskWritable = value.writable;
 							diskWriter = diskWritable.getWriter();
@@ -8209,8 +8980,8 @@
 					} else if (chunk.length >= availableSize) {
 						await writeChunk(chunk.slice(0, availableSize));
 						await closeDisk();
-						zipWriter.diskOffset += diskSourceWriter.size;
-						zipWriter.diskNumber++;
+						writer.diskOffset += diskSourceWriter.size;
+						writer.diskNumber++;
 						diskWriter = null;
 						await this.write(chunk.slice(availableSize));
 					} else {
@@ -8222,7 +8993,7 @@
 					await closeDisk();
 				}
 			});
-			Object.defineProperty(zipWriter, PROPERTY_NAME_WRITABLE, {
+			Object.defineProperty(writer, PROPERTY_NAME_WRITABLE, {
 				get() {
 					return writable;
 				}
@@ -8234,8 +9005,8 @@
 					await diskWriter.ready;
 					await diskWriter.write(chunk);
 					diskSourceWriter.size += chunkLength;
-					zipWriter.size += chunkLength;
-					zipWriter.availableSize -= chunkLength;
+					writer.size += chunkLength;
+					writer.availableSize -= chunkLength;
 				}
 			}
 
@@ -8255,6 +9026,8 @@
 	async function initStream(stream, initSize) {
 		if (stream.init && !stream.initialized) {
 			await stream.init(initSize);
+		} else {
+			return Promise.resolve();
 		}
 	}
 
@@ -8271,7 +9044,7 @@
 	}
 
 	function initWriter(writer) {
-		if (writer.writable === UNDEFINED_VALUE && typeof writer.next == FUNCTION_TYPE$1) {
+		if (writer.writable === UNDEFINED_VALUE && typeof writer.next == FUNCTION_TYPE) {
 			writer = new SplitDataWriter(writer);
 		}
 		if (writer instanceof WritableStream) {
@@ -8283,8 +9056,7 @@
 		if (writable.size === UNDEFINED_VALUE) {
 			writable.size = 0;
 		}
-		const splitZipFile = writer instanceof SplitDataWriter;
-		if (!splitZipFile) {
+		if (!(writer instanceof SplitDataWriter)) {
 			Object.assign(writer, {
 				diskNumber: 0,
 				diskOffset: 0,
@@ -8375,6 +9147,7 @@
 	 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	 */
 
+
 	function decodeText(value, encoding) {
 		if (encoding && encoding.trim().toLowerCase() == "cp437") {
 			return decodeCP437(value);
@@ -8429,16 +9202,19 @@
 	const PROPERTY_NAME_EXTERNAL_FILE_ATTRIBUTE = "externalFileAttribute";
 	const PROPERTY_NAME_MS_DOS_COMPATIBLE = "msDosCompatible";
 	const PROPERTY_NAME_ZIP64 = "zip64";
+	const PROPERTY_NAME_ENCRYPTED = "encrypted";
+	const PROPERTY_NAME_VERSION = "version";
+	const PROPERTY_NAME_VERSION_MADE_BY = "versionMadeBy";
+	const PROPERTY_NAME_ZIPCRYPTO = "zipCrypto";
 
 	const PROPERTY_NAMES = [
 		PROPERTY_NAME_FILENAME, PROPERTY_NAME_RAW_FILENAME, PROPERTY_NAME_COMPPRESSED_SIZE, PROPERTY_NAME_UNCOMPPRESSED_SIZE,
 		PROPERTY_NAME_LAST_MODIFICATION_DATE, PROPERTY_NAME_RAW_LAST_MODIFICATION_DATE, PROPERTY_NAME_COMMENT, PROPERTY_NAME_RAW_COMMENT,
 		PROPERTY_NAME_LAST_ACCESS_DATE, PROPERTY_NAME_CREATION_DATE, PROPERTY_NAME_OFFSET, PROPERTY_NAME_DISK_NUMBER_START,
 		PROPERTY_NAME_DISK_NUMBER_START, PROPERTY_NAME_INTERNAL_FILE_ATTRIBUTE, PROPERTY_NAME_EXTERNAL_FILE_ATTRIBUTE,
-		PROPERTY_NAME_MS_DOS_COMPATIBLE, PROPERTY_NAME_ZIP64,
-		"directory", "bitFlag", "encrypted", "signature", "filenameUTF8", "commentUTF8", "compressionMethod", "version", "versionMadeBy",
-		"extraField", "rawExtraField", "extraFieldZip64", "extraFieldUnicodePath", "extraFieldUnicodeComment", "extraFieldAES", "extraFieldNTFS",
-		"extraFieldExtendedTimestamp"];
+		PROPERTY_NAME_MS_DOS_COMPATIBLE, PROPERTY_NAME_ZIP64, PROPERTY_NAME_ENCRYPTED, PROPERTY_NAME_VERSION, PROPERTY_NAME_VERSION_MADE_BY,
+		PROPERTY_NAME_ZIPCRYPTO, "directory", "bitFlag", "signature", "filenameUTF8", "commentUTF8", "compressionMethod", "extraField", "rawExtraField",
+		"extraFieldZip64", "extraFieldUnicodePath", "extraFieldUnicodeComment", "extraFieldAES", "extraFieldNTFS", "extraFieldExtendedTimestamp"];
 
 	class Entry {
 
@@ -8457,8 +9233,8 @@
 	 1. Redistributions of source code must retain the above copyright notice,
 	 this list of conditions and the following disclaimer.
 
-	 2. Redistributions in binary form must reproduce the above copyright 
-	 notice, this list of conditions and the following disclaimer in 
+	 2. Redistributions in binary form must reproduce the above copyright
+	 notice, this list of conditions and the following disclaimer in
 	 the documentation and/or other materials provided with the distribution.
 
 	 3. The names of the authors may not be used to endorse or promote products
@@ -8476,9 +9252,9 @@
 	 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	 */
 
+
 	const ERR_BAD_FORMAT = "File format is not recognized";
 	const ERR_EOCDR_NOT_FOUND = "End of central directory not found";
-	const ERR_EOCDR_ZIP64_NOT_FOUND = "End of Zip64 central directory not found";
 	const ERR_EOCDR_LOCATOR_ZIP64_NOT_FOUND = "End of Zip64 central directory locator not found";
 	const ERR_CENTRAL_DIRECTORY_NOT_FOUND = "Central directory header not found";
 	const ERR_LOCAL_FILE_HEADER_NOT_FOUND = "Local file header not found";
@@ -8554,41 +9330,44 @@
 			if (directoryDataOffset == MAX_32_BITS || directoryDataLength == MAX_32_BITS || filesLength == MAX_16_BITS || diskNumber == MAX_16_BITS) {
 				const endOfDirectoryLocatorArray = await readUint8Array(reader, endOfDirectoryInfo.offset - ZIP64_END_OF_CENTRAL_DIR_LOCATOR_LENGTH, ZIP64_END_OF_CENTRAL_DIR_LOCATOR_LENGTH);
 				const endOfDirectoryLocatorView = getDataView$1(endOfDirectoryLocatorArray);
-				if (getUint32(endOfDirectoryLocatorView, 0) != ZIP64_END_OF_CENTRAL_DIR_LOCATOR_SIGNATURE) {
-					throw new Error(ERR_EOCDR_ZIP64_NOT_FOUND);
+				if (getUint32(endOfDirectoryLocatorView, 0) == ZIP64_END_OF_CENTRAL_DIR_LOCATOR_SIGNATURE) {
+					directoryDataOffset = getBigUint64(endOfDirectoryLocatorView, 8);
+					let endOfDirectoryArray = await readUint8Array(reader, directoryDataOffset, ZIP64_END_OF_CENTRAL_DIR_LENGTH, -1);
+					let endOfDirectoryView = getDataView$1(endOfDirectoryArray);
+					const expectedDirectoryDataOffset = endOfDirectoryInfo.offset - ZIP64_END_OF_CENTRAL_DIR_LOCATOR_LENGTH - ZIP64_END_OF_CENTRAL_DIR_LENGTH;
+					if (getUint32(endOfDirectoryView, 0) != ZIP64_END_OF_CENTRAL_DIR_SIGNATURE && directoryDataOffset != expectedDirectoryDataOffset) {
+						const originalDirectoryDataOffset = directoryDataOffset;
+						directoryDataOffset = expectedDirectoryDataOffset;
+						prependedDataLength = directoryDataOffset - originalDirectoryDataOffset;
+						endOfDirectoryArray = await readUint8Array(reader, directoryDataOffset, ZIP64_END_OF_CENTRAL_DIR_LENGTH, -1);
+						endOfDirectoryView = getDataView$1(endOfDirectoryArray);
+					}
+					if (getUint32(endOfDirectoryView, 0) != ZIP64_END_OF_CENTRAL_DIR_SIGNATURE) {
+						throw new Error(ERR_EOCDR_LOCATOR_ZIP64_NOT_FOUND);
+					}
+					if (lastDiskNumber == MAX_16_BITS) {
+						lastDiskNumber = getUint32(endOfDirectoryView, 16);
+					}
+					if (diskNumber == MAX_16_BITS) {
+						diskNumber = getUint32(endOfDirectoryView, 20);
+					}
+					if (filesLength == MAX_16_BITS) {
+						filesLength = getBigUint64(endOfDirectoryView, 32);
+					}
+					if (directoryDataLength == MAX_32_BITS) {
+						directoryDataLength = getBigUint64(endOfDirectoryView, 40);
+					}
+					directoryDataOffset -= directoryDataLength;
 				}
-				directoryDataOffset = getBigUint64(endOfDirectoryLocatorView, 8);
-				let endOfDirectoryArray = await readUint8Array(reader, directoryDataOffset, ZIP64_END_OF_CENTRAL_DIR_LENGTH, -1);
-				let endOfDirectoryView = getDataView$1(endOfDirectoryArray);
-				const expectedDirectoryDataOffset = endOfDirectoryInfo.offset - ZIP64_END_OF_CENTRAL_DIR_LOCATOR_LENGTH - ZIP64_END_OF_CENTRAL_DIR_LENGTH;
-				if (getUint32(endOfDirectoryView, 0) != ZIP64_END_OF_CENTRAL_DIR_SIGNATURE && directoryDataOffset != expectedDirectoryDataOffset) {
-					const originalDirectoryDataOffset = directoryDataOffset;
-					directoryDataOffset = expectedDirectoryDataOffset;
-					prependedDataLength = directoryDataOffset - originalDirectoryDataOffset;
-					endOfDirectoryArray = await readUint8Array(reader, directoryDataOffset, ZIP64_END_OF_CENTRAL_DIR_LENGTH, -1);
-					endOfDirectoryView = getDataView$1(endOfDirectoryArray);
-				}
-				if (getUint32(endOfDirectoryView, 0) != ZIP64_END_OF_CENTRAL_DIR_SIGNATURE) {
-					throw new Error(ERR_EOCDR_LOCATOR_ZIP64_NOT_FOUND);
-				}
-				if (lastDiskNumber == MAX_16_BITS) {
-					lastDiskNumber = getUint32(endOfDirectoryView, 16);
-				}
-				if (diskNumber == MAX_16_BITS) {
-					diskNumber = getUint32(endOfDirectoryView, 20);
-				}
-				if (filesLength == MAX_16_BITS) {
-					filesLength = getBigUint64(endOfDirectoryView, 32);
-				}
-				if (directoryDataLength == MAX_32_BITS) {
-					directoryDataLength = getBigUint64(endOfDirectoryView, 40);
-				}
-				directoryDataOffset -= directoryDataLength;
+			}
+			if (directoryDataOffset >= reader.size) {
+				prependedDataLength = reader.size - directoryDataOffset - directoryDataLength - END_OF_CENTRAL_DIR_LENGTH;
+				directoryDataOffset = reader.size - directoryDataLength - END_OF_CENTRAL_DIR_LENGTH;
 			}
 			if (expectedLastDiskNumber != lastDiskNumber) {
 				throw new Error(ERR_SPLIT_ZIP_FILE);
 			}
-			if (directoryDataOffset < 0 || directoryDataOffset >= reader.size) {
+			if (directoryDataOffset < 0) {
 				throw new Error(ERR_BAD_FORMAT);
 			}
 			let offset = 0;
@@ -8599,13 +9378,13 @@
 				if (getUint32(directoryView, offset) != CENTRAL_FILE_HEADER_SIGNATURE && directoryDataOffset != expectedDirectoryDataOffset) {
 					const originalDirectoryDataOffset = directoryDataOffset;
 					directoryDataOffset = expectedDirectoryDataOffset;
-					prependedDataLength = directoryDataOffset - originalDirectoryDataOffset;
+					prependedDataLength += directoryDataOffset - originalDirectoryDataOffset;
 					directoryArray = await readUint8Array(reader, directoryDataOffset, directoryDataLength, diskNumber);
 					directoryView = getDataView$1(directoryArray);
 				}
 			}
 			const expectedDirectoryDataLength = endOfDirectoryInfo.offset - directoryDataOffset - (reader.lastDiskOffset || 0);
-			if (directoryDataLength != expectedDirectoryDataLength && expectedDirectoryDataLength) {
+			if (directoryDataLength != expectedDirectoryDataLength && expectedDirectoryDataLength >= 0) {
 				directoryDataLength = expectedDirectoryDataLength;
 				directoryArray = await readUint8Array(reader, directoryDataOffset, directoryDataLength, diskNumber);
 				directoryView = getDataView$1(directoryArray);
@@ -8651,10 +9430,17 @@
 					commentUTF8,
 					rawExtraField: directoryArray.subarray(extraFieldOffset, commentOffset)
 				});
-				const [filename, comment] = await Promise.all([
-					decodeText(rawFilename, filenameUTF8 ? CHARSET_UTF8 : filenameEncoding || CHARSET_CP437),
-					decodeText(rawComment, commentUTF8 ? CHARSET_UTF8 : commentEncoding || CHARSET_CP437)
-				]);
+				const decode = getOptionValue$1(zipReader, options, "decodeText") || decodeText;
+				const rawFilenameEncoding = filenameUTF8 ? CHARSET_UTF8 : filenameEncoding || CHARSET_CP437;
+				const rawCommentEncoding = commentUTF8 ? CHARSET_UTF8 : commentEncoding || CHARSET_CP437;
+				let filename = decode(rawFilename, rawFilenameEncoding);
+				if (filename === UNDEFINED_VALUE) {
+					filename = decodeText(rawFilename, rawFilenameEncoding);
+				}
+				let comment = decode(rawComment, rawCommentEncoding);
+				if (comment === UNDEFINED_VALUE) {
+					comment = decodeText(rawComment, rawCommentEncoding);
+				}
 				Object.assign(fileEntry, {
 					rawComment,
 					filename,
@@ -8663,6 +9449,7 @@
 				});
 				startOffset = Math.max(offsetFileEntry, startOffset);
 				await readCommonFooter(fileEntry, fileEntry, directoryView, offset + 6);
+				fileEntry.zipCrypto = fileEntry.encrypted && !fileEntry.extraFieldAES;
 				const entry = new Entry(fileEntry);
 				entry.getData = (writer, options) => fileEntry.getData(writer, entry, options);
 				offset = endOffset;
@@ -8700,7 +9487,35 @@
 		}
 	}
 
-	class ZipEntry$1 {
+	class ZipReaderStream {
+
+		constructor(options = {}) {
+			const { readable, writable } = new TransformStream();
+			const gen = new ZipReader(readable, options).getEntriesGenerator();
+			this.readable = new ReadableStream({
+				async pull(controller) {
+					const { done, value } = await gen.next();
+					if (done)
+						return controller.close();
+					const chunk = {
+						...value,
+						readable: (function () {
+							const { readable, writable } = new TransformStream();
+							if (value.getData) {
+								value.getData(writable);
+								return readable;
+							}
+						})()
+					};
+					delete chunk.getData;
+					controller.enqueue(chunk);
+				}
+			});
+			this.writable = writable;
+		}
+	}
+
+	let ZipEntry$1 = class ZipEntry {
 
 		constructor(reader, config, options) {
 			Object.assign(this, {
@@ -8725,17 +9540,20 @@
 				uncompressedSize,
 				compressedSize
 			} = zipEntry;
-			const localDirectory = zipEntry.localDirectory = {};
+			const localDirectory = fileEntry.localDirectory = {};
 			const dataArray = await readUint8Array(reader, offset, 30, diskNumberStart);
 			const dataView = getDataView$1(dataArray);
 			let password = getOptionValue$1(zipEntry, options, "password");
+			let rawPassword = getOptionValue$1(zipEntry, options, "rawPassword");
+			const passThrough = getOptionValue$1(zipEntry, options, "passThrough");
 			password = password && password.length && password;
+			rawPassword = rawPassword && rawPassword.length && rawPassword;
 			if (extraFieldAES) {
 				if (extraFieldAES.originalCompressionMethod != COMPRESSION_METHOD_AES) {
 					throw new Error(ERR_UNSUPPORTED_COMPRESSION);
 				}
 			}
-			if (compressionMethod != COMPRESSION_METHOD_STORE && compressionMethod != COMPRESSION_METHOD_DEFLATE) {
+			if ((compressionMethod != COMPRESSION_METHOD_STORE && compressionMethod != COMPRESSION_METHOD_DEFLATE) && !passThrough) {
 				throw new Error(ERR_UNSUPPORTED_COMPRESSION);
 			}
 			if (getUint32(dataView, 0) != LOCAL_FILE_HEADER_SIGNATURE) {
@@ -8745,17 +9563,20 @@
 			localDirectory.rawExtraField = localDirectory.extraFieldLength ?
 				await readUint8Array(reader, offset + 30 + localDirectory.filenameLength, localDirectory.extraFieldLength, diskNumberStart) :
 				new Uint8Array();
-			await readCommonFooter(zipEntry, localDirectory, dataView, 4);
+			await readCommonFooter(zipEntry, localDirectory, dataView, 4, true);
 			Object.assign(fileEntry, {
 				lastAccessDate: localDirectory.lastAccessDate,
 				creationDate: localDirectory.creationDate
 			});
-			const encrypted = zipEntry.encrypted && localDirectory.encrypted;
+			const encrypted = zipEntry.encrypted && localDirectory.encrypted && !passThrough;
 			const zipCrypto = encrypted && !extraFieldAES;
+			if (!passThrough) {
+				fileEntry.zipCrypto = zipCrypto;
+			}
 			if (encrypted) {
 				if (!zipCrypto && extraFieldAES.strength === UNDEFINED_VALUE) {
 					throw new Error(ERR_UNSUPPORTED_ENCRYPTION);
-				} else if (!password) {
+				} else if (!password && !rawPassword) {
 					throw new Error(ERR_ENCRYPTED);
 				}
 			}
@@ -8773,20 +9594,21 @@
 				writer = new WritableStream();
 			}
 			writer = initWriter(writer);
-			await initStream(writer, uncompressedSize);
+			await initStream(writer, passThrough ? compressedSize : uncompressedSize);
 			const { writable } = writer;
 			const { onstart, onprogress, onend } = options;
 			const workerOptions = {
 				options: {
 					codecType: CODEC_INFLATE,
 					password,
+					rawPassword,
 					zipCrypto,
 					encryptionStrength: extraFieldAES && extraFieldAES.strength,
-					signed: getOptionValue$1(zipEntry, options, "checkSignature"),
+					signed: getOptionValue$1(zipEntry, options, "checkSignature") && !passThrough,
 					passwordVerification: zipCrypto && (bitFlag.dataDescriptor ? ((rawLastModDate >>> 8) & 0xFF) : ((signature >>> 24) & 0xFF)),
 					signature,
-					compressed: compressionMethod != 0,
-					encrypted,
+					compressed: compressionMethod != 0 && !passThrough,
+					encrypted: zipEntry.encrypted && !passThrough,
 					useWebWorkers: getOptionValue$1(zipEntry, options, "useWebWorkers"),
 					useCompressionStream: getOptionValue$1(zipEntry, options, "useCompressionStream"),
 					transferStreams: getOptionValue$1(zipEntry, options, "transferStreams"),
@@ -8809,9 +9631,9 @@
 					await writable.getWriter().close();
 				}
 			}
-			return checkPasswordOnly ? undefined : writer.getData ? writer.getData() : writable;
+			return checkPasswordOnly ? UNDEFINED_VALUE : writer.getData ? writer.getData() : writable;
 		}
-	}
+	};
 
 	function readCommonHeader(directory, dataView, offset) {
 		const rawBitFlag = directory.rawBitFlag = getUint16(dataView, offset + 2);
@@ -8832,7 +9654,7 @@
 		});
 	}
 
-	async function readCommonFooter(fileEntry, directory, dataView, offset) {
+	async function readCommonFooter(fileEntry, directory, dataView, offset, localDirectory) {
 		const { rawExtraField } = directory;
 		const extraField = directory.extraField = new Map();
 		const rawExtraFieldView = getDataView$1(new Uint8Array(rawExtraField));
@@ -8885,8 +9707,12 @@
 		}
 		const extraFieldExtendedTimestamp = extraField.get(EXTRAFIELD_TYPE_EXTENDED_TIMESTAMP);
 		if (extraFieldExtendedTimestamp) {
-			readExtraFieldExtendedTimestamp(extraFieldExtendedTimestamp, directory);
+			readExtraFieldExtendedTimestamp(extraFieldExtendedTimestamp, directory, localDirectory);
 			directory.extraFieldExtendedTimestamp = extraFieldExtendedTimestamp;
+		}
+		const extraFieldUSDZ = extraField.get(EXTRAFIELD_TYPE_USDZ);
+		if (extraFieldUSDZ) {
+			directory.extraFieldUSDZ = extraFieldUSDZ;
 		}
 	}
 
@@ -8976,22 +9802,27 @@
 		}
 	}
 
-	function readExtraFieldExtendedTimestamp(extraFieldExtendedTimestamp, directory) {
+	function readExtraFieldExtendedTimestamp(extraFieldExtendedTimestamp, directory, localDirectory) {
 		const extraFieldView = getDataView$1(extraFieldExtendedTimestamp.data);
 		const flags = getUint8(extraFieldView, 0);
 		const timeProperties = [];
 		const timeRawProperties = [];
-		if ((flags & 0x1) == 0x1) {
+		if (localDirectory) {
+			if ((flags & 0x1) == 0x1) {
+				timeProperties.push(PROPERTY_NAME_LAST_MODIFICATION_DATE);
+				timeRawProperties.push(PROPERTY_NAME_RAW_LAST_MODIFICATION_DATE);
+			}
+			if ((flags & 0x2) == 0x2) {
+				timeProperties.push(PROPERTY_NAME_LAST_ACCESS_DATE);
+				timeRawProperties.push(PROPERTY_NAME_RAW_LAST_ACCESS_DATE);
+			}
+			if ((flags & 0x4) == 0x4) {
+				timeProperties.push(PROPERTY_NAME_CREATION_DATE);
+				timeRawProperties.push(PROPERTY_NAME_RAW_CREATION_DATE);
+			}
+		} else if (extraFieldExtendedTimestamp.data.length >= 5) {
 			timeProperties.push(PROPERTY_NAME_LAST_MODIFICATION_DATE);
 			timeRawProperties.push(PROPERTY_NAME_RAW_LAST_MODIFICATION_DATE);
-		}
-		if ((flags & 0x2) == 0x2) {
-			timeProperties.push(PROPERTY_NAME_LAST_ACCESS_DATE);
-			timeRawProperties.push(PROPERTY_NAME_RAW_LAST_ACCESS_DATE);
-		}
-		if ((flags & 0x4) == 0x4) {
-			timeProperties.push(PROPERTY_NAME_CREATION_DATE);
-			timeRawProperties.push(PROPERTY_NAME_RAW_CREATION_DATE);
 		}
 		let offset = 1;
 		timeProperties.forEach((propertyName, indexProperty) => {
@@ -9077,8 +9908,8 @@
 	 1. Redistributions of source code must retain the above copyright notice,
 	 this list of conditions and the following disclaimer.
 
-	 2. Redistributions in binary form must reproduce the above copyright 
-	 notice, this list of conditions and the following disclaimer in 
+	 2. Redistributions in binary form must reproduce the above copyright
+	 notice, this list of conditions and the following disclaimer in
 	 the documentation and/or other materials provided with the distribution.
 
 	 3. The names of the authors may not be used to endorse or promote products
@@ -9096,6 +9927,7 @@
 	 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	 */
 
+
 	const ERR_DUPLICATED_NAME = "File already exists";
 	const ERR_INVALID_COMMENT = "Zip file comment exceeds 64KB";
 	const ERR_INVALID_ENTRY_COMMENT = "File entry comment exceeds 64KB";
@@ -9105,6 +9937,7 @@
 	const ERR_INVALID_EXTRAFIELD_TYPE = "Extra field type exceeds 65535";
 	const ERR_INVALID_EXTRAFIELD_DATA = "Extra field data exceeds 64KB";
 	const ERR_UNSUPPORTED_FORMAT = "Zip64 is not supported (make sure 'keepOrder' is set to 'true')";
+	const ERR_UNDEFINED_UNCOMPRESSED_SIZE = "Undefined uncompressed size";
 
 	const EXTRAFIELD_DATA_AES = new Uint8Array([0x07, 0x00, 0x02, 0x00, 0x41, 0x45, 0x03, 0x00, 0x00]);
 
@@ -9115,14 +9948,17 @@
 
 		constructor(writer, options = {}) {
 			writer = initWriter(writer);
+			const addSplitZipSignature =
+				writer.availableSize !== UNDEFINED_VALUE && writer.availableSize > 0 && writer.availableSize !== Infinity &&
+				writer.maxSize !== UNDEFINED_VALUE && writer.maxSize > 0 && writer.maxSize !== Infinity;
 			Object.assign(this, {
 				writer,
-				addSplitZipSignature: writer instanceof SplitDataWriter,
+				addSplitZipSignature,
 				options,
 				config: getConfiguration(),
 				files: new Map(),
 				filenames: new Set(),
-				offset: writer.writable.size,
+				offset: options.offset === UNDEFINED_VALUE ? writer.writable.size : options.offset,
 				pendingEntriesSize: 0,
 				pendingAddFileCalls: new Set(),
 				bufferedWrites: 0
@@ -9169,7 +10005,7 @@
 			const { pendingAddFileCalls, writer } = this;
 			const { writable } = writer;
 			while (pendingAddFileCalls.size) {
-				await Promise.all(Array.from(pendingAddFileCalls));
+				await Promise.allSettled(Array.from(pendingAddFileCalls));
 			}
 			await closeFile(this, comment, options);
 			const preventClose = getOptionValue(zipWriter, options, "preventClose");
@@ -9180,6 +10016,33 @@
 		}
 	}
 
+	class ZipWriterStream {
+
+		constructor(options = {}) {
+			const { readable, writable } = new TransformStream();
+			this.readable = readable;
+			this.zipWriter = new ZipWriter(writable, options);
+		}
+
+		transform(path) {
+			const { readable, writable } = new TransformStream({
+				flush: () => { this.zipWriter.close(); }
+			});
+			this.zipWriter.add(path, readable);
+			return { readable: this.readable, writable };
+		}
+
+		writable(path) {
+			const { readable, writable } = new TransformStream();
+			this.zipWriter.add(path, readable);
+			return writable;
+		}
+
+		close(comment = undefined, options = {}) {
+			return this.zipWriter.close(comment, options);
+		}
+	}
+
 	async function addFile(zipWriter, name, reader, options) {
 		name = name.trim();
 		if (options.directory && (!name.endsWith(DIRECTORY_SIGNATURE))) {
@@ -9187,20 +10050,27 @@
 		} else {
 			options.directory = name.endsWith(DIRECTORY_SIGNATURE);
 		}
-		const rawFilename = encodeText(name);
+		const encode = getOptionValue(zipWriter, options, "encodeText", encodeText);
+		let rawFilename = encode(name);
+		if (rawFilename === UNDEFINED_VALUE) {
+			rawFilename = encodeText(name);
+		}
 		if (getLength(rawFilename) > MAX_16_BITS) {
 			throw new Error(ERR_INVALID_ENTRY_NAME);
 		}
 		const comment = options.comment || "";
-		const rawComment = encodeText(comment);
+		let rawComment = encode(comment);
+		if (rawComment === UNDEFINED_VALUE) {
+			rawComment = encodeText(comment);
+		}
 		if (getLength(rawComment) > MAX_16_BITS) {
 			throw new Error(ERR_INVALID_ENTRY_COMMENT);
 		}
-		const version = getOptionValue(zipWriter, options, "version", VERSION_DEFLATE);
+		const version = getOptionValue(zipWriter, options, PROPERTY_NAME_VERSION, VERSION_DEFLATE);
 		if (version > MAX_16_BITS) {
 			throw new Error(ERR_INVALID_VERSION);
 		}
-		const versionMadeBy = getOptionValue(zipWriter, options, "versionMadeBy", 20);
+		const versionMadeBy = getOptionValue(zipWriter, options, PROPERTY_NAME_VERSION_MADE_BY, 20);
 		if (versionMadeBy > MAX_16_BITS) {
 			throw new Error(ERR_INVALID_VERSION);
 		}
@@ -9210,9 +10080,14 @@
 		const msDosCompatible = getOptionValue(zipWriter, options, PROPERTY_NAME_MS_DOS_COMPATIBLE, true);
 		const internalFileAttribute = getOptionValue(zipWriter, options, PROPERTY_NAME_INTERNAL_FILE_ATTRIBUTE, 0);
 		const externalFileAttribute = getOptionValue(zipWriter, options, PROPERTY_NAME_EXTERNAL_FILE_ATTRIBUTE, 0);
-		const password = getOptionValue(zipWriter, options, "password");
+		const passThrough = getOptionValue(zipWriter, options, "passThrough");
+		let password, rawPassword;
+		if (!passThrough) {
+			password = getOptionValue(zipWriter, options, "password");
+			rawPassword = getOptionValue(zipWriter, options, "rawPassword");
+		}
 		const encryptionStrength = getOptionValue(zipWriter, options, "encryptionStrength", 3);
-		const zipCrypto = getOptionValue(zipWriter, options, "zipCrypto");
+		const zipCrypto = getOptionValue(zipWriter, options, PROPERTY_NAME_ZIPCRYPTO);
 		const extendedTimestamp = getOptionValue(zipWriter, options, "extendedTimestamp", true);
 		const keepOrder = getOptionValue(zipWriter, options, "keepOrder", true);
 		const level = getOptionValue(zipWriter, options, "level");
@@ -9220,10 +10095,12 @@
 		const bufferedWrite = getOptionValue(zipWriter, options, "bufferedWrite");
 		const dataDescriptorSignature = getOptionValue(zipWriter, options, "dataDescriptorSignature", false);
 		const signal = getOptionValue(zipWriter, options, "signal");
+		const useUnicodeFileNames = getOptionValue(zipWriter, options, "useUnicodeFileNames", true);
 		const useCompressionStream = getOptionValue(zipWriter, options, "useCompressionStream");
+		const compressionMethod = getOptionValue(zipWriter, options, "compressionMethod");
 		let dataDescriptor = getOptionValue(zipWriter, options, "dataDescriptor", true);
 		let zip64 = getOptionValue(zipWriter, options, PROPERTY_NAME_ZIP64);
-		if (password !== UNDEFINED_VALUE && encryptionStrength !== UNDEFINED_VALUE && (encryptionStrength < 1 || encryptionStrength > 3)) {
+		if (!zipCrypto && (password !== UNDEFINED_VALUE || rawPassword !== UNDEFINED_VALUE) && !(encryptionStrength >= 1 && encryptionStrength <= 3)) {
 			throw new Error(ERR_INVALID_ENCRYPTION_STRENGTH);
 		}
 		let rawExtraField = new Uint8Array();
@@ -9249,27 +10126,37 @@
 		let maximumCompressedSize = 0;
 		let maximumEntrySize = 0;
 		let uncompressedSize = 0;
+		if (passThrough) {
+			({ uncompressedSize } = options);
+			if (uncompressedSize === UNDEFINED_VALUE) {
+				throw new Error(ERR_UNDEFINED_UNCOMPRESSED_SIZE);
+			}
+		}
 		const zip64Enabled = zip64 === true;
 		if (reader) {
 			reader = initReader(reader);
 			await initStream(reader);
-			if (reader.size === UNDEFINED_VALUE) {
-				dataDescriptor = true;
-				if (zip64 || zip64 === UNDEFINED_VALUE) {
-					zip64 = true;
-					maximumCompressedSize = MAX_32_BITS;
+			if (!passThrough) {
+				if (reader.size === UNDEFINED_VALUE) {
+					dataDescriptor = true;
+					if (zip64 || zip64 === UNDEFINED_VALUE) {
+						zip64 = true;
+						uncompressedSize = maximumCompressedSize = MAX_32_BITS + 1;
+					}
+				} else {
+					uncompressedSize = reader.size;
+					maximumCompressedSize = getMaximumCompressedSize(uncompressedSize);
 				}
 			} else {
-				uncompressedSize = reader.size;
 				maximumCompressedSize = getMaximumCompressedSize(uncompressedSize);
 			}
 		}
 		const { diskOffset, diskNumber, maxSize } = zipWriter.writer;
-		const zip64UncompressedSize = zip64Enabled || uncompressedSize >= MAX_32_BITS;
-		const zip64CompressedSize = zip64Enabled || maximumCompressedSize >= MAX_32_BITS;
-		const zip64Offset = zip64Enabled || zipWriter.offset + zipWriter.pendingEntriesSize - diskOffset >= MAX_32_BITS;
+		const zip64UncompressedSize = zip64Enabled || uncompressedSize > MAX_32_BITS;
+		const zip64CompressedSize = zip64Enabled || maximumCompressedSize > MAX_32_BITS;
+		const zip64Offset = zip64Enabled || zipWriter.offset + zipWriter.pendingEntriesSize - diskOffset > MAX_32_BITS;
 		const supportZip64SplitFile = getOptionValue(zipWriter, options, "supportZip64SplitFile", true);
-		const zip64DiskNumberStart = (supportZip64SplitFile && zip64Enabled) || diskNumber + Math.ceil(zipWriter.pendingEntriesSize / maxSize) >= MAX_16_BITS;
+		const zip64DiskNumberStart = (supportZip64SplitFile && zip64Enabled) || diskNumber + Math.ceil(zipWriter.pendingEntriesSize / maxSize) > MAX_16_BITS;
 		if (zip64Offset || zip64UncompressedSize || zip64CompressedSize || zip64DiskNumberStart) {
 			if (zip64 === false || !keepOrder) {
 				throw new Error(ERR_UNSUPPORTED_FORMAT);
@@ -9278,6 +10165,8 @@
 			}
 		}
 		zip64 = zip64 || false;
+		const encrypted = getOptionValue(zipWriter, options, PROPERTY_NAME_ENCRYPTED);
+		const { signature } = options;
 		options = Object.assign({}, options, {
 			rawFilename,
 			rawComment,
@@ -9293,28 +10182,38 @@
 			zip64Offset,
 			zip64DiskNumberStart,
 			password,
-			level,
+			rawPassword,
+			level: !useCompressionStream && (zipWriter.config.CompressionStream === UNDEFINED_VALUE && zipWriter.config.CompressionStreamNative === UNDEFINED_VALUE) ? 0 : level,
 			useWebWorkers,
 			encryptionStrength,
 			extendedTimestamp,
 			zipCrypto,
 			bufferedWrite,
 			keepOrder,
+			useUnicodeFileNames,
 			dataDescriptor,
 			dataDescriptorSignature,
 			signal,
 			msDosCompatible,
 			internalFileAttribute,
 			externalFileAttribute,
-			useCompressionStream
+			useCompressionStream,
+			passThrough,
+			encrypted: Boolean((password && getLength(password)) || (rawPassword && getLength(rawPassword))) || (passThrough && encrypted),
+			signature,
+			compressionMethod
 		});
 		const headerInfo = getHeaderInfo(options);
 		const dataDescriptorInfo = getDataDescriptorInfo(options);
-		maximumEntrySize = getLength(headerInfo.localHeaderArray, dataDescriptorInfo.dataDescriptorArray) + maximumCompressedSize;
+		const metadataSize = getLength(headerInfo.localHeaderArray, dataDescriptorInfo.dataDescriptorArray);
+		maximumEntrySize = metadataSize + maximumCompressedSize;
+		if (zipWriter.options.usdz) {
+			maximumEntrySize += maximumEntrySize + 64;
+		}
 		zipWriter.pendingEntriesSize += maximumEntrySize;
 		let fileEntry;
 		try {
-			fileEntry = await getFileEntry(zipWriter, name, reader, { headerInfo, dataDescriptorInfo }, options);
+			fileEntry = await getFileEntry(zipWriter, name, reader, { headerInfo, dataDescriptorInfo, metadataSize }, options);
 		} finally {
 			zipWriter.pendingEntriesSize -= maximumEntrySize;
 		}
@@ -9335,6 +10234,7 @@
 		const {
 			headerInfo
 		} = entryInfo;
+		const { usdz } = zipWriter.options;
 		const previousFileEntry = Array.from(files.values()).pop();
 		let fileEntry = {};
 		let bufferedWrite;
@@ -9343,6 +10243,7 @@
 		let writingBufferedEntryData;
 		let writingEntryData;
 		let fileWriter;
+		let blobPromise;
 		files.set(name, fileEntry);
 		try {
 			let lockPreviousFileEntry;
@@ -9350,8 +10251,9 @@
 				lockPreviousFileEntry = previousFileEntry && previousFileEntry.lock;
 				requestLockCurrentFileEntry();
 			}
-			if (options.bufferedWrite || zipWriter.writerLocked || (zipWriter.bufferedWrites && keepOrder) || !dataDescriptor) {
-				fileWriter = new BlobWriter();
+			if ((options.bufferedWrite || zipWriter.writerLocked || (zipWriter.bufferedWrites && keepOrder) || !dataDescriptor) && !usdz) {
+				fileWriter = new TransformStream();
+				blobPromise = new Response(fileWriter.readable).blob();
 				fileWriter.writable.size = 0;
 				bufferedWrite = true;
 				zipWriter.bufferedWrites++;
@@ -9371,6 +10273,9 @@
 				await writeData(writable, signatureArray);
 				zipWriter.offset += 4;
 			}
+			if (usdz) {
+				appendExtraFieldUSDZ(entryInfo, zipWriter.offset - diskOffset);
+			}
 			if (!bufferedWrite) {
 				await lockPreviousFileEntry;
 				await skipDiskIfNeeded(writable);
@@ -9384,7 +10289,7 @@
 			fileEntry.filename = name;
 			if (bufferedWrite) {
 				await fileWriter.writable.getWriter().close();
-				let blob = await fileWriter.getData();
+				let blob = await blobPromise;
 				await lockPreviousFileEntry;
 				await requestLockWriter();
 				writingBufferedEntryData = true;
@@ -9401,10 +10306,10 @@
 			fileEntry.offset = zipWriter.offset - diskOffset;
 			if (fileEntry.zip64) {
 				setZip64ExtraInfo(fileEntry, options);
-			} else if (fileEntry.offset >= MAX_32_BITS) {
+			} else if (fileEntry.offset > MAX_32_BITS) {
 				throw new Error(ERR_UNSUPPORTED_FORMAT);
 			}
-			zipWriter.offset += fileEntry.length;
+			zipWriter.offset += fileEntry.size;
 			return fileEntry;
 		} catch (error) {
 			if ((bufferedWrite && writingBufferedEntryData) || (!bufferedWrite && writingEntryData)) {
@@ -9451,7 +10356,7 @@
 		}
 
 		async function skipDiskIfNeeded(writable) {
-			if (headerInfo.localHeaderArray.length > writer.availableSize) {
+			if (getLength(headerInfo.localHeaderArray) > writer.availableSize) {
 				writer.availableSize = 0;
 				await writeData(writable, new Uint8Array());
 			}
@@ -9461,7 +10366,8 @@
 	async function createFileEntry(reader, writer, { diskNumberStart, lock }, entryInfo, config, options) {
 		const {
 			headerInfo,
-			dataDescriptorInfo
+			dataDescriptorInfo,
+			metadataSize
 		} = entryInfo;
 		const {
 			localHeaderArray,
@@ -9473,6 +10379,7 @@
 			version,
 			compressionMethod,
 			rawExtraFieldExtendedTimestamp,
+			extraFieldExtendedTimestampFlag,
 			rawExtraFieldNTFS,
 			rawExtraFieldAES
 		} = headerInfo;
@@ -9482,6 +10389,7 @@
 			lastAccessDate,
 			creationDate,
 			password,
+			rawPassword,
 			level,
 			zip64,
 			zip64UncompressedSize,
@@ -9504,7 +10412,8 @@
 			msDosCompatible,
 			internalFileAttribute,
 			externalFileAttribute,
-			useCompressionStream
+			useCompressionStream,
+			passThrough
 		} = options;
 		const fileEntry = {
 			lock,
@@ -9525,9 +10434,14 @@
 			externalFileAttribute,
 			diskNumberStart
 		};
+		let {
+			signature,
+			uncompressedSize
+		} = options;
 		let compressedSize = 0;
-		let uncompressedSize = 0;
-		let signature;
+		if (!passThrough) {
+			uncompressedSize = 0;
+		}
 		const { writable } = writer;
 		if (reader) {
 			reader.chunkSize = getChunkSize(config);
@@ -9538,13 +10452,14 @@
 				options: {
 					codecType: CODEC_DEFLATE,
 					level,
+					rawPassword,
 					password,
 					encryptionStrength,
 					zipCrypto: encrypted && zipCrypto,
 					passwordVerification: encrypted && zipCrypto && (rawLastModDate >> 8) & 0xFF,
-					signed: true,
-					compressed,
-					encrypted,
+					signed: !passThrough,
+					compressed: compressed && !passThrough,
+					encrypted: encrypted && !passThrough,
 					useWebWorkers,
 					useCompressionStream,
 					transferStreams: false
@@ -9553,10 +10468,12 @@
 				streamOptions: { signal, size, onstart, onprogress, onend }
 			};
 			const result = await runWorker({ readable, writable }, workerOptions);
-			writable.size += result.size;
-			signature = result.signature;
-			uncompressedSize = reader.size = readable.size;
-			compressedSize = result.size;
+			compressedSize = result.outputSize;
+			if (!passThrough) {
+				uncompressedSize = result.inputSize;
+				signature = result.signature;
+			}
+			writable.size += uncompressedSize;
 		} else {
 			await writeData(writable, localHeaderArray);
 		}
@@ -9598,12 +10515,14 @@
 			creationDate,
 			lastAccessDate,
 			encrypted,
-			length: getLength(localHeaderArray, dataDescriptorArray) + compressedSize,
+			zipCrypto,
+			size: metadataSize + compressedSize,
 			compressionMethod,
 			version,
 			headerArray,
 			signature,
 			rawExtraFieldZip64,
+			extraFieldExtendedTimestampFlag,
 			zip64UncompressedSize,
 			zip64CompressedSize,
 			zip64Offset,
@@ -9618,19 +10537,19 @@
 			lastModDate,
 			lastAccessDate,
 			creationDate,
-			password,
 			level,
 			zip64,
 			zipCrypto,
+			useUnicodeFileNames,
 			dataDescriptor,
 			directory,
 			rawExtraField,
 			encryptionStrength,
 			extendedTimestamp,
+			encrypted
 		} = options;
 		const compressed = level !== 0 && !directory;
-		const encrypted = Boolean(password && getLength(password));
-		let version = options.version;
+		let { version, compressionMethod } = options;
 		let rawExtraFieldAES;
 		if (encrypted && !zipCrypto) {
 			rawExtraFieldAES = new Uint8Array(getLength(EXTRAFIELD_DATA_AES) + 2);
@@ -9643,19 +10562,23 @@
 		}
 		let rawExtraFieldNTFS;
 		let rawExtraFieldExtendedTimestamp;
+		let extraFieldExtendedTimestampFlag;
 		if (extendedTimestamp) {
 			rawExtraFieldExtendedTimestamp = new Uint8Array(9 + (lastAccessDate ? 4 : 0) + (creationDate ? 4 : 0));
 			const extraFieldExtendedTimestampView = getDataView(rawExtraFieldExtendedTimestamp);
 			setUint16(extraFieldExtendedTimestampView, 0, EXTRAFIELD_TYPE_EXTENDED_TIMESTAMP);
 			setUint16(extraFieldExtendedTimestampView, 2, getLength(rawExtraFieldExtendedTimestamp) - 4);
-			const extraFieldExtendedTimestampFlag = 0x1 + (lastAccessDate ? 0x2 : 0) + (creationDate ? 0x4 : 0);
+			extraFieldExtendedTimestampFlag = 0x1 + (lastAccessDate ? 0x2 : 0) + (creationDate ? 0x4 : 0);
 			setUint8(extraFieldExtendedTimestampView, 4, extraFieldExtendedTimestampFlag);
-			setUint32(extraFieldExtendedTimestampView, 5, Math.floor(lastModDate.getTime() / 1000));
+			let offset = 5;
+			setUint32(extraFieldExtendedTimestampView, offset, Math.floor(lastModDate.getTime() / 1000));
+			offset += 4;
 			if (lastAccessDate) {
-				setUint32(extraFieldExtendedTimestampView, 9, Math.floor(lastAccessDate.getTime() / 1000));
+				setUint32(extraFieldExtendedTimestampView, offset, Math.floor(lastAccessDate.getTime() / 1000));
+				offset += 4;
 			}
 			if (creationDate) {
-				setUint32(extraFieldExtendedTimestampView, 13, Math.floor(creationDate.getTime() / 1000));
+				setUint32(extraFieldExtendedTimestampView, offset, Math.floor(creationDate.getTime() / 1000));
 			}
 			try {
 				rawExtraFieldNTFS = new Uint8Array(36);
@@ -9674,13 +10597,26 @@
 		} else {
 			rawExtraFieldNTFS = rawExtraFieldExtendedTimestamp = new Uint8Array();
 		}
-		let bitFlag = BITFLAG_LANG_ENCODING_FLAG;
+		let bitFlag = 0;
+		if (useUnicodeFileNames) {
+			bitFlag = bitFlag | BITFLAG_LANG_ENCODING_FLAG;
+		}
 		if (dataDescriptor) {
 			bitFlag = bitFlag | BITFLAG_DATA_DESCRIPTOR;
 		}
-		let compressionMethod = COMPRESSION_METHOD_STORE;
+		if (compressionMethod === UNDEFINED_VALUE) {
+			compressionMethod = compressed ? COMPRESSION_METHOD_DEFLATE : COMPRESSION_METHOD_STORE;
+		}
 		if (compressed) {
-			compressionMethod = COMPRESSION_METHOD_DEFLATE;
+			if (level >= 1 && level < 3) {
+				bitFlag = bitFlag | 0b110;
+			}
+			if (level >= 3 && level < 5) {
+				bitFlag = bitFlag | 0b01;
+			}
+			if (level === 9) {
+				bitFlag = bitFlag | 0b10;
+			}
 		}
 		if (zip64) {
 			version = version > VERSION_ZIP64 ? version : VERSION_ZIP64;
@@ -9689,10 +10625,8 @@
 			bitFlag = bitFlag | BITFLAG_ENCRYPTED;
 			if (!zipCrypto) {
 				version = version > VERSION_AES ? version : VERSION_AES;
+				rawExtraFieldAES[9] = compressionMethod;
 				compressionMethod = COMPRESSION_METHOD_AES;
-				if (compressed) {
-					rawExtraFieldAES[9] = COMPRESSION_METHOD_DEFLATE;
-				}
 			}
 		}
 		const headerArray = new Uint8Array(26);
@@ -9736,10 +10670,33 @@
 			compressed,
 			version,
 			compressionMethod,
+			extraFieldExtendedTimestampFlag,
 			rawExtraFieldExtendedTimestamp,
 			rawExtraFieldNTFS,
-			rawExtraFieldAES
+			rawExtraFieldAES,
+			extraFieldLength
 		};
+	}
+
+	function appendExtraFieldUSDZ(entryInfo, zipWriterOffset) {
+		const { headerInfo } = entryInfo;
+		let { localHeaderArray, extraFieldLength } = headerInfo;
+		let localHeaderArrayView = getDataView(localHeaderArray);
+		let extraBytesLength = 64 - ((zipWriterOffset + getLength(localHeaderArray)) % 64);
+		if (extraBytesLength < 4) {
+			extraBytesLength += 64;
+		}
+		const rawExtraFieldUSDZ = new Uint8Array(extraBytesLength);
+		const extraFieldUSDZView = getDataView(rawExtraFieldUSDZ);
+		setUint16(extraFieldUSDZView, 0, EXTRAFIELD_TYPE_USDZ);
+		setUint16(extraFieldUSDZView, 2, extraBytesLength - 2);
+		const previousLocalHeaderArray = localHeaderArray;
+		headerInfo.localHeaderArray = localHeaderArray = new Uint8Array(getLength(previousLocalHeaderArray) + extraBytesLength);
+		arraySet(localHeaderArray, previousLocalHeaderArray);
+		arraySet(localHeaderArray, rawExtraFieldUSDZ, getLength(previousLocalHeaderArray));
+		localHeaderArrayView = getDataView(localHeaderArray);
+		setUint16(localHeaderArrayView, 28, extraFieldLength + extraBytesLength);
+		entryInfo.metadataSize += extraBytesLength;
 	}
 
 	function getDataDescriptorInfo(options) {
@@ -9798,7 +10755,7 @@
 		if (zip64) {
 			const rawExtraFieldZip64View = getDataView(rawExtraFieldZip64);
 			setUint16(rawExtraFieldZip64View, 0, EXTRAFIELD_TYPE_ZIP64);
-			setUint16(rawExtraFieldZip64View, 2, rawExtraFieldZip64.length - 4);
+			setUint16(rawExtraFieldZip64View, 2, getLength(rawExtraFieldZip64) - 4);
 			let rawExtraFieldZip64Offset = 4;
 			if (zip64UncompressedSize) {
 				setUint32(headerView, 18, MAX_32_BITS);
@@ -9824,7 +10781,11 @@
 	}
 
 	async function writeExtraHeaderInfo(fileEntry, entryData, writable, { zipCrypto }) {
-		const arrayBuffer = await sliceAsArrayBuffer(entryData, 0, 26);
+		let arrayBuffer;
+		arrayBuffer = await entryData.slice(0, 26).arrayBuffer();
+		if (arrayBuffer.byteLength != 26) {
+			arrayBuffer = arrayBuffer.slice(0, 26);
+		}
 		const arrayBufferView = new DataView(arrayBuffer);
 		if (!fileEntry.encrypted || zipCrypto) {
 			setUint32(arrayBufferView, 14, fileEntry.signature);
@@ -9868,23 +10829,38 @@
 		let directoryDataLength = 0;
 		let directoryOffset = zipWriter.offset - diskOffset;
 		let filesLength = files.size;
-		for (const [, {
-			rawFilename,
-			rawExtraFieldZip64,
-			rawExtraFieldAES,
-			rawExtraField,
-			rawComment,
-			rawExtraFieldExtendedTimestamp,
-			rawExtraFieldNTFS
-		}] of files) {
+		for (const [, fileEntry] of files) {
+			const {
+				rawFilename,
+				rawExtraFieldZip64,
+				rawExtraFieldAES,
+				rawComment,
+				rawExtraFieldNTFS,
+				rawExtraField,
+				extendedTimestamp,
+				extraFieldExtendedTimestampFlag,
+				lastModDate
+			} = fileEntry;
+			let rawExtraFieldTimestamp;
+			if (extendedTimestamp) {
+				rawExtraFieldTimestamp = new Uint8Array(9);
+				const extraFieldExtendedTimestampView = getDataView(rawExtraFieldTimestamp);
+				setUint16(extraFieldExtendedTimestampView, 0, EXTRAFIELD_TYPE_EXTENDED_TIMESTAMP);
+				setUint16(extraFieldExtendedTimestampView, 2, 5);
+				setUint8(extraFieldExtendedTimestampView, 4, extraFieldExtendedTimestampFlag);
+				setUint32(extraFieldExtendedTimestampView, 5, Math.floor(lastModDate.getTime() / 1000));
+			} else {
+				rawExtraFieldTimestamp = new Uint8Array();
+			}
+			fileEntry.rawExtraFieldCDExtendedTimestamp = rawExtraFieldTimestamp;
 			directoryDataLength += 46 +
 				getLength(
 					rawFilename,
 					rawComment,
 					rawExtraFieldZip64,
 					rawExtraFieldAES,
-					rawExtraFieldExtendedTimestamp,
 					rawExtraFieldNTFS,
+					rawExtraFieldTimestamp,
 					rawExtraField);
 		}
 		const directoryArray = new Uint8Array(directoryDataLength);
@@ -9897,6 +10873,7 @@
 				rawFilename,
 				rawExtraFieldZip64,
 				rawExtraFieldAES,
+				rawExtraFieldCDExtendedTimestamp,
 				rawExtraFieldNTFS,
 				rawExtraField,
 				rawComment,
@@ -9911,24 +10888,11 @@
 				msDosCompatible,
 				internalFileAttribute,
 				externalFileAttribute,
-				extendedTimestamp,
-				lastModDate,
 				diskNumberStart,
 				uncompressedSize,
 				compressedSize
 			} = fileEntry;
-			let rawExtraFieldExtendedTimestamp;
-			if (extendedTimestamp) {
-				rawExtraFieldExtendedTimestamp = new Uint8Array(9);
-				const extraFieldExtendedTimestampView = getDataView(rawExtraFieldExtendedTimestamp);
-				setUint16(extraFieldExtendedTimestampView, 0, EXTRAFIELD_TYPE_EXTENDED_TIMESTAMP);
-				setUint16(extraFieldExtendedTimestampView, 2, getLength(rawExtraFieldExtendedTimestamp) - 4);
-				setUint8(extraFieldExtendedTimestampView, 4, 0x1);
-				setUint32(extraFieldExtendedTimestampView, 5, Math.floor(lastModDate.getTime() / 1000));
-			} else {
-				rawExtraFieldExtendedTimestamp = new Uint8Array();
-			}
-			const extraFieldLength = getLength(rawExtraFieldZip64, rawExtraFieldAES, rawExtraFieldExtendedTimestamp, rawExtraFieldNTFS, rawExtraField);
+			const extraFieldLength = getLength(rawExtraFieldZip64, rawExtraFieldAES, rawExtraFieldCDExtendedTimestamp, rawExtraFieldNTFS, rawExtraField);
 			setUint32(directoryView, offset, CENTRAL_FILE_HEADER_SIGNATURE);
 			setUint16(directoryView, offset + 4, versionMadeBy);
 			const headerView = getDataView(headerArray);
@@ -9952,9 +10916,9 @@
 			arraySet(directoryArray, rawFilename, offset + 46);
 			arraySet(directoryArray, rawExtraFieldZip64, offset + 46 + getLength(rawFilename));
 			arraySet(directoryArray, rawExtraFieldAES, offset + 46 + getLength(rawFilename, rawExtraFieldZip64));
-			arraySet(directoryArray, rawExtraFieldExtendedTimestamp, offset + 46 + getLength(rawFilename, rawExtraFieldZip64, rawExtraFieldAES));
-			arraySet(directoryArray, rawExtraFieldNTFS, offset + 46 + getLength(rawFilename, rawExtraFieldZip64, rawExtraFieldAES, rawExtraFieldExtendedTimestamp));
-			arraySet(directoryArray, rawExtraField, offset + 46 + getLength(rawFilename, rawExtraFieldZip64, rawExtraFieldAES, rawExtraFieldExtendedTimestamp, rawExtraFieldNTFS));
+			arraySet(directoryArray, rawExtraFieldCDExtendedTimestamp, offset + 46 + getLength(rawFilename, rawExtraFieldZip64, rawExtraFieldAES));
+			arraySet(directoryArray, rawExtraFieldNTFS, offset + 46 + getLength(rawFilename, rawExtraFieldZip64, rawExtraFieldAES, rawExtraFieldCDExtendedTimestamp));
+			arraySet(directoryArray, rawExtraField, offset + 46 + getLength(rawFilename, rawExtraFieldZip64, rawExtraFieldAES, rawExtraFieldCDExtendedTimestamp, rawExtraFieldNTFS));
 			arraySet(directoryArray, rawComment, offset + 46 + getLength(rawFilename) + extraFieldLength);
 			const directoryEntryLength = 46 + getLength(rawFilename, rawComment) + extraFieldLength;
 			if (offset - directoryDiskOffset > writer.availableSize) {
@@ -9977,8 +10941,8 @@
 		if (availableSize < END_OF_CENTRAL_DIR_LENGTH) {
 			lastDiskNumber++;
 		}
-		let zip64 = getOptionValue(zipWriter, options, "zip64");
-		if (directoryOffset >= MAX_32_BITS || directoryDataLength >= MAX_32_BITS || filesLength >= MAX_16_BITS || lastDiskNumber >= MAX_16_BITS) {
+		let zip64 = getOptionValue(zipWriter, options, PROPERTY_NAME_ZIP64);
+		if (directoryOffset > MAX_32_BITS || directoryDataLength > MAX_32_BITS || filesLength > MAX_16_BITS || lastDiskNumber > MAX_16_BITS) {
 			if (zip64 === false) {
 				throw new Error(ERR_UNSUPPORTED_FORMAT);
 			} else {
@@ -10033,20 +10997,15 @@
 		}
 	}
 
-	function sliceAsArrayBuffer(blob, start, end) {
-		if (start || end) {
-			return blob.slice(start, end).arrayBuffer();
-		} else {
-			return blob.arrayBuffer();
-		}
-	}
-
 	async function writeData(writable, array) {
 		const streamWriter = writable.getWriter();
-		await streamWriter.ready;
-		writable.size += getLength(array);
-		await streamWriter.write(array);
-		streamWriter.releaseLock();
+		try {
+			await streamWriter.ready;
+			writable.size += getLength(array);
+			await streamWriter.write(array);
+		} finally {
+			streamWriter.releaseLock();
+		}
 	}
 
 	function getTimeNTFS(date) {
@@ -10122,6 +11081,7 @@
 	 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	 */
 
+
 	class ZipEntry {
 
 		constructor(fs, name, params, parent) {
@@ -10140,7 +11100,8 @@
 				id: fs.entries.length,
 				parent,
 				children: [],
-				uncompressedSize: params.uncompressedSize || 0
+				uncompressedSize: params.uncompressedSize || 0,
+				passThrough: params.passThrough
 			});
 			fs.entries.push(zipEntry);
 			if (parent) {
@@ -10483,7 +11444,8 @@
 						importedEntries.push(addChild(parent, name, {
 							data: entry,
 							Reader: getZipBlobReader(Object.assign({}, options)),
-							uncompressedSize: entry.uncompressedSize
+							uncompressedSize: entry.uncompressedSize,
+							passThrough: options.passThrough
 						}));
 					}
 				} catch (error) {
@@ -10502,6 +11464,9 @@
 
 		async exportZip(writer, options) {
 			const zipEntry = this;
+			if (options.bufferedWrite === UNDEFINED_VALUE) {
+				options.bufferedWrite = true;
+			}
 			await Promise.all([initReaders(zipEntry, options.readerOptions), initStream(writer)]);
 			const zipWriter = new ZipWriter(writer, options);
 			await exportZip(zipWriter, zipEntry, getTotalSize([zipEntry], "uncompressedSize"), options);
@@ -10607,6 +11572,10 @@
 
 		addData64URI(name, dataURI, options) {
 			return this.root.addData64URI(name, dataURI, options);
+		}
+
+		addUint8Array(name, array, options) {
+			return this.root.addUint8Array(name, array, options);
 		}
 
 		addHttpContent(name, url, options) {
@@ -10783,26 +11752,54 @@
 
 			async function processChild(child) {
 				const name = options.relativePath ? child.getRelativeName(selectedEntry) : child.getFullname();
-				let externalFileAttribute;
-				let versionMadeBy;
-				let comment;
-				let lastModDate;
 				let childOptions = child.options || {};
+				let zipEntryOptions = {};
 				if (child.data instanceof Entry) {
-					({
+					const {
 						externalFileAttribute,
 						versionMadeBy,
 						comment,
-						lastModDate
-					} = child.data);
+						lastModDate,
+						creationDate,
+						lastAccessDate,
+						uncompressedSize,
+						encrypted,
+						zipCrypto,
+						signature,
+						compressionMethod,
+						extraFieldAES
+					} = child.data;
+					zipEntryOptions = {
+						externalFileAttribute,
+						versionMadeBy,
+						comment,
+						lastModDate,
+						creationDate,
+						lastAccessDate
+					};
+					if (child.passThrough) {
+						let level, encryptionStrength;
+						if (compressionMethod === 0) {
+							level = 0;
+						}
+						if (extraFieldAES) {
+							encryptionStrength = extraFieldAES.strength;
+						}
+						zipEntryOptions = Object.assign(zipEntryOptions, {
+							passThrough: true,
+							encrypted,
+							zipCrypto,
+							signature,
+							uncompressedSize,
+							level,
+							encryptionStrength,
+							compressionMethod
+						});
+					}
 				}
 				await zipWriter.add(name, child.reader, Object.assign({
 					directory: child.directory
-				}, Object.assign({}, options, {
-					externalFileAttribute,
-					versionMadeBy,
-					comment,
-					lastModDate,
+				}, Object.assign({}, options, zipEntryOptions, childOptions, {
 					onprogress: async indexProgress => {
 						if (options.onprogress) {
 							entryOffsets.set(name, indexProgress);
@@ -10813,7 +11810,7 @@
 							}
 						}
 					}
-				}, childOptions)));
+				})));
 				await process(zipWriter, child);
 			}
 		}
@@ -10823,33 +11820,35 @@
 		return addFile(zipEntry, handle, []);
 
 		async function addFile(parentEntry, handle, addedEntries) {
-			try {
-				if (handle.isFile || handle.isDirectory) {
-					handle = await transformToFileSystemhandle(handle);
-				}
-				if (handle.kind == "file") {
-					const file = await handle.getFile();
-					addedEntries.push(
-						parentEntry.addData(file.name, {
-							Reader: function () {
-								const readable = file.stream();
-								const size = file.size;
-								return { readable, size };
-							},
-							options: Object.assign({}, { lastModDate: new Date(file.lastModified) }, options),
-							uncompressedSize: file.size
-						})
-					);
-				} else if (handle.kind == "directory") {
-					const directoryEntry = parentEntry.addDirectory(handle.name);
-					addedEntries.push(directoryEntry);
-					for await (const childHandle of handle.values()) {
-						await addFile(directoryEntry, childHandle, addedEntries);
+			if (handle) {
+				try {
+					if (handle.isFile || handle.isDirectory) {
+						handle = await transformToFileSystemhandle(handle);
 					}
+					if (handle.kind == "file") {
+						const file = await handle.getFile();
+						addedEntries.push(
+							parentEntry.addData(file.name, {
+								Reader: function () {
+									const readable = file.stream();
+									const size = file.size;
+									return { readable, size };
+								},
+								options: Object.assign({}, { lastModDate: new Date(file.lastModified) }, options),
+								uncompressedSize: file.size
+							})
+						);
+					} else if (handle.kind == "directory") {
+						const directoryEntry = parentEntry.addDirectory(handle.name);
+						addedEntries.push(directoryEntry);
+						for await (const childHandle of handle.values()) {
+							await addFile(directoryEntry, childHandle, addedEntries);
+						}
+					}
+				} catch (error) {
+					const message = error.message + (handle ? " (" + handle.name + ")" : "");
+					throw new Error(message);
 				}
-			} catch (error) {
-				const message = error.message + (handle ? " (" + handle.name + ")" : "");
-				throw new Error(message);
 			}
 			return addedEntries;
 		}
@@ -10928,8 +11927,8 @@
 	 1. Redistributions of source code must retain the above copyright notice,
 	 this list of conditions and the following disclaimer.
 
-	 2. Redistributions in binary form must reproduce the above copyright 
-	 notice, this list of conditions and the following disclaimer in 
+	 2. Redistributions in binary form must reproduce the above copyright
+	 notice, this list of conditions and the following disclaimer in
 	 the documentation and/or other materials provided with the distribution.
 
 	 3. The names of the authors may not be used to endorse or promote products
@@ -10947,9 +11946,10 @@
 	 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	 */
 
+
 	let baseURL;
 	try {
-		baseURL = (typeof document === 'undefined' && typeof location === 'undefined' ? new (require('u' + 'rl').URL)('file:' + __filename).href : typeof document === 'undefined' ? location.href : (document.currentScript && document.currentScript.src || new URL('zip-fs-full.js', document.baseURI).href));
+		baseURL = (typeof document === 'undefined' && typeof location === 'undefined' ? require('u' + 'rl').pathToFileURL(__filename).href : typeof document === 'undefined' ? location.href : (_documentCurrentScript && _documentCurrentScript.src || new URL('zip-fs-full.js', document.baseURI).href));
 	} catch (_error) {
 		// ignored
 	}
@@ -10957,6 +11957,7 @@
 	e(configure);
 
 	/// <reference types="./index.d.ts" />
+
 
 	configure({ Deflate: ZipDeflate, Inflate: ZipInflate });
 
@@ -10970,7 +11971,6 @@
 	exports.ERR_ENCRYPTED = ERR_ENCRYPTED;
 	exports.ERR_EOCDR_LOCATOR_ZIP64_NOT_FOUND = ERR_EOCDR_LOCATOR_ZIP64_NOT_FOUND;
 	exports.ERR_EOCDR_NOT_FOUND = ERR_EOCDR_NOT_FOUND;
-	exports.ERR_EOCDR_ZIP64_NOT_FOUND = ERR_EOCDR_ZIP64_NOT_FOUND;
 	exports.ERR_EXTRAFIELD_ZIP64_NOT_FOUND = ERR_EXTRAFIELD_ZIP64_NOT_FOUND;
 	exports.ERR_HTTP_RANGE = ERR_HTTP_RANGE;
 	exports.ERR_INVALID_COMMENT = ERR_INVALID_COMMENT;
@@ -10985,6 +11985,7 @@
 	exports.ERR_ITERATOR_COMPLETED_TOO_SOON = ERR_ITERATOR_COMPLETED_TOO_SOON;
 	exports.ERR_LOCAL_FILE_HEADER_NOT_FOUND = ERR_LOCAL_FILE_HEADER_NOT_FOUND;
 	exports.ERR_SPLIT_ZIP_FILE = ERR_SPLIT_ZIP_FILE;
+	exports.ERR_UNDEFINED_UNCOMPRESSED_SIZE = ERR_UNDEFINED_UNCOMPRESSED_SIZE;
 	exports.ERR_UNSUPPORTED_COMPRESSION = ERR_UNSUPPORTED_COMPRESSION;
 	exports.ERR_UNSUPPORTED_ENCRYPTION = ERR_UNSUPPORTED_ENCRYPTION;
 	exports.ERR_UNSUPPORTED_FORMAT = ERR_UNSUPPORTED_FORMAT;
@@ -11001,13 +12002,13 @@
 	exports.Uint8ArrayWriter = Uint8ArrayWriter;
 	exports.Writer = Writer;
 	exports.ZipReader = ZipReader;
+	exports.ZipReaderStream = ZipReaderStream;
 	exports.ZipWriter = ZipWriter;
+	exports.ZipWriterStream = ZipWriterStream;
 	exports.configure = configure;
 	exports.fs = fs;
 	exports.getMimeType = getMimeType;
 	exports.initShimAsyncCodec = initShimAsyncCodec;
 	exports.terminateWorkers = terminateWorkers;
-
-	Object.defineProperty(exports, '__esModule', { value: true });
 
 }));

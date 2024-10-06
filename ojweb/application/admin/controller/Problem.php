@@ -204,6 +204,9 @@ class Problem extends Adminbase
     {
         return $this->fetch('problem_edit');
     }
+    public function polygon_import() {
+        return $this->fetch();
+    }
     protected function ProValid($pro_data) {
         if(!array_key_exists('sample_input', $pro_data) || !array_key_exists('sample_output', $pro_data)) {
             $this->error("Sample needed.");
