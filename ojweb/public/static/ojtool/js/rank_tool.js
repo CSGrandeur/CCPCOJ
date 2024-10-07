@@ -121,22 +121,12 @@ async function SchoolLogoUriAuto(school_str) {
     });
 }
 function GetHashImg(school_str) {
-    function SimpleHash(st) {
-        let res = 1;
-        for(let i = 0; i < st.length; i ++) {
-            res = res + st.charCodeAt(i) << 2;
-        }
-        return Math.abs(res);
-    }
     if(typeof school_str !== 'string' || school_str.length == 0) {
         school_str = 'xcpc';
     }
-    let res = SimpleHash(school_str);
+    let res = FNV1aHash(school_str);
     let rr = res & 255, gg = res >> 8 & 255, bb = res >> 16 & 255;
-    school_str = SimpleHash(school_str).toString(16);
-    while(school_str.length < 15) {
-        school_str += school_str;
-    }
+    school_str = FNV1aHash2Str(school_str, 16);
     let data = new Identicon(btoa(school_str), {size: 16, format: 'svg', foreground: [rr, gg, bb, 255]}).toString();
     return 'data:image/svg+xml;base64,' + data;
 }

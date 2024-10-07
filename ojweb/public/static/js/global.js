@@ -145,6 +145,24 @@ function SetAnchor(val, name=null) {
     }
     window.location.hash = '#' + anchor_str;
 }
+
+function FNV1aHash(str) {
+    let hash = 2166136261; // FNV offset basis
+    for (let i = 0; i < str.length; i++) {
+        hash ^= str.charCodeAt(i);
+        hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+    }
+    return hash >>> 0; // Convert to 32bit unsigned integer
+}
+
+function FNV1aHash2Str(str, len=32) {
+    let hash = FNV1aHash(str);
+    let hashStr = hash.toString(16).toUpperCase();
+    while (hashStr.length < len) {
+        hashStr += FNV1aHash(hashStr).toString(16).toUpperCase();
+    }
+    return hashStr.slice(0, len);
+}
 // **************************************************
 // cookie 封装，可处理中文
 function SetCookie(key, value, exp={})

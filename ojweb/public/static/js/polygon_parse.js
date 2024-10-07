@@ -128,15 +128,7 @@ async function FindProblemDirectories(zipFile, contest_problem_name_list) {
 async function AttachHash(projson) {
     const now = new Date();
     const dateStr = now.toISOString().slice(0, 10);
-    const hashed_str = await crypto.subtle.digest(
-        "SHA-256",
-        new TextEncoder().encode(`${projson?.authorName}-${projson?.legend}`)
-    );
-    const hashed_res = Array.from(new Uint8Array(hashed_str))
-        .map((b) => b.toString(16).padStart(2, "0"))
-        .join("")
-        .toUpperCase()
-        .slice(0, 16);
+    const hashed_res = FNV1aHash2Str(`${projson?.authorName}-${projson?.legend}`, 16);
     return `${dateStr}_${hashed_res}`;
 }
 async function MakeProblemJson(entry, pid) {
