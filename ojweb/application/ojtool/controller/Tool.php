@@ -24,4 +24,8 @@ class Tool extends Ojtoolbase
         $this->assign("pagetitle", "Time Page Show");
         return $this->fetch();
     }
+    public function polygon_parser() {
+        $this->assign("pagetitle", "Polygon Parser");
+        return $this->fetch();
+    }
 }
