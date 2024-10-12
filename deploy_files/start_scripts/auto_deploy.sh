@@ -5,6 +5,7 @@
 # 所有密码建议用数字字母；特殊符号的密码在脚本逻辑中可能出问题
 # 例:
 # bash auto_deploy.sh \
+#     --OJ_NAME=ccpc \
 #     --PATH_DATA=`pwd`/csgoj_data \
 #     --WITH_JUDGE=0 \
 #     --WITH_MYSQL=1 \
@@ -24,6 +25,9 @@ source parse_args.sh
 parse_args "$@"
 
 bash install_docker.sh
+if [ -z "$(docker network ls | grep $DOCKER_NET_NAME)" ]; then
+    docker network create $DOCKER_NET_NAME
+fi
 if [ "$WITH_MYSQL" = "1" ]; then
     bash start_db.sh "$@"
 fi

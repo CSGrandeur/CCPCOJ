@@ -149,8 +149,10 @@ parse_args() {
     source $CONFIG_FILE
   fi
 
-  if [ -z "$(docker network ls | grep $DOCKER_NET_NAME)" ]; then
+  if command -v docker &> /dev/null; then
+    if [ -z "$(docker network ls | grep $DOCKER_NET_NAME)" ]; then
       docker network create $DOCKER_NET_NAME
+    fi
   fi
 
   if [ ! -d $PATH_DATA ]; then
@@ -189,3 +191,10 @@ write_config_if_changed() {
 }
 write_config_if_changed "$@"
 echo "arguments: $@"
+
+echo "********** 关于docker镜像拉取 **********"
+echo "如果网络无法拉取OJ镜像，有三个方案"
+echo "1. 如果能拉取Ubuntu等基本公共镜像，可参考OJ部署文档末尾本地构建"
+echo "2. 修改/etc/docker/daemon.json，修改\"registry-mirrors\"，上网搜其它最新能用的镜像地址"
+echo "3. 修改/etc/docker/daemon.json，参考docker官方daemon.json设置文档配置自己搭建的代理"
+echo "***************************************"

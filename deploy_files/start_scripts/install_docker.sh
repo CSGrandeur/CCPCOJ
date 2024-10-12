@@ -20,10 +20,9 @@ else
     sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
     sudo groupadd docker
     sudo gpasswd -a $USER docker
-    newgrp docker
-    docker ps
     daemonjson='{
         "registry-mirrors": [
+            "https://dockerpull.com",
             "https://docker.m.daocloud.io", 
             "https://docker.jianmuhub.com",
             "https://huecker.io",
@@ -33,7 +32,9 @@ else
             "https://docker.jianmuhub.com"
         ]
     }'
-    sudo bash -c "echo '$daemonjson' > /etc/docker/daemon.json"
+    sudo mkdir -p /etc/docker
+    echo "$daemonjson" | sudo tee /etc/docker/daemon.json
     sudo service docker restart
-    echo "Docker inited"
+    echo "Docker安装完毕，shell环境已刷新，请重新执行部署OJ的相关脚本"
+    newgrp docker
 fi
