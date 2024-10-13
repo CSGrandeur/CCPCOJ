@@ -140,7 +140,7 @@ function GenPass(len=8) {
 $('#staff_gen_template').click(function() {
     // 生成一份 staff 模板
     let tpe = ``;
-    tpe += `admin\t裁判\t${GenPass()}\tadmin\n`;
+    tpe += `proctor\t裁判\t${GenPass()}\tadmin\n`;
     tpe += `live\t直播\t${GenPass()}\twatcher\n`;
     tpe += `rankroll\t滚榜\t${GenPass()}\tadmin\n`;
     for(let i = 0; i < 6; i ++) {

@@ -1,11 +1,11 @@
 <ul class="nav nav-tabs">
     <?php $controller = strtolower(request()->controller()); ?>
+    {if $isContestAdmin }
     <li class="{if $action == 'contest_edit' } active {/if}">
         <a href="__CPC__/admin/contest_edit?cid={$contest['contest_id']}" role="button" aria-haspopup="true" aria-expanded="false">
             Modify
         </a>
     </li>
-    {if $isContestAdmin }
     <li class="{if $action == 'contest_rejudge' } active {/if}">
         <a href="__CPC__/admin/contest_rejudge?cid={$contest['contest_id']}" role="button" aria-haspopup="true" aria-expanded="false">
             Rejudge

@@ -7,15 +7,17 @@
 </a>
 &nbsp;
 {/if}
-{if IsAdmin('contest', $contest['contest_id']) }
+{if IsAdmin('contest', $contest['contest_id']) || isset($proctorAdmin) && $proctorAdmin }
     {if $topic['public_show'] == 0}
     <button type="button" field="public_show" topic_id="{$topic['topic_id']}" class="change_status btn btn-sm btn-warning" status="{$topic['public_show']}">Private</button>
     {else/}
     <button type="button" field="public_show" topic_id="{$topic['topic_id']}" class="change_status btn btn-sm btn-success" status="{$topic['public_show']}">Public</button>
     {/if}
     &nbsp;
+    {if IsAdmin('contest', $contest['contest_id']) }
     <button type="button" class="btn btn-sm btn-danger delete_topic_button" topic_id="{$topic['topic_id']}" >Delete</button>
     &nbsp;
+    {/if}
 {/if}
     <span class="inline_span">Create Time: <span class="inline_span text-warning">{$topic['in_date']}</span></span>&nbsp;&nbsp;&nbsp;&nbsp;
     <span class="inline_span">Creator: <span class="inline_span text-default"><a href="{$userInfoUrlPrefix}{$topic['user_id']}">{$topic['user_id']}</a></span></span>&nbsp;&nbsp;&nbsp;&nbsp;
@@ -31,7 +33,7 @@
     {foreach($replyList as $reply)}
         <article class="md_display_div reply_display_div">
             <p class="help-block">
-                {if IsAdmin('contest', $contest['contest_id']) }
+                {if IsAdmin('contest', $contest['contest_id']) || isset($proctorAdmin) && $proctorAdmin}
                 <button type="button" class="btn btn-sm btn-danger delete_reply_button" topic_id="{$reply['topic_id']}" >Delete</button>
                 &nbsp;&nbsp;
                 {/if}
@@ -144,7 +146,7 @@
                             "</article>";
                         reply_list_content_div.append(reply);
                         topic_reply_content.val('');
-                        button_delay(submit_button, 20, 'Submit');
+                        button_delay(submit_button, 10, 'Submit');
                         return true;
                     }
                     else

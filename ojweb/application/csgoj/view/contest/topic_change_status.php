@@ -7,7 +7,7 @@
             {
                 'cid': cid,
                 'topic_id': button.attr('topic_id'),
-                'status': button.attr('status') == '1' ? '0' : '1'
+                'status': button.attr('status') == '0' ? '1' : '0'
             },
             function(ret)
             {
