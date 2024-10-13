@@ -12,6 +12,11 @@
         </a>
     </li>
     {/if}
+    <li class="{if $action == 'msg' } active {/if}">
+        <a href="__CPC__/admin/msg?cid={$contest['contest_id']}" role="button" aria-haspopup="true" aria-expanded="false">
+            Message
+        </a>
+    </li>
     {if $module == 'cpcsys'}
         {if $isContestAdmin }
         <li class="{if $action == 'contest_teamgen' } active {/if}">

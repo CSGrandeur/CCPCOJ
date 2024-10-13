@@ -242,4 +242,43 @@ trait ContestAdminTrait {
         ]);
         return $this->fetch();
     }
+    // **************************************************
+    // Contest Message
+    // 弹窗消息
+    // **************************************************
+    protected function MsgAuth() {
+        if(!$this->IsContestAdmin('admin')) {
+            $this->error("No Privilege to Send Message");
+        }
+    }
+    public function msg() {
+        $this->MsgAuth();
+        return $this->fetch();
+    }
+    public function msg_ajax() {
+        $this->MsgAuth();
+        return db('contest_msg')->where(['contest_id' => $this->contest['contest_id']])->select();
+    }
+    public function msg_add_edit_ajax() {
+        $this->MsgAuth();
+        $msg_id = input('msg_id/d');
+        $content = input('content/d');
+        $ContestMsg = db('contest_msg');
+        if(!$msg_id) {
+            $ContestMsg->insert([
+                'content'       => $content,
+                'contest_id'    => $this->contest['contest_id'],
+                'in_date'       => date('Y-m-d H:i:s'),
+                'team_id'       => $this->ContestUser()
+            ]);
+        } else {
+            $msg = $ContestMsg->where('msg_id', $msg_id);
+            if(!$msg || $msg['contest_id'] != $this->contest['contest_id']) {
+                $this->error("no such message");
+            }
+            $msg['content'] = $content;
+            $ContestMsg->update();
+        }
+        $this->success('ok');
+    }
 }

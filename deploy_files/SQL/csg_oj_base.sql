@@ -143,6 +143,23 @@ CREATE TABLE IF NOT EXISTS `contest_topic` (
 -- --------------------------------------------------------
 
 --
+-- 表的结构 `contest_msg`
+--
+
+CREATE TABLE IF NOT EXISTS `contest_msg` (
+  `msg_id` int NOT NULL AUTO_INCREMENT,
+  `contest_id` int NOT NULL,
+  `content` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `in_date` datetime NOT NULL,
+  `team_id` varchar(48) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `defunct` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'N',
+  PRIMARY KEY (`msg_id`),
+  FOREIGN KEY (`contest_id`) REFERENCES `contest`(`contest_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- 表的结构 `cpc_team`
 --
 
