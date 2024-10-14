@@ -1,6 +1,6 @@
 <li role="presentation" class="dropdown {if strpos($action, 'topic') === 0 } active {/if}">
     <a href="/{$module}/{$contest_controller}/topic_list?cid={$contest['contest_id']}" class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-        提问<br/><span class="en-text">Clarification</span> <span class="caret"></span>
+        提问<span class="caret"></span><br/><span class="en-text">Clarification</span> 
     </a>
     <ul class="dropdown-menu">
         {if $running}

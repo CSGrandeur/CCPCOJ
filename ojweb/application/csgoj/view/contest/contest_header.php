@@ -21,7 +21,7 @@
     &nbsp;&nbsp;<strong class="text text-info">Rank Frozen</strong>&nbsp;&nbsp;&nbsp;&nbsp;
     {/if}
 </p>
-<ul class="nav nav-tabs">
+<ul class="nav nav-tabs" id="contest_menu">
     <li role="presentation" {if $action == 'contest' } class="active" {/if}><a href="/{$module}/{$contest_controller}/contest?cid={$contest['contest_id']}">比赛首页<br/><span class="en-text">Index</span></a></li>
     {if $isContestAdmin || !isset($balloonSender) || !$balloonSender }
         {if $canJoin==true && $contestStatus > -1 || $isContestAdmin }
@@ -139,17 +139,4 @@ $(document).ready(function(){
 {/if}
 
 <style>
-    .en-text {
-        display: block;
-        font-size: 0.8em;
-        color: #888;
-        margin-top: 1px;
-        line-height: 1.1em;
-    }
-
-    .nav-tabs > li > a {
-        padding-top: 10px;
-        padding-bottom: 10px;
-        line-height: 1.2em;
-    }
 </style>

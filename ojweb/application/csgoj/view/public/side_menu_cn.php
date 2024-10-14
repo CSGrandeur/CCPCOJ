@@ -43,13 +43,10 @@ if($showadmin)
         font-size: 0.8em;
         color: #888;
         margin-top: 1px;
-        line-height: 0.4em;
+        line-height: 0.8em;
     }
 
-    .list-group-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        line-height: 1em;
+    #sidebar_div > li {
+        line-height: 1.2em;
     }
 </style>
