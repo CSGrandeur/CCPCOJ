@@ -31,6 +31,10 @@ class Contest extends Csgojbase
     var $isContestAdmin;
     var $rankUseCache;
     var $topicDefaultMap = ['public_show' => ['neq', -1]];               // topic 的默认过滤逻辑
+    
+    var $isContestStaff=false;      // cpcsys使用，是否是包含proctor（contest内部admin）在内的工作人员
+    var $isContestWorker=false;     // cpcsys使用，是否是balloon等无任何管理特权的工作人员
+    var $proctorAdmin=false;        // cpcsys使用，是否是contest内部admin
     public function InitController()
     {
         if ($this->OJ_STATUS == 'exp' && $this->controller == 'contest') {
@@ -2287,5 +2291,11 @@ class Contest extends Csgojbase
         // } else {
         //     $this->success("ok", null, $pro_ret_all);
         // }
+    }
+    public function msg() {
+        return $this->fetch();
+    }
+    public function msg_list_ajax() {
+        return db('contest_msg')->where(['contest_id' => $this->contest['contest_id'], 'defunct' => 0])->cache(10)->select();
     }
 }

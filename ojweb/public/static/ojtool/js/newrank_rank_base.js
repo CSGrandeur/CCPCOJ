@@ -54,13 +54,11 @@ const RES_CODE = {
     3:  '<div style="height:60px;padding:5px;margin:2px;" class="alert alert-info">     <strong>正在运行<br/>（R J）</strong></div>',
 }
 function LoadData() {
-    console.log(3333);
     let param = csg.Url2Json();
     let requests = [
         param?.cid ? csg.get(`/${QUERY_MODULE}/contest/contest_data_ajax?cid=${param.cid}`) : 
         csg.get(`/${QUERY_MODULE}/contest/contest_data_joint_ajax?cid_list=${param?.cid_list}`)
     ];
-    console.log(12121, requests);
     Promise.all(requests)
     .then(responses => Promise.all(responses.map(r => r.json())))
     .then(data => {

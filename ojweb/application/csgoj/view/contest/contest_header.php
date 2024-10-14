@@ -1,7 +1,7 @@
 <h1>{$contest['contest_id']}: {$contest['title']}</h1>
 <p class="help-block">
-    <span class="inline_span">Start Time：<span class="inline_span text-danger">{$contest['start_time']}</span></span>&nbsp;&nbsp;
-    <span class="inline_span">End Time：<span class="inline_span text-danger">{$contest['end_time']}</span></span>&nbsp;&nbsp;
+    <span class="inline_span">Start Time：<span class="inline_span text-danger" id="start_time_span">{$contest['start_time']}</span></span>&nbsp;&nbsp;
+    <span class="inline_span">End Time：<span class="inline_span text-danger" id="end_time_span">{$contest['end_time']}</span></span>&nbsp;&nbsp;
     <span class="inline_span">Current Time：<span class="inline_span text-info" id="current_time_div" time_stamp=<?php echo microtime(true); ?> >{$now}</span></span>&nbsp;&nbsp;
     {if $contest['private'] % 10 == 1}
         <label class="label label-primary">Private</label>
@@ -39,7 +39,8 @@
             <li role="presentation" {if $action == 'schoolrank'} class="active" {/if}><a href="/{$module}/{$contest_controller}/schoolrank?cid={$contest['contest_id']}">学校排名<br/>School Rank</a></li>
             {/if}
             {if $canJoin==true}
-            <li role="presentation" {if strpos($action, 'statistic') === 0 } class="active" {/if}><a href="/{$module}/{$contest_controller}/statistics?cid={$contest['contest_id']}">统计<br/>Statistics</a></li>
+            <li role="presentation" {if strpos($action, 'statistic') === 0 } class="active" {/if}><a href="#" id="show_msg_btn">通知(<span id="msg_num">0</span>)<br/>Message</a></li>
+            <li role="presentation" {if strpos($action, 'statistic') === 0 } class="active" {/if}><a href="/{$module}/{$contest_controller}/msg?cid={$contest['contest_id']}">统计<br/>Statistics</a></li>
             {if $isContestAdmin || $contest_user }
                 {include file="../../csgoj/view/contest/topic_menu" /}
             {/if}
@@ -64,6 +65,9 @@
     {/if}
     
 </ul>
+
+{include file="../../csgoj/view/contest/contest_msg_timing" /}
+
 <script type="text/javascript">
     var diff = new Date($('#current_time_div').attr('time_stamp') * 1000).getTime()-new Date().getTime();
     function str0(a)

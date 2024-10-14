@@ -370,7 +370,6 @@ function DownloadPro(pid) {
         const zipWriter = new zip.ZipWriter(new zip.BlobWriter("application/zip"));
         zipWriter.add("problemlist.json", new zip.TextReader(JSON.stringify([problem.problemJson], null, 4)));
 
-        console.log(222, problem.attach_files);
         if (problem.attach_files && problem.attach_files.length > 0) {
             MakeAttachFiles(problem.testData.entries, problem.statement_entry, problem.attach_files).then((attachFilesData) => {
                 attachFilesData.forEach(async (file) => {
@@ -386,7 +385,6 @@ function DownloadPro(pid) {
                 });
             });
         } else {
-            console.log(111, problem.problemJson);
             zipWriter.close().then((zipContent) => {
                 const url = URL.createObjectURL(zipContent);
                 const a = document.createElement("a");

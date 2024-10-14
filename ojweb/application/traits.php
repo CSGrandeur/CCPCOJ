@@ -262,23 +262,40 @@ trait ContestAdminTrait {
     public function msg_add_edit_ajax() {
         $this->MsgAuth();
         $msg_id = input('msg_id/d');
-        $content = input('content/d');
+        $content = input('content/s');
         $ContestMsg = db('contest_msg');
         if(!$msg_id) {
             $ContestMsg->insert([
                 'content'       => $content,
                 'contest_id'    => $this->contest['contest_id'],
                 'in_date'       => date('Y-m-d H:i:s'),
-                'team_id'       => $this->ContestUser()
+                'defunct'       => 1,
+                'team_id'       => $this->contest_user ? $this->SolutionUser($this->contest_user, true) : session('user_id')
             ]);
         } else {
-            $msg = $ContestMsg->where('msg_id', $msg_id);
+            $msg = $ContestMsg->where('msg_id', $msg_id)->find();
             if(!$msg || $msg['contest_id'] != $this->contest['contest_id']) {
                 $this->error("no such message");
             }
             $msg['content'] = $content;
-            $ContestMsg->update();
+            $msg['team_id'] = $this->contest_user ? $this->SolutionUser($this->contest_user, true) : session('user_id');
+            $msg['in_date'] = date('Y-m-d H:i:s');
+            $ContestMsg->update($msg);
         }
         $this->success('ok');
+    }
+    public function msg_status_change_ajax() {
+        $this->MsgAuth();
+        $msg_id = input('msg_id/d');
+        $msg = db('contest_msg')->where(['msg_id' => $msg_id,  'contest_id' => $this->contest['contest_id']])->find();
+        if(!$msg) {
+            $this->error("no such message");
+        }
+        $msg['defunct'] = input('defunct/d');
+        if($msg['defunct'] == 0) {
+            $msg['in_date'] = date('Y-m-d H:i:s');
+        }
+        db('contest_msg')->update($msg);
+        $this->success('Status to ' . ($msg['defunct'] == 1 ? 'Prepared' : 'Sent'), null, $msg);
     }
 }

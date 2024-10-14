@@ -7,14 +7,11 @@ use phpDocumentor\Reflection\Types\Null_;
 class Contest extends Contestbase
 {
     var $teamSessionName;       // team 的 session 字段名
-    var $proctorAdmin;
     var $watcherUser;
     var $balloonManager;
     var $balloonSender;
     var $printManager;
     var $isReviewer;
-    var $isContestStaff;
-    var $isContestWorker;
     public function _initialize()
     {
         $this->OJMode();
