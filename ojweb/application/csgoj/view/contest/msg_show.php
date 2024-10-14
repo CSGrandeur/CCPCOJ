@@ -26,8 +26,11 @@
 
             const messageItem = $(`
                 <div class="list-group-item message-item ${isRecent ? 'recent-message' : ''}">
-                    <div id="message-${index}" class="message-info"></div>
-                    <small class="text-muted">Date: ${msg.in_date} | Admin: ${team_id}</small>
+                    <div class="message-content">
+                        <div id="message-${index}" class="message-info"></div>
+                        <small class="text-muted">Date: ${msg.in_date} | Admin: ${team_id}</small>
+                    </div>
+                    <div class="message-index">${messages.length - index}</div>
                 </div>
             `);
             messageList.append(messageItem);
@@ -42,21 +45,32 @@
     }
 </script>
 <style>
-    .message-item {
-        margin-bottom: 20px;
-    }
+.message-item {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+}
 
-    .message-item small {
-        display: block;
-        margin-top: 10px;
-    }
+.message-index {
+    margin-left: 10px;
+    color: #333;
+}
 
-    .message-info {
-        font-size: 1.2em;
-        /* 调整字体大小 */
-    }
+.message-content {
+    flex-grow: 1;
+}
 
-    .recent-message {
-        border: 2px solid red; /* 设置红色外框 */
-    }
+.message-item small {
+    display: block;
+    margin-top: 10px;
+}
+
+.message-info {
+    font-size: 1.2em;
+    /* 调整字体大小 */
+}
+
+.recent-message {
+    border: 2px solid red; /* 设置红色外框 */
+}
 </style>

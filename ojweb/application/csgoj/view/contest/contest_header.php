@@ -39,8 +39,10 @@
             <li role="presentation" {if $action == 'schoolrank'} class="active" {/if}><a href="/{$module}/{$contest_controller}/schoolrank?cid={$contest['contest_id']}">学校排名<br/>School Rank</a></li>
             {/if}
             {if $canJoin==true}
+            {if $controller == 'contest'}
             <li role="presentation" {if strpos($action, 'statistic') === 0 } class="active" {/if}><a href="#" id="show_msg_btn">通知(<span id="msg_num">0</span>)<br/>Message</a></li>
-            <li role="presentation" {if strpos($action, 'statistic') === 0 } class="active" {/if}><a href="/{$module}/{$contest_controller}/msg?cid={$contest['contest_id']}">统计<br/>Statistics</a></li>
+            {/if}
+            <li role="presentation" {if strpos($action, 'statistic') === 0 } class="active" {/if}><a href="/{$module}/{$contest_controller}/statistics?cid={$contest['contest_id']}">统计<br/>Statistics</a></li>
             {if $isContestAdmin || $contest_user }
                 {include file="../../csgoj/view/contest/topic_menu" /}
             {/if}
@@ -66,7 +68,9 @@
     
 </ul>
 
+{if $canJoin }
 {include file="../../csgoj/view/contest/contest_msg_timing" /}
+{/if}
 
 <script type="text/javascript">
     var diff = new Date($('#current_time_div').attr('time_stamp') * 1000).getTime()-new Date().getTime();

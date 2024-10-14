@@ -263,6 +263,9 @@ trait ContestAdminTrait {
         $this->MsgAuth();
         $msg_id = input('msg_id/d');
         $content = input('content/s');
+        if (strlen($content) > 255) {
+            $this->error("Message too long");
+        }
         $ContestMsg = db('contest_msg');
         if(!$msg_id) {
             $ContestMsg->insert([

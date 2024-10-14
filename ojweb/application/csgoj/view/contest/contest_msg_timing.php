@@ -62,6 +62,9 @@
         let cid = <?php echo $contest['contest_id'] ?>;
         $.get(`msg_list_ajax?cid=${cid}`, function(rep) {
             let msg_list = rep;
+            if(!Array.isArray(msg_list)) {
+                console.error('msg_list is not an array', msg_list);
+            }
             let msg_list_local_obj = csg.store(`contest_msg#cid${cid}`);
             let currentTime = MsgGetCurrentTime();
             if (!msg_list_local_obj || !CompareMsg(msg_list_local_obj.msg_list, msg_list)) {
@@ -127,18 +130,21 @@
         }
         let startTime = new Date(document.getElementById('start_time_span').textContent.trim()).getTime();
         let endTime = new Date(document.getElementById('end_time_span').textContent.trim()).getTime();
+        let cid = <?php echo $contest['contest_id'] ?>;
+
         if (currentTime >= startTime && currentTime <= endTime) {
             document.addEventListener('visibilitychange', handleVisibilityChange);
             handleVisibilityChange(); // 初始化时检查页面可见性
         }
 
-        let cid = <?php echo $contest['contest_id'] ?>;
+        <?php if(!$isContestAdmin && (!isset($isContestStaff) || !$isContestStaff)) { ?>
         let msg_list_local_obj = csg.store(`contest_msg#cid${cid}`);
         if (!msg_list_local_obj || MsgGetCurrentTime() - msg_list_local_obj.time > TIME_REFRESH_FETCH) {
             fetchMessages();
         } else {
             updateMsgNum(msg_list_local_obj.msg_list);
         }
+        <?php } ?>
         document.getElementById('show_msg_btn').addEventListener('click', async function() {
             await fetchMessages(false);
             const cid = <?php echo $contest['contest_id']; ?>;

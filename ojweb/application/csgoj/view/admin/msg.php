@@ -143,6 +143,7 @@
         isEditMode = false;
         document.getElementById('messageForm').reset();
         setVditorContent('');
+        updateCharCount();
         msg_edit_modal.modal('show');
     });
     document.getElementById('preview_all_msg_btn').addEventListener('click', function() {
@@ -214,7 +215,7 @@
         if (remaining < 0) {
             // 截断超出部分
             let truncatedValue = content;
-            while (StrByteLength(truncatedValue) > maxLength) {
+            while (StrByteLength(truncatedValue) >= maxLength) {
                 truncatedValue = truncatedValue.slice(0, -1);
             }
             setVditorContent(truncatedValue);
@@ -233,7 +234,7 @@
         }
         $.post(`/${page_module}/admin/msg_add_edit_ajax?cid=${cid}`, data_post, function(rep) {
             if (rep.code == 1) {
-                // Handle response
+                alertify.success(rep.msg);
                 msg_edit_modal.modal('hide');
                 msg_talbe.bootstrapTable('refresh');
             } else {
@@ -246,6 +247,7 @@
         isEditMode = true;
         contest_msg_id = messageId;
         setVditorContent(content); // document.getElementById('messageContent').value = content;
+        updateCharCount();
         msg_edit_modal.modal('show');
     }
 </script>
@@ -256,6 +258,7 @@
     }
 
     .limit_span {
+        display: inline-block;
         max-width: 550px;
         overflow: hidden;
         text-overflow: ellipsis;
