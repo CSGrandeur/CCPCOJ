@@ -1,9 +1,14 @@
 <div class="page-header" style="display:flex;">
-    <h1>Award</h1>
+    <div style="display:flex; flex-direction: column;">
+        <h1>获奖数据/award</h1>
+        <strong class="text-danger danger-tip">务必确认：比赛已结束</strong>
+        <strong class="text-danger danger-tip">务必确认：<a href="/{$module}/contest/status?cid=${contest['contest_id']}">评测队列</a>已完成</strong>
+    </div>
     <div style="margin-left: 10px;">
         <article id="teamgen_help_div" class="alert alert-info">
             <p>当正式参赛女队（3名队员皆为女生）数目大于等于3时，可以设置最佳女队奖，排名最高且获得铜奖或以上奖项的正式参赛女队获得。</p>
             <p>可以设置顽强拼搏奖，未获得金奖、银奖或铜奖的正式队伍中最晚解出题目的1或2支参赛队获得顽强拼搏奖。</p>
+            <p>默认发奖模式：金奖按比例向上取整，金银按比例向上取证后减金奖个数，金银铜按比例向上取整后减去金银个数。</p>
         </article>
     </div>
 </div>
@@ -543,11 +548,24 @@ async function ExportAwardXlsx() {
 }
 
 
-
+let award_confirm_info = `
+    <strong>务必确认：</strong><br/>
+    <strong class="text-danger">1. 比赛已结束</strong><br/>
+    <strong class="text-danger">2. <a href="/${page_module}/contest/status?cid=${page_cid}">评测队列</a>已全部完成</strong><br/>
+    <strong class="text-danger">3. 确认后，刷新本页确保获取最新数据，再导出最终结果</strong><br/><br/>
+    确认现在导出？
+    `;
 $('#export_award_csv_btn').click(function() {
-    ExportAwardCsv();
+    alertify.confirm("确认", award_confirm_info, function() {ExportAwardCsv();}, function(){});
+    
 });
 $('#export_award_xlsx_btn').click(function() {
-    ExportAwardXlsx();
+    alertify.confirm("确认", award_confirm_info, function() {ExportAwardXlsx();}, function(){});
 });
 </script>
+<style>
+    .danger-tip {
+        font-size: 16px;
+        margin-top: 0;
+    }
+</style>

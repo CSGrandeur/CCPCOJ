@@ -101,7 +101,7 @@
         return `<a href='#' class='limit_span'>${value}</a>`;
     }
     let cid = "<?php echo $contest['contest_id']; ?>";
-    let page_module = "<?php echo $module; ?>";
+    var page_module = "<?php echo $module; ?>";
     let isEditMode = false;
     let contest_msg_id = null;
     let msg_talbe = $('#msg_table');

@@ -11,7 +11,7 @@
     let sc = {
         OJ_MODE: page_info.getAttribute("OJ_MODE")
     };
-    let page_module = sc.OJ_MODE == "cpcsys" ? "cpcsys" : "csgoj";
+    var page_module = sc.OJ_MODE == "cpcsys" ? "cpcsys" : "csgoj";
     let urlParam = csg.GetUrlParam();
     let cid;
     let with_page = 'with_page' in urlParam && urlParam.with_page == 1;

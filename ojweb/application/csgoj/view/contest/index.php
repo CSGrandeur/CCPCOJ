@@ -31,7 +31,7 @@
 <input type="hidden" id="page_info" page_module="{$module}" page_controller="{$contest_controller}" >
 <script type="text/javascript">
 let page_info = $('#page_info');
-let page_module = page_info.attr('page_module');
+var page_module = page_info.attr('page_module');
 function FormatterContestTitle(value, row, index, field) {
     return "<a href='/" + page_module + "/contest/problemset?cid=" + row['contest_id'] + "'>" + value + "</a>";
 }
