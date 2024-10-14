@@ -20,29 +20,28 @@
     {if($rankFrozen == true)}
     &nbsp;&nbsp;<strong class="text text-info">Rank Frozen</strong>&nbsp;&nbsp;&nbsp;&nbsp;
     {/if}
-
 </p>
 <ul class="nav nav-tabs">
-    <li role="presentation" {if $action == 'contest' } class="active" {/if}><a href="/{$module}/{$contest_controller}/contest?cid={$contest['contest_id']}">比赛首页<br/>Index</a></li>
+    <li role="presentation" {if $action == 'contest' } class="active" {/if}><a href="/{$module}/{$contest_controller}/contest?cid={$contest['contest_id']}">比赛首页<br/><span class="en-text">Index</span></a></li>
     {if $isContestAdmin || !isset($balloonSender) || !$balloonSender }
         {if $canJoin==true && $contestStatus > -1 || $isContestAdmin }
-        <li role="presentation" {if strpos($action, 'problem') === 0} class="active" {/if}><a href="/{$module}/{$contest_controller}/problemset?cid={$contest['contest_id']}">题目<br/>Problems</a></li>
+        <li role="presentation" {if strpos($action, 'problem') === 0} class="active" {/if}><a href="/{$module}/{$contest_controller}/problemset?cid={$contest['contest_id']}">题目<br/><span class="en-text">Problems</span></a></li>
         {/if}
         {if $contestStatus > -1}
             {if $canJoin}
-            <li role="presentation" {if strpos($action, 'status') === 0} class="active" {/if}><a href="/{$module}/{$contest_controller}/status?cid={$contest['contest_id']}{if !$isContestAdmin && !IsAdmin('source_browser') }#user_id={$contest_user}{/if}">评测状态<br/>Status</a></li>
+            <li role="presentation" {if strpos($action, 'status') === 0} class="active" {/if}><a href="/{$module}/{$contest_controller}/status?cid={$contest['contest_id']}{if !$isContestAdmin && !IsAdmin('source_browser') }#user_id={$contest_user}{/if}">评测状态<br/><span class="en-text">Status</span></a></li>
             {/if}
-        <li role="presentation" {if $action == 'ranklist'} class="active" {/if}><a href="/{$module}/{$contest_controller}/ranklist?cid={$contest['contest_id']}">排名<br/>Ranklist</a></li>
+        <li role="presentation" {if $action == 'ranklist'} class="active" {/if}><a href="/{$module}/{$contest_controller}/ranklist?cid={$contest['contest_id']}">排名<br/><span class="en-text">Ranklist</span></a></li>
             {if $OJ_OPEN_OI && ($OJ_STATUS != 'exp' || $contest['private'] % 10 == 2)  }
-            <li role="presentation" {if $action == 'scorerank'} class="active" {/if}><a href="/{$module}/{$contest_controller}/scorerank?cid={$contest['contest_id']}">分数<br/>Score Rank</a></li>
+            <li role="presentation" {if $action == 'scorerank'} class="active" {/if}><a href="/{$module}/{$contest_controller}/scorerank?cid={$contest['contest_id']}">分数<br/><span class="en-text">Score Rank</span></a></li>
             {else /}
-            <li role="presentation" {if $action == 'schoolrank'} class="active" {/if}><a href="/{$module}/{$contest_controller}/schoolrank?cid={$contest['contest_id']}">学校排名<br/>School Rank</a></li>
+            <li role="presentation" {if $action == 'schoolrank'} class="active" {/if}><a href="/{$module}/{$contest_controller}/schoolrank?cid={$contest['contest_id']}">学校排名<br/><span class="en-text">School Rank</span></a></li>
             {/if}
             {if $canJoin==true}
             {if $controller == 'contest'}
-            <li role="presentation" {if strpos($action, 'statistic') === 0 } class="active" {/if}><a href="#" id="show_msg_btn">通知(<span id="msg_num">0</span>)<br/>Message</a></li>
+            <li role="presentation"><a href="#" id="show_msg_btn">通知(<span id="msg_num">0</span>)<br/><span class="en-text">Message</span></a></li>
             {/if}
-            <li role="presentation" {if strpos($action, 'statistic') === 0 } class="active" {/if}><a href="/{$module}/{$contest_controller}/statistics?cid={$contest['contest_id']}">统计<br/>Statistics</a></li>
+            <li role="presentation" {if strpos($action, 'statistic') === 0 } class="active" {/if}><a href="/{$module}/{$contest_controller}/statistics?cid={$contest['contest_id']}">统计<br/><span class="en-text">Statistics</span></a></li>
             {if $isContestAdmin || $contest_user }
                 {include file="../../csgoj/view/contest/topic_menu" /}
             {/if}
@@ -54,18 +53,17 @@
             {include file="../../cpcsys/view/contest/print_menu" /}
         {/if}
         {if $balloonManager || $isContestAdmin }
-            <li role="presentation" {if $action == 'balloon'} class="active" {/if}><a href="/{$module}/{$contest_controller}/balloon?cid={$contest['contest_id']}">气球管理<br/>Balloon</a></li>
+            <li role="presentation" {if $action == 'balloon'} class="active" {/if}><a href="/{$module}/{$contest_controller}/balloon?cid={$contest['contest_id']}">气球管理<br/><span class="en-text">Balloon</span></a></li>
         {elseif $balloonSender}
-            <li role="presentation" {if $action == 'balloon_queue'} class="active" {/if}><a href="/{$module}/{$contest_controller}/balloon_queue?cid={$contest['contest_id']}" target="_blank">气球任务<br/>BalloonQue</a></li>
+            <li role="presentation" {if $action == 'balloon_queue'} class="active" {/if}><a href="/{$module}/{$contest_controller}/balloon_queue?cid={$contest['contest_id']}" target="_blank">气球任务<br/><span class="en-text">BalloonQue</span></a></li>
         {/if}
         {if isset($watcherUser) && $watcherUser }
-        <li role="presentation"><a href="/ojtool/contestlive/ctrl?cid={$contest['contest_id']}" target="_blank">直播<br/>Live</a></li>
+        <li role="presentation"><a href="/ojtool/contestlive/ctrl?cid={$contest['contest_id']}" target="_blank">直播<br/><span class="en-text">Live</span></a></li>
         {/if}
     {/if}
     {if $isContestAdmin || isset($proctorAdmin) && $proctorAdmin }
-        <li role="presentation" id="contest_admin" cid="{$contest['contest_id']}" {if $controller == 'admin'}class="active" {/if}><a href="/{$module}/admin?cid={$contest['contest_id']}">比赛管理<br/>Admin</a></li>
+        <li role="presentation" id="contest_admin" cid="{$contest['contest_id']}" {if $controller == 'admin'}class="active" {/if}><a href="/{$module}/admin?cid={$contest['contest_id']}">比赛管理<br/><span class="en-text">Admin</span></a></li>
     {/if}
-    
 </ul>
 
 {if $canJoin }
@@ -139,3 +137,19 @@ $(document).ready(function(){
 })
 </script>
 {/if}
+
+<style>
+    .en-text {
+        display: block;
+        font-size: 0.8em;
+        color: #888;
+        margin-top: 1px;
+        line-height: 1.1em;
+    }
+
+    .nav-tabs > li > a {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        line-height: 1.2em;
+    }
+</style>
