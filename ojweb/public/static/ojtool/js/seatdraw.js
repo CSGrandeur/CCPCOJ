@@ -593,7 +593,6 @@ function Import2Contest(cid) {
         }
         if(team_insert_list.length > 0) {
             $.post('/cpcsys/admin/contest_teamgen_ajax?cid=' + cid, {'team_description': team_insert_list.join('\n'), 'reset_team': 'on'}, function(ret) {
-                console.log(typeof(ret));
                 if(typeof(ret) != 'object') {
                     alertify.error("导入失败。比赛ID：" + $cid);
                 } else if(!('code' in ret) || ret.code != 1) {

@@ -1,7 +1,13 @@
-let param = csg.Url2Json();
-let cid = param?.cid;
+var param;
+if(typeof param === 'undefined') {
+    param = csg.Url2Json();
+}
+var cid;
+if (typeof cid === 'undefined') {
+    cid = param?.cid;
+}
 let cid_list = param?.cid_list;
-let cdata = null;  // 比赛原始数据
+var cdata = null;  // 比赛原始数据
 let cnt_base = null;    // 过题队数量作为评奖基数，金银铜向上取整
 let map_team_sol, map_team, map_p2num, map_num2p, map_fb; // data maps
 let rank_gold, rank_silver, rank_bronze;
@@ -259,13 +265,11 @@ function ProcessData() {
         if(cdata.solution[i].problem_id in user_sol.ac) {
             continue;   // 已ac之后的提交忽略
         }
-        if(cdata.solution[i].result >= 4) {
-            // cdata.solution[i].frozen = false;
+        if(PAGE_TYPE == 'roll' && cdata.solution[i].in_date <= time_frozen || PAGE_TYPE == 'rank' && cdata.solution[i].result >= 4) {
             if(cdata.solution[i].result == 4) {
                 user_sol.ac[cdata.solution[i].problem_id] = cdata.solution[i].in_date;
             }
         } else {
-            // cdata.solution[i].frozen = true;
             user_sol.frozen[cdata.solution[i].problem_id] = true;
         }
         user_sol_pro.push(cdata.solution[i]);

@@ -97,12 +97,11 @@ function TeamItemRes(team_id) {
     });
 }
 function ProcessItem() {
-    // map_item = {};
     InitGrid();
     now_judging_ith = -1;
     judging_team_id_last = null;
     for(let team_id in map_team_sol) {
-        let team_item = TeamItem(team_id, true, 'rank');
+        let team_item = TeamItem(team_id, true);
         if(team_item != null) {
             team_item.dom = $(team_item.dom);
             if(team_id in map_item) {
@@ -150,6 +149,9 @@ function SetFB() {
     }
 }
 function SummaryUpdate() {
+    if(typeof(summary_div) == 'undefined') {
+        return;
+    }
     let thead = `<tr><th style="width:90px;"></th>`;
     for(let i = 0; i < summary_data.pro_list.length; i ++) {
         thead += `<th style="width:65px;">${String.fromCharCode('A'.charCodeAt(0) + i)}</th>`
@@ -187,12 +189,14 @@ function SummaryShow() {
 }
 $(document).ready(function() {
     summary_modal_div = $('#summary_modal_div');
-    summary_modal_obj = new bootstrap.Modal(document.getElementById('summary_modal_div'));
-    summary_div = $('#summary_div');
-    summary_button = $('#summary_button');
-    summary_button.click(function() {
-        SummaryShow();
-    });
+    if ($('#summary_modal_div').length > 0) {
+        summary_modal_obj = new bootstrap.Modal(document.getElementById('summary_modal_div'));
+        summary_div = $('#summary_div');
+        summary_button = $('#summary_button');
+        summary_button.click(function() {
+            SummaryShow();
+        });
+    }
 });
 function JudgeSort() {
     grid.sort('solved:desc penalty team_id');

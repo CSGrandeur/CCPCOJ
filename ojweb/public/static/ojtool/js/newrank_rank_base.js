@@ -1,8 +1,13 @@
 if('oj_mode' in param) {
     OJ_MODE = param.oj_mode;
 }
+var PAGE_TYPE;
+if(typeof(PAGE_TYPE) == 'undefined') {
+    PAGE_TYPE = 'rank';
+}
+ 
 let QUERY_MODULE = OJ_MODE == 'online' ? 'csgoj' : 'cpcsys';
-const DEFAULT_SPEED = 512;
+const DEFAULT_SPEED = 256;
 let flag_auto = false, auto_speed = DEFAULT_SPEED;
 let flag_award_area = false;    // 标识是否进入奖区，进入奖区时取消自动模式一次
 let flag_nowstep = null;
@@ -54,33 +59,44 @@ const RES_CODE = {
     3:  '<div style="height:60px;padding:5px;margin:2px;" class="alert alert-info">     <strong>正在运行<br/>（R J）</strong></div>',
 }
 function LoadData() {
-    let param = csg.Url2Json();
-    let requests = [
-        param?.cid ? csg.get(`/${QUERY_MODULE}/contest/contest_data_ajax?cid=${param.cid}`) : 
-        csg.get(`/${QUERY_MODULE}/contest/contest_data_joint_ajax?cid_list=${param?.cid_list}`)
-    ];
-    Promise.all(requests)
-    .then(responses => Promise.all(responses.map(r => r.json())))
-    .then(data => {
-        let ret = data[0];
-        if(ret.code == 1) {
-            cdata = ret.data;
-            ProcessData();
-            $('#page_header_main').text(cdata.contest.title);
-            if(typeof(SummaryUpdate) == 'function') {
-                SummaryUpdate();
-            }
-            ProcessItem();
-            
-        } else {
-            alertify.error(ret.msg);
+    if(typeof(FLG_PKG_MODE) == 'undefined' || FLG_PKG_MODE == false) {
+        if(typeof param === 'undefined') {
+            var param = csg.Url2Json();
         }
+        let requests = [
+            param?.cid ? csg.get(`/${QUERY_MODULE}/contest/contest_data_ajax?cid=${param.cid}`) : 
+            csg.get(`/${QUERY_MODULE}/contest/contest_data_joint_ajax?cid_list=${param?.cid_list}`)
+        ];
+        Promise.all(requests)
+        .then(responses => Promise.all(responses.map(r => r.json())))
+        .then(data => {
+            let ret = data[0];
+            if(ret.code == 1) {
+                cdata = ret.data;
+                ProcessData();
+                $('#page_header_main').text(cdata.contest.title);
+                if(typeof(SummaryUpdate) == 'function') {
+                    SummaryUpdate();
+                }
+                ProcessItem();
+            } else {
+                alertify.error(ret.msg);
+            }
+            loading_div.hide();
+        })
+        .catch(error => {
+            console.error('Error:', error); 
+            loading_div.hide();
+        });
+    } else {
+        ProcessData();
+        $('#page_header_main').text(cdata.contest.title);
+        if(typeof(SummaryUpdate) == 'function') {
+            SummaryUpdate();
+        }
+        ProcessItem();
         loading_div.hide();
-    })
-    .catch(error => {
-        console.error('Error:', error); 
-        loading_div.hide();
-    });
+    }
 }
 function StopAutoRefresh(flag_msg=true) {
     if(interval_id != null) {
@@ -100,13 +116,18 @@ function TryStopInterval() {
 function InitData(re_query=false) {
     // loading_div.show();
     try {
-        LoadData();
+        if(re_query) {
+            LoadData();
+        } else {
+            ProcessData();
+            ProcessItem();
+        }
     } catch (e) {
         console.error(e);
         loading_div.hide();
     }
 }
-function TeamItem(team_id, with_dom=true, page_type='rank') {
+function TeamItem(team_id, with_dom=true) {
     if(!(team_id in map_team)) {
         return null;
     }
@@ -130,7 +151,7 @@ function TeamItem(team_id, with_dom=true, page_type='rank') {
     let dom_solve = `<div class="g_td g_solve">${pro_res.solved}</div>`;
     let dom_time = `<div class="g_td g_time" title="${Timeint2Str(pro_res.penalty_sec)}">${pro_res.penalty}</div>`;
     let team_line_dom;
-    if(page_type == 'rank') {
+    if(PAGE_TYPE == 'rank') {
         team_line_dom = `${dom_rank}${dom_logo}${dom_solve}${dom_time}${dom_team_content}`;
     } else {
         team_line_dom = `${dom_rank}${dom_logo}${dom_team_content}${dom_solve}${dom_time}`;
@@ -280,40 +301,42 @@ $(document).on('click', function (e) {
 let flag_forbid_f5 = false;
 
 window.onkeydown = (e) => {
-    if (!e || !e.isTrusted || !e.cancelable) {
-        return;
-    }
-    if(e.key == 'A' || e.key == 'a') {
-        if(interval_id === null) {
-            StartAutoRefresh();
-        } else {
-            StopAutoRefresh();
+    if(!FLG_PKG_MODE && PAGE_TYPE != 'roll') {
+        if (!e || !e.isTrusted || !e.cancelable) {
+            return;
         }
-    } else if(e.key == 'B' || e.key == 'b') {
-        flag_auto_scroll = !flag_auto_scroll;
-        if(flag_auto_scroll) {
-            alertify.success("开启自动滚动");
-            AutoScroll(1000, 10000, true);
-        } else {
-            for(let i = 0; i < auto_scroll_task_id.length; i ++) {
-                try {
-                    clearTimeout(auto_scroll_task_id[i]);
-                } catch {}
+        if(e.key == 'A' || e.key == 'a') {
+            if(interval_id === null) {
+                StartAutoRefresh();
+            } else {
+                StopAutoRefresh();
             }
-            auto_scroll_task_id = [];
-            alertify.message("关闭自动滚动");
-        }
-
-    } else if(e.keyCode == 116 && !e.ctrlKey) {
-        e.preventDefault();
-        if(flag_forbid_f5) {
-            alertify.warning("不需要太频繁刷新呦~")
-        } else {
-            flag_forbid_f5 = true;
-            setTimeout(()=>{flag_forbid_f5=false;}, 5000);
-            alertify.success("更新数据...")
-            StopAutoRefresh(false);
-            InitData(true);
+        } else if(e.key == 'B' || e.key == 'b') {
+            flag_auto_scroll = !flag_auto_scroll;
+            if(flag_auto_scroll) {
+                alertify.success("开启自动滚动");
+                AutoScroll(1000, 10000, true);
+            } else {
+                for(let i = 0; i < auto_scroll_task_id.length; i ++) {
+                    try {
+                        clearTimeout(auto_scroll_task_id[i]);
+                    } catch {}
+                }
+                auto_scroll_task_id = [];
+                alertify.message("关闭自动滚动");
+            }
+    
+        } else if(e.keyCode == 116 && !e.ctrlKey) {
+            e.preventDefault();
+            if(flag_forbid_f5) {
+                alertify.warning("不需要太频繁刷新呦~")
+            } else {
+                flag_forbid_f5 = true;
+                setTimeout(()=>{flag_forbid_f5=false;}, 5000);
+                alertify.success("更新数据...")
+                StopAutoRefresh(false);
+                InitData(true);
+            }
         }
     }
 }

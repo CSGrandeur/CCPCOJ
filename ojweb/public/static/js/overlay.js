@@ -14,15 +14,15 @@ function showOverlay(initialText = "Scanning ... Found 0 problem(s), 0 tests") {
     overlay.style.alignItems = "center";
     overlay.style.zIndex = "10000";
     overlay.style.fontSize = "32px";
-    overlay.innerHTML = `<div id="overlay-text">${initialText}</div>`;
+    overlay.innerHTML = `<div id="overlay-text" style="text-align:center;">${initialText}</div>`;
     document.body.appendChild(overlay);
     
 }
 
-function updateOverlay(initialText = "") {
+function updateOverlay(initialText = "", ratio=null) {
     const overlayText = document.getElementById("overlay-text");
     if (overlayText) {
-        overlayText.innerHTML = initialText;
+        overlayText.innerHTML = `${ratio ? ratio + '%<br/>' : ''}${initialText}`;
     }
 }
 

@@ -1,3 +1,7 @@
+/*
+Rank school badge tool
+*/
+let URL_SCHOOL_BADGE_BASE = FLG_PKG_MODE ? './resource/static/image/school_badge' : '/static/image/school_badge';
 let sl_db = null;
 let IDDB_NAME = 'csgoj';
 let IDDB_TABLE = ['ranktable', 'logotable'];
@@ -71,43 +75,40 @@ function InitIndexedDb(store_name, dbcallback) {
 InitIndexedDb('logotable', function(local_db) {sl_db = local_db;});  // 初始化 IndexedDB
 
 function SchoolLogoUri(school_str) {
-    return '/static/image/school_badge/' + school_str + '.jpg';
+    return `${URL_SCHOOL_BADGE_BASE}/${school_str}.jpg`;
 }
 // const IMG_TRY_LIST = ["svg", "jpg"]; // 即使懒加载，30kb的svg也很卡
 const IMG_TRY_LIST = ["jpg"];
 function FetchSchoolLogo(school_str) {
     let i = 0;
-    function next() {
-        if(i < IMG_TRY_LIST.length) {
-            return fetch(`${school_str}.${IMG_TRY_LIST[i ++]}`).then(rep => {
-                if(!rep.ok) {
-                    return next();
-                }
-                return rep;
-            })
+    function next(resolve, reject) {
+        if (i < IMG_TRY_LIST.length) {
+            const img = new Image();
+            img.onload = function() {
+                resolve(img.src);
+            };
+            img.onerror = function() {
+                i++;
+                next(resolve, reject);
+            };
+            img.src = `${school_str}.${IMG_TRY_LIST[i ++]}`;
         } else {
-            throw new Error('No valid school logo file found');
+            reject(new Error('No valid school logo file found'));
         }
     }
-    return next();
+    return new Promise(next);
 }
 async function SchoolLogoUriAuto(school_str) {
-    const key = '/static/image/school_badge/' + Any2Ascii(school_str);
-    const file_key = '/static/image/school_badge/' + school_str;
+    const key = `${URL_SCHOOL_BADGE_BASE}/${Any2Ascii(school_str)}`;
+    const file_key = `${URL_SCHOOL_BADGE_BASE}/${school_str}`;
     return new Promise((resolve, reject) => {
         sl_db.get(key).then(logo => {
             // logo = null;    // 用于更新logo
-            if(logo == null) {
+            if(logo == null || FLG_PKG_MODE) {
                 FetchSchoolLogo(file_key)
-                    .then(response => response.blob())
-                    .then(blob => {
-                        const reader = new FileReader();
-                        reader.onloadend = function() {
-                            const base64data = reader.result;
-                            sl_db.set(key, base64data);
-                            resolve(base64data);
-                        }
-                        reader.readAsDataURL(blob);
+                    .then(base64data => {
+                        sl_db.set(key, base64data);
+                        resolve(base64data);
                     })
                     .catch(() => {
                         const hashImg = GetHashImg(school_str);
