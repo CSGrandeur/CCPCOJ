@@ -12,8 +12,22 @@ else
     TAG_VERSION=$1
 fi
 
-# 版本号比较函数
-function version_gt() { test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"; }
+version_gt() {
+    IFS='.' read -r -a ver1 <<< "$1"
+    IFS='.' read -r -a ver2 <<< "$2"
+
+    for ((i=0; i<${#ver1[@]}; i++)); do
+        part1=${ver1[i]:-0}
+        part2=${ver2[i]:-0}
+        if (( part1 > part2 )); then
+            return 0
+        elif (( part1 < part2 )); then
+            return 1
+        fi
+    done
+
+    return 1
+}
 
 # 比较新旧版本号
 if version_gt $current_version $TAG_VERSION; then
