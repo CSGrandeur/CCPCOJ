@@ -5,9 +5,9 @@ A:系统 Ubuntu Server 22.04. 参数如下
 |:----|:-------------------------------------------------------------------------------|
 |C:|gcc Main.c -o Main -O2 -fmax-errors=10 -Wall -lm --static -std=c17 -DONLINE_JUDGE|
 |C++:|g++ Main.cc -o Main -O2 -fno-asm -fmax-errors=10 -Wall -lm --static -std=c++17 -DONLINE_JUDGE|
-|Java:|javac -J-Xms64M -J-Xmx128M -J-Xss64M Main.java <br/> java -Xms64M -Xmx<题目内存限制> -Xss64M Main |
+|Java:|javac -J-Xms1024M -J-Xmx1024M -J-Xss64M Main.java <br/> java -Xms1024M -Xmx<题目内存限制> -Xss64M Main |
 
-Java 有额外 2 秒和额外 512M 内存用于运行与评测.
+Java、Python 有额外 2 秒和额外 512M 内存用于运行与评测.
 
 - C/C++： gcc version 11.4.0 (Ubuntu 11.4.0-1ubuntu1~22.04) 
 - Python： 3.10.12

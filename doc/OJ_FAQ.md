@@ -5,9 +5,9 @@ A:The online judge system is running on Debian Linux. We are using GNU GCC/G++ f
 |:----|:-------------------------------------------------------------------------------|
 |C:|gcc Main.c -o Main -O2 -fmax-errors=10 -Wall -lm --static -std=c17 -DONLINE_JUDGE|
 |C++:|g++ Main.cc -o Main -O2 -fno-asm -fmax-errors=10 -Wall -lm --static -std=c++17 -DONLINE_JUDGE|
-|Java:|javac -J-Xms64M -J-Xmx128M -J-Xss64M Main.java <br/> java -Xms64M -Xmx<problem limit> -Xss64M Main |
+|Java:|javac -J-Xms1024M -J-Xmx1024M -J-Xss64M Main.java <br/> java -Xms1024M -Xmx<problem limit> -Xss64M Main |
 
-Java has 2 more seconds and 512M more memory when running and judging.
+Java, Python have 2 more seconds and 512M more memory when running and judging.
 
 - C/C++： gcc version 11.4.0 (Ubuntu 11.4.0-1ubuntu1~22.04) 
 - Python： 3.10.12
