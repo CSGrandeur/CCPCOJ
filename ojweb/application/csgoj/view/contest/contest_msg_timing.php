@@ -136,15 +136,13 @@
             document.addEventListener('visibilitychange', handleVisibilityChange);
             handleVisibilityChange(); // 初始化时检查页面可见性
         }
-
-        <?php if(!$isContestAdmin && (!isset($isContestStaff) || !$isContestStaff)) { ?>
+        let auto_show = <?php echo !$isContestAdmin && (!isset($isContestStaff) || !$isContestStaff) ? "true" : "false"; ?>;
         let msg_list_local_obj = csg.store(`contest_msg#cid${cid}`);
         if (!msg_list_local_obj || MsgGetCurrentTime() - msg_list_local_obj.time > TIME_REFRESH_FETCH) {
-            fetchMessages();
+            fetchMessages(auto_show);
         } else {
             updateMsgNum(msg_list_local_obj.msg_list);
         }
-        <?php } ?>
         document.getElementById('show_msg_btn').addEventListener('click', async function() {
             await fetchMessages(false);
             const cid = <?php echo $contest['contest_id']; ?>;
