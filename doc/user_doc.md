@@ -32,7 +32,20 @@
 
 ![](./user_doc_image/add_pro_attach2.png)
 
-### 1.3 Special Judge
+20241015更新：支持基础的LaTeX题目格式，在每部分开头一行写`__LATEX__`标识，OJ将基于LaTeX引擎编译。支持LaTeX的 `\textbf`、`\includegraphcs` 等基本语法.
+
+### 1.3 Polygon转换器
+
+通过 “Parse Polygon Zip” 将 [Polygon](https://polygon.codeforces.com/) 打包的题目导入，将解析出所有题目，点击 “Help” 查看需要的 Polygon 目录结构。
+
+勾选需要的题目后，点击“Pack Selected To CSGOJ”将题目转换为CSGOJ导入格式。
+
+Polygon 默认每道题都有 check.cpp，根据是否有 Special Judge 的需求调整SpecialJudge列开关，打开则导出包含tpj.cc的开启 Special Judge 的题目，关闭则反之。CSGOJ的 Special Judge 相关请阅读下一节.
+
+![](./user_doc_image/parse_polygon.png)
+
+
+### 1.4 Special Judge
 
 将special judge代码与评测数据一起上传，并勾选题目设置中的“Special Judge”
 
@@ -262,3 +275,9 @@ StaffGen中生成 watcher 账号，该账号在菜单中点击“直播Live”�
 为适配不同屏幕分辨率，点击启动按钮全屏后，通过ctrl+鼠标滚轮，或ctrl+加减号缩放页面，到屏幕内显示12支队伍为宜。
 
 也可根据大屏实际尺寸、保证页面上所有数字完整显示（不会出现省略号）的前提下自行决定。
+
+#### 离线滚榜
+
+滚榜页面可点击右上角“打包下载”，将一场比赛滚榜所需的全部数据拷贝到无法访问服务器的地方进行滚榜。
+
+![](./user_doc_image/pack_rankroll.png)
