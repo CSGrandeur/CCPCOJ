@@ -149,6 +149,9 @@
             await fetchMessages(false);
             const cid = <?php echo $contest['contest_id']; ?>;
             let msg_list_local = csg.store(`contest_msg#cid${cid}`);
+            if(!msg_list_local) {
+                msg_list_local = {msg_list: []};
+            }
             renderMessages(msg_list_local.msg_list);
             $('#contentModal').modal('show');
         });

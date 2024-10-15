@@ -1,7 +1,7 @@
 /*
 Rank school badge tool
 */
-let URL_SCHOOL_BADGE_BASE = FLG_PKG_MODE ? './resource/static/image/school_badge' : '/static/image/school_badge';
+let URL_SCHOOL_BADGE_BASE = typeof(FLG_PKG_MODE) != 'undefined' && FLG_PKG_MODE ? './resource/static/image/school_badge' : '/static/image/school_badge';
 let sl_db = null;
 let IDDB_NAME = 'csgoj';
 let IDDB_TABLE = ['ranktable', 'logotable'];
