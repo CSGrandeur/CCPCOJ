@@ -43,7 +43,7 @@ async function PackPage(cdata, zipWriter, addedFiles, totalFiles, processedFiles
     }
 
     // 替换资源链接
-    doc.querySelectorAll('script[src], link[rel="stylesheet"]').forEach(el => {
+    doc.querySelectorAll('script[src], link[rel="stylesheet"], link[rel="icon"]').forEach(el => {
         const url = new URL(el.src || el.href, window.location.href);
         const trimmedPathname = url.pathname.replace(/^\/+|\/+$/g, '').replace(/^\.+|\.+$/g, ''); // 去掉前后的斜杠和点号
         const path = `./resource/${trimmedPathname}`;
@@ -110,8 +110,16 @@ async function PackPage(cdata, zipWriter, addedFiles, totalFiles, processedFiles
             await GetResource(schoolBadgeUrl, zipWriter, addedFiles, totalFiles, processedFiles);
         }
     }
-    await GetResource("/static/ojtool/bootstrap-icons/font/fonts/bootstrap-icons.woff2", zipWriter, addedFiles, totalFiles, processedFiles);
-    await GetResource("/static/ojtool/bootstrap-icons/font/fonts/bootstrap-icons.woff", zipWriter, addedFiles, totalFiles, processedFiles);
+    // 处理动态加载的 bootstrap-icons
+    const linkElement = document.querySelector('link[href*="bootstrap-icons"]');
+    if (linkElement) {
+        const iconPath = linkElement.href.replace(/\/font\/.*$/, '/font/fonts');
+        console.log(12121, `${iconPath}/bootstrap-icons.woff2`);
+        await GetResource(`${iconPath}/bootstrap-icons.woff2`, zipWriter, addedFiles, totalFiles, processedFiles);
+        await GetResource(`${iconPath}/bootstrap-icons.woff`, zipWriter, addedFiles, totalFiles, processedFiles);
+    } else {
+        console.error('未找到包含 bootstrap-icons 的 <link> 标签');
+    }
     await GetResource("/static/image/global/favicon.ico", zipWriter, addedFiles, totalFiles, processedFiles);
 }
 
