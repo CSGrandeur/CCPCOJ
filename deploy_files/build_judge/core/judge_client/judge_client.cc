@@ -2223,14 +2223,23 @@ void TryBuildSpj(const char *oj_home, const int p_id, const char *spj_code_name,
     sprintf(local_spj_code_file, "%s/data/%d/%s.%s", oj_home, p_id, spj_code_name, spj_code_ext);
     sprintf(local_spj_file, "%s/data/%d/%s", oj_home, p_id, spj_code_name);
 
+    struct rlimit LIM;
+    LIM.rlim_cur = STD_MB << 9;
+    LIM.rlim_max = STD_MB << 9;
+
+    setrlimit(RLIMIT_FSIZE, &LIM);  // 主进程开栈
+
     if (!flag_remote_get && access(local_spj_file, F_OK) == 0)
     {
         return; // 如果不是远程获取的spj代码，且本地已经有spj可执行文件了，则不再编译
     }
     if (access(local_spj_code_file, F_OK) == 0)
     {
-        const char *cmd_spj = "g++ -o %s %s"; // spj.c也可以用g++编译
-        execute_cmd(cmd_spj, local_spj_file, local_spj_code_file);
+        const char *cmd_spj = "g++ %s %s -o %s %s"; // spj.c也可以用g++编译
+        execute_cmd(cmd_spj, cc_opt, cpp_std, local_spj_file, local_spj_code_file);
+        if(DEBUG) {
+            printf(cmd_spj, local_spj_file, local_spj_code_file);
+        }
         execute_cmd("chmod +x", local_spj_file);
     }
 }
@@ -2954,18 +2963,18 @@ int get_test_file(char *work_dir, int p_id)
             execute_cmd(cmd2, p_id, filename, localfile, http_baseurl, http_apipath);
             ret++;
 
-            if (strcmp(filename, "spj.c") == 0 && access(localfile, F_OK) == 0)
-            {
-                TryBuildSpj(oj_home, p_id, "spj", "c", true);
-            }
-            else if (strcmp(filename, "spj.cc") == 0 && access(localfile, F_OK) == 0)
-            {
-                TryBuildSpj(oj_home, p_id, "spj", "cc", true);
-            }
-            else if (strcmp(filename, "tpj.cc") == 0 && access(localfile, F_OK) == 0)
-            {
-                TryBuildSpj(oj_home, p_id, "tpj", "cc", true);
-            }
+        }
+        if (strcmp(filename, "spj.c") == 0)
+        {
+            TryBuildSpj(oj_home, p_id, "spj", "c", true);
+        }
+        else if (strcmp(filename, "spj.cc") == 0)
+        {
+            TryBuildSpj(oj_home, p_id, "spj", "cc", true);
+        }
+        else if (strcmp(filename, "tpj.cc") == 0)
+        {
+            TryBuildSpj(oj_home, p_id, "tpj", "cc", true);
         }
     }
     // ********** 20231006: 目录加锁避免多进程同写
@@ -3027,6 +3036,12 @@ int same_subtask(char *last, char *cur)
 }
 int main(int argc, char **argv)
 {
+        struct rlimit LIM;
+        LIM.rlim_max = 500 * STD_MB;
+        LIM.rlim_cur = 500 * STD_MB;
+        setrlimit(RLIMIT_FSIZE, &LIM);
+
+
     char work_dir[BUFFER_SIZE];
     // char cmd[BUFFER_SIZE];
     char user_id[BUFFER_SIZE];
