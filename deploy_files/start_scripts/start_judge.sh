@@ -67,6 +67,11 @@ else
     else
         CPUSET_CONFIG=""
     fi
+    JUDGE_MOUNT=""
+    if [ "$CSGOJ_DEV" = "1" ]; then
+        JUDGE_MOUNT="-v `pwd`/../build_judge:/judgecore
+        "
+    fi
     docker run -dit $LINK_LOCAL \
         --name $CONTAINER_NAME \
         -e OJ_HTTP_BASEURL="$OJ_HTTP_BASEURL" \
@@ -77,7 +82,7 @@ else
         -e JUDGE_IGNORE_ESOL=$JUDGE_IGNORE_ESOL \
         -e JUDGE_TOP_DIFF_BYTES=$JUDGE_TOP_DIFF_BYTES \
         -e JUDGE_SHM_RUN=$JUDGE_SHM_RUN \
-        -v $PATH_DATA/var/data/judge-$OJ_NAME:/volume $SIDE_ETC \
+        -v $PATH_DATA/var/data/judge-$OJ_NAME:/volume $SIDE_ETC $JUDGE_MOUNT \
         --cpus=$JUDGE_DOCKER_CPUS $CPUSET_CONFIG \
         --memory=$JUDGE_DOCKER_MEMORY \
         --cap-add=SYS_PTRACE $SHM_CONFIG \

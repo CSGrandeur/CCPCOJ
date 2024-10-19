@@ -32,6 +32,7 @@ else
     fi
     if [ "$CSGOJ_DEV" = "1" ]; then
         WEB_MOUNT="-v `pwd`/../../ojweb/application:/ojweb/application 
+        -v `pwd`/../../ojweb/public:/ojweb/public  
         -v `pwd`/../../ojweb/extend:/ojweb/extend  
         -v `pwd`/../../ojweb/vendor:/ojweb/vendor  
         -v `pwd`/../../ojweb/thinkphp:/ojweb/thinkphp
