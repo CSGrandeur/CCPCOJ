@@ -2229,7 +2229,7 @@ void TryBuildSpj(const char *oj_home, const int p_id, const char *spj_code_name,
     LIM.rlim_cur = STD_MB << 9;
     LIM.rlim_max = STD_MB << 9;
 
-    setrlimit(RLIMIT_FSIZE, &LIM);  // 主进程开栈
+    setrlimit(RLIMIT_STACK, &LIM);  // 主进程开栈
 
     if (!flag_remote_get && access(local_spj_file, F_OK) == 0)
     {
