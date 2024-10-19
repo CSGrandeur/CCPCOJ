@@ -29,6 +29,7 @@ chmod +x /usr/bin/sim.sh
 
 
 # Adjust system configuration
+cp /judgecore/install/pycheck.py  /home/judge/etc/
 cp /judgecore/install/java0.policy  /home/judge/etc/
 cp /judgecore/install/judge.conf    /home/judge/etc/
 chmod 777 -R /home/judge
