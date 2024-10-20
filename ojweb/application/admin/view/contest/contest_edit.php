@@ -37,7 +37,7 @@
                     <label for="Minute">Minute</label> <input type="text" class="form-control" name="end_minute"style="width:50px;" value="{$end_minute}">
                 </div>
                 <div class="form-inline">
-                    <label for="award_ratio" style="width:150px;">Award Ratio:</label>
+                    <label for="award_ratio" style="width:150px; color:red;">Award Ratio (%):</label>
                     <label for="ratio_gold">Gold</label>     <input type="text" class="form-control" name="ratio_gold"  style="width:80px;" value="{$ratio_gold}">
                     <label for="ratio_silver">Silver</label>   <input type="text" class="form-control" name="ratio_silver" style="width:80px;" value="{$ratio_silver}">
                     <label for="ratio_bronze">Bronze</label>       <input type="text" class="form-control" name="ratio_bronze"   style="width:80px;" value="{$ratio_bronze}">
@@ -45,11 +45,11 @@
                 <div class="form-inline">
                     <label for="frozen_minute" style="width:150px;">Frozen Minutes:</label>
                     <label for="frozen_minute">Before End</label>     <input type="text" class="form-control" name="frozen_minute"  style="width:80px;" value="{$frozen_minute}">
-                    <label for="frozen_after">After End</label>   <input type="text" class="form-control" name="frozen_after" style="width:80px;" value="{$frozen_after}">
+                    <label for="frozen_after" style="color:red;">After End</label>   <input type="text" class="form-control" name="frozen_after" style="width:80px;" value="{$frozen_after}">
                 </div>
                 <div class="form-inline">
                     <span style="display: inline-block;">
-                        <label style="width:150px;">Contest Type:</label>
+                        <label style="width:150px; color:red;">Contest Type:</label>
                         <div class="radio">
                             <label><input name="private" type="radio" value="0" {if !isset($private) || $private % 10 == 0} checked {/if} />Public</label>
                             <label><input name="private" type="radio" value="1" {if isset($private) && $private % 10 == 1} checked {/if} />Private</label>

@@ -142,13 +142,13 @@ class Contest extends Adminbase
             'end_day'       => date('d', $now + 18000),
             'end_hour'      => date('H', $now + 18000),
             'end_minute'    => 0,
-            'private'       => 0,
+            'private'       => $this->OJ_MODE == 'online' ? 1 : 2,
             'topteam'       => 1,   // 每个学校前topteam个正式队伍计入学校排名
             'ratio_gold'    => 10,
-            'ratio_silver'  => 15,
-            'ratio_bronze'  => 20,
+            'ratio_silver'  => 20,
+            'ratio_bronze'  => 30,
             'frozen_minute' => 60,
-            'frozen_after'  => 15,
+            'frozen_after'  => 300,
             'edit_mode'     => false
         ]);
         return $this->fetch($this->OJ_STATUS == 'exp' ? 'contest_edit_clss' : 'contest_edit');
