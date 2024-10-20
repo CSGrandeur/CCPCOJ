@@ -297,7 +297,7 @@ async function FetchProblem(problem_entries, problem_xml_entry) {
                 statement_lang = "chinese";
             } else if (
                 entry.filename.includes("statements/english/") &&
-                statement_lang != "english"
+                statement_lang != "chinese"
             ) {
                 statement_entry = entry;
                 statement_lang = "english";

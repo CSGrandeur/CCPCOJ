@@ -3123,8 +3123,11 @@ int main(int argc, char **argv)
     // java and other VM language are lucky to have the global bonus in judge.conf
     if (lang >= LANG_JAVA && lang != LANG_OBJC && lang != LANG_CLANG && lang != LANG_CLANGPP && lang != LANG_GO)
     { // ObjectivC Clang Clang++ Go not VM or Script
-        // the limit for java
-        time_lmt = time_lmt + java_time_bonus;
+        if(lang == LANG_PYTHON) {
+            time_lmt *= 2;  // python 2倍
+        } else {
+            time_lmt = time_lmt + java_time_bonus;  // java等有初始化时间的语言加 java_time_bonus 秒
+        }
         mem_lmt = mem_lmt + java_memory_bonus;
         // copy java.policy
         if (lang == 3)
@@ -3136,8 +3139,11 @@ int main(int argc, char **argv)
     }
 
     // never bigger than judged set value;
-    if (time_lmt > 300 || time_lmt < 0)
+    if (time_lmt > 300) {
+        time_lmt = 300;
+    } else if(time_lmt <= 0) {
         time_lmt = 1;
+    }
     if (mem_lmt > 1024 || mem_lmt < 1)
         mem_lmt = 1024;
 
