@@ -5,7 +5,7 @@ if [ ! -d /volume/etc ]; then
 fi
 
 if [ ! -f /volume/etc/judge.conf ]; then
-    cp -rp /home/judge/etc/judge.conf /volume/etc/judge.conf;
+    cp -rfp /home/judge/etc/* /volume/etc/;
 fi
 if [ $OJ_HTTP_BASEURL ];        then sed -i "s#OJ_HTTP_BASEURL=.*#OJ_HTTP_BASEURL=$OJ_HTTP_BASEURL#g"           /volume/etc/judge.conf; fi
 if [ $OJ_HTTP_PASSWORD ];       then sed -i "s#OJ_HTTP_PASSWORD=.*#OJ_HTTP_PASSWORD=$OJ_HTTP_PASSWORD#g"        /volume/etc/judge.conf; fi
