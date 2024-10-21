@@ -41,20 +41,26 @@ bronze="<?php echo isset($ratio_bronze) ? $ratio_bronze : 20;?>"
     overflow-y: unset; 
     height: auto; 
 } */
+
 .rank_fullscreen {
     position: fixed;
     top: 0;
     left: 0;
+    right: 0;
     width: 100%;
     height: 100%;
     z-index: 1024;
     background-color: white;
-    padding-left: 10vw;
-    /* display: flex; */
-    /* flex-direction: column; */
-    /* justify-content: center; */
-    /*align-items: center; /* 垂直居中 */
-    overflow: auto;
+    display: flex;
+    justify-content: center;
+    overflow-x: auto; 
+}
+
+
+@media (max-width: 2500px) {
+    .rank_fullscreen > div {
+        min-width: 100%; 
+    }
 }
 
 .d-inline-block {

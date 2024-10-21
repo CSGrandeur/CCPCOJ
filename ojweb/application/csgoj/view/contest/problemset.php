@@ -28,7 +28,6 @@
                 {if $isContestAdmin || isset($proctorAdmin) && $proctorAdmin }
                     &nbsp;&nbsp;&nbsp;&nbsp;
                     <button class="btn btn-sm btn-default" data-toggle="modal" data-target="#page_modal">Change</button>
-                    {include file="../../csgoj/view/contest/change_notification" /}
                 {/if}
                 </h3>
             </div>
@@ -52,7 +51,7 @@
 }
 </style>
 {css href="__STATIC__/csgoj/contest_problemset.js" /}
-{if IsAdmin('contest', $contest['contest_id'])}
-{include file="../../csgoj/view/contest/change_notification" /}
+{if $isContestAdmin || isset($proctorAdmin) && $proctorAdmin }
+    {include file="../../csgoj/view/contest/change_notification" /}
 {/if}
 {include file="../../csgoj/view/public/mathjax_js" /}

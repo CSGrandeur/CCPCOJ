@@ -6,6 +6,10 @@ var cid;
 if (typeof cid === 'undefined') {
     cid = param?.cid;
 }
+var PAGE_TYPE;
+if(typeof(PAGE_TYPE) == 'undefined') {
+    PAGE_TYPE = 'rank';
+}
 let cid_list = param?.cid_list;
 var cdata = null;  // 比赛原始数据
 let cnt_base = null;    // 过题队数量作为评奖基数，金银铜向上取整

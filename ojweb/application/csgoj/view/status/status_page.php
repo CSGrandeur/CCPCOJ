@@ -1,22 +1,27 @@
 <div id="status_toolbar">
     <div class="form-inline fake-form" role="form">
-        <button id="status_refresh" type="submit" class="btn btn-default"><i class="glyphicon glyphicon-refresh icon-refresh"></i></button>
-        <button id="status_clear" type="submit" class="btn btn-default">Clear</button>
-        <button id="status_ok" type="submit" class="btn btn-default">Search</button>
+        <button id="status_refresh" type="submit" class="btn btn-default" title="刷新 (Refresh)">
+            <i class="glyphicon glyphicon-refresh icon-refresh"></i>
+        </button>
+        <button id="status_clear" type="submit" class="btn btn-default" title="清空 (Clear)">
+            <i class="glyphicon glyphicon-trash"></i>
+        </button>
+        <button id="status_ok" type="submit" class="btn btn-default" title="过滤 (Filter)">
+            <i class="glyphicon glyphicon-filter"></i>
+        </button>
         <div class="form-group">
-            <span>Problem ID:</span>
-            <input id="problem_id_input" name="problem_id" class="form-control status_filter" type="text" value="{$search_problem_id}" style="max-width:100px;">
+            <input id="problem_id_input" name="problem_id" class="form-control status_filter" type="text" value="{$search_problem_id}" style="max-width:100px;" placeholder="Problem ID">
         </div>
         <div class="form-group">
-            <span>User:</span>
-            <input id="user_id_input" name="user_id" class="form-control status_filter" type="text" value="{$search_user_id}" style="max-width:120px;">
+            <input id="user_id_input" name="user_id" class="form-control status_filter" type="text" value="{$search_user_id}" style="max-width:120px;" placeholder="User">
         </div>
         <div class="form-group">
-            <span>RunID:</span>
-            <input id="solution_id_input" name="solution_id" class="form-control status_filter" type="text" value="{$search_solution_id}" style="max-width:100px;">
+            <input id="solution_id_input" name="solution_id" class="form-control status_filter" type="text" value="{$search_solution_id}" style="max-width:100px;" placeholder="RunID">
         </div>
         <div class="form-group">
-            <span>Language:</span>
+        <span class="inline-dlang"><span>编程语言</span><span class="label-subtext">Language</span></span>
+        </div>
+        <div class="form-group">
             <select name="language" class="form-control status_filter">
                 <option value="-1" selected="true">
                     All
@@ -29,7 +34,9 @@
             </select>
         </div>
         <div class="form-group">
-            <span>Result:</span>
+            <span class="inline-dlang"><span>评测结果</span><span class="label-subtext">Result</span></span>
+        </div>
+        <div class="form-group">
             <select name="result" class="form-control status_filter">
                 <option value="-1" {if $search_result == -1}selected="true"{/if}>
                     All
@@ -44,7 +51,6 @@
             </select>
         </div>
         {if(isset($contest) && (IsAdmin('contest', $contest['contest_id']) || IsAdmin('source_browser'))) }
-        <span>Similar:</span>
         <input id="similar_input" name="similar" placeholder="Sim" class="form-control" type="text" style="max-width:50px;">
         {/if}
     </div>
@@ -201,4 +207,35 @@
         overflow-x: auto;
     }
 
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            -webkit-transform: rotate(360deg);
+            transform: rotate(360deg);
+        }
+    }
+    #content_show_modal_content pre {
+        overflow-y: hidden;
+    }
+    .code_linenumber_div {
+        overflow-x: auto;
+    }
+    .btn-subtext {
+        display: block;
+        font-size: 0.75em;
+        line-height: 1em;
+        color: gray; /* 设置英文文本颜色为灰色 */
+    }
+    .label-subtext {
+        display: inline-block;
+        font-size: 0.75em;
+        line-height: 1em;
+        color: gray; /* 设置英文文本颜色为灰色 */
+    }
+    .inline-dlang {
+        display:flex; 
+        flex-direction: column;
+    }
 </style>

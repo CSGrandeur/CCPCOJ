@@ -29,7 +29,11 @@
         {/if}
         {if $contestStatus > -1}
             {if $canJoin}
-            <li role="presentation" {if strpos($action, 'status') === 0} class="active" {/if}><a href="/{$module}/{$contest_controller}/status?cid={$contest['contest_id']}{if !$isContestAdmin && !IsAdmin('source_browser') }#user_id={$contest_user}{/if}">评测状态<br/><span class="en-text">Status</span></a></li>
+            <li role="presentation" {if strpos($action, 'status') === 0} class="active" {/if}>
+                <a href="/{$module}/{$contest_controller}/status?cid={$contest['contest_id']}{if !$isContestAdmin && !IsAdmin('source_browser') && (!isset($proctorAdmin) || !$proctorAdmin) }#user_id={$contest_user}{/if}">
+                    评测状态<br/><span class="en-text">Status</span>
+                </a>
+            </li>
             {/if}
         <li role="presentation" {if $action == 'ranklist'} class="active" {/if}><a href="/{$module}/{$contest_controller}/ranklist?cid={$contest['contest_id']}">排名<br/><span class="en-text">Ranklist</span></a></li>
             {if $OJ_OPEN_OI && ($OJ_STATUS != 'exp' || $contest['private'] % 10 == 2)  }

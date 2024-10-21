@@ -452,6 +452,12 @@ class Contest extends Csgojbase
         if (isset($this->isContestWorker) && $this->isContestWorker && !$this->isContestAdmin) {
             $this->error("No permission", '/' . $this->module . '/contest?cid=' . $this->contest['contest_id'], '', 1);
         }
+        $summary_map = ['result' => 4, 'contest_id' => $this->contest['contest_id']];
+        if ($this->rankFrozen) {
+            // 如果不是比赛管理员，则统计ac数要按封榜时间
+            $closeRankTimeStr = date('Y-m-d H:i:s', $this->closeRankTime);
+            $summary_map['in_date'] = ['lt', $closeRankTimeStr];
+        }
         $apid = trim(input('get.pid'));
         $problem_id = $this->problemIdMap['abc2id'][$apid];
 
@@ -476,7 +482,7 @@ class Contest extends Csgojbase
             ->buildSql();
         $acSql = db('solution')
             ->field(['problem_id', 'count(1) accepted'])
-            ->where(['result' => 4, 'contest_id' => $this->contest['contest_id']])
+            ->where($summary_map)
             ->group('problem_id')
             ->buildSql();
         $submitSql = db('solution')
@@ -1610,7 +1616,7 @@ class Contest extends Csgojbase
             if ($s['result'] == 11) {
                 // Compile Error 不罚时，计算rank时视为不存在
                 continue;
-            } else if ($this->rankFrozen == true && $s['in_date'] > $closeRankTimeStr) {
+            } else if ($this->rankFrozen == true && $s['in_date'] > $closeRankTimeStr || $s['result'] < 4) {    // 20241021 增加，result < 4 的正在评测的题也是 try 
                 $rankData['tr_num'][$s['problem_id']] = array_key_exists($s['problem_id'], $rankData['tr_num']) ? $rankData['tr_num'][$s['problem_id']] + 1 : 1;
             } else if ($s['result'] == 4) {
                 $rankData['ac_sec'][$s['problem_id']] = strtotime($s['in_date']) - strtotime($this->contest['start_time']);
@@ -1765,7 +1771,7 @@ class Contest extends Csgojbase
     // reply正数表示被回复ID，负数表示被回复的次数
     public function TopicAuth() {
         if (!$this->contest_user)
-            $this->error("Please login first", 'contest?cid=' . $this->contest['contest_id'], '', 2);
+            $this->error("Please login first", 'contest?cid=' . $this->contest['contest_id'], '', 1);
     }
     public function topic_detail()
     {

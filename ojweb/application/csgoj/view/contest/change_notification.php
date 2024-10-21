@@ -73,9 +73,9 @@
                 'description_md': notification
             },
             function(ret){
-                if(ret['code'] == 1) {
-                    alertify.success(ret['msg']);
-                    contest_notification_div.html(ret['data']);
+                if(ret.code == 1) {
+                    alertify.success(ret.msg);
+                    contest_notification_div.html(ret.data);
                     page_modal.modal('hide');
                     button_delay(page_modal_submit, 5, submit_button_text);
                 }

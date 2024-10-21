@@ -286,7 +286,7 @@ function FormatterRankPro(value, row, index, field) {
         return typeof(res) == 'undefined' || res === null ? '&nbsp;' : sec2str(res);
     }
     function TR(res) {
-        return typeof(res) == 'undefined' || res === null ? '' : `? ${res}`;
+        return typeof(res) == 'undefined' || res === null || value.ac ? '' : `? ${res}`;
     }
     function WA(res) {
         return typeof(res) == 'undefined' || res === null ? '&nbsp;' : `(- ${res})`;

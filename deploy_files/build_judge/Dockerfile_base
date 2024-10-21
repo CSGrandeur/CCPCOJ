@@ -1,8 +1,10 @@
 FROM ubuntu:22.04
 ENV     DEBIAN_FRONTEND noninteractive
-RUN     sed -i 's/archive.ubuntu/mirrors.tencent/g' /etc/apt/sources.list && \
-	    apt-get update && apt-get -y upgrade
-
+RUN     sed -i 's/archive.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list && \
+        sed -i 's/security.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list
+RUN     apt-get update
+RUN     apt-get -y upgrade
+RUN    	DEBIAN_FRONTEND=noninteractive  apt-get -y install --no-install-recommends  openjdk-17-jdk 
 RUN    	DEBIAN_FRONTEND=noninteractive  apt-get -y install --no-install-recommends  tzdata && dpkg-reconfigure -f noninteractive tzdata
 RUN    	DEBIAN_FRONTEND=noninteractive  apt-get -y install --no-install-recommends  iputils-ping 
 RUN    	DEBIAN_FRONTEND=noninteractive  apt-get -y install --no-install-recommends  make 
@@ -12,7 +14,6 @@ RUN    	DEBIAN_FRONTEND=noninteractive  apt-get -y install --no-install-recommen
 RUN    	DEBIAN_FRONTEND=noninteractive  apt-get -y install --no-install-recommends  g++ 
 RUN    	DEBIAN_FRONTEND=noninteractive  apt-get -y install --no-install-recommends  iptables 
 RUN    	DEBIAN_FRONTEND=noninteractive  apt-get -y install --no-install-recommends  python3 
-RUN    	DEBIAN_FRONTEND=noninteractive  apt-get -y install --no-install-recommends  openjdk-17-jdk 
 RUN    	DEBIAN_FRONTEND=noninteractive  apt-get -y install --no-install-recommends  fp-compiler 
 # RUN    	DEBIAN_FRONTEND=noninteractive  apt-get -y install --no-install-recommends  mono-devel 
 RUN    	DEBIAN_FRONTEND=noninteractive  apt-get -y install --no-install-recommends  busybox 

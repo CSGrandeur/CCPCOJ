@@ -8,10 +8,10 @@
         <button class="btn btn-default" type="button" aria-label="Refresh" id="balloon_refresh"><i class="glyphicon glyphicon-refresh icon-refresh"></i> </button>
         {/if}
 
-        <button class="btn btn-warning" type="button" id="rank_fullscreen_btn" title="网页全屏"><span id="rank_fullscreen_span" class="glyphicon glyphicon-fullscreen"></span></button>
+        <button class="btn btn-warning" type="button" id="rank_fullscreen_btn" title="网页全屏(Full Window)"><span id="rank_fullscreen_span" class="glyphicon glyphicon-fullscreen"></span></button>
         {if $action == 'ranklist' || $action == 'schoolrank' }
         <div class="form-group">
-            <a class="btn btn-info" href="/ojtool/rankdynamic/{if $action == 'ranklist'}rank{else /}schoolrank{/if}?cid={$contest['contest_id']}" target="_blank">Dynamic Rank</a>
+            <a class="btn btn-info" href="/ojtool/rankdynamic/{if $action == 'ranklist'}rank{else /}schoolrank{/if}?cid={$contest['contest_id']}" target="_blank" title="动态榜(Dynamic Rank)"><i class="glyphicon glyphicon-th-list"></i></a>
         </div>
         {/if}
         <div class="form-group">
