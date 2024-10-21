@@ -6,10 +6,10 @@
 # --OJ_HTTP_BASEURL='http://nginx-server:20080' \
 # --PASS_JUDGER='999999'  \
 # --JUDGE_USER_NAME='judger' \
-# --JUDGE_DOCKER_CPUS=6 \
-# --JUDGE_DOCKER_CPU_OFFSET=0 \
-# --JUDGE_DOCKER_MEMORY=6g \
-# --JUDGE_PROCESS_NUM=2 \
+# --JUDGE_DOCKER_CPUS=4 \
+# --JUDGE_DOCKER_MEMORY=4g \
+# --JUDGE_DOCKER_CPU_OFFSET=2 \
+# --JUDGE_PROCESS_NUM=1 \
 # --JUDGE_SHM_RUN=0 \
 # --JUDGER_TOTAL=1 \
 # --OJ_MOD=0 
@@ -68,10 +68,10 @@ else
         CPUSET_CONFIG=""
     fi
     JUDGE_MOUNT=""
-    if [ "$CSGOJ_DEV" = "1" ]; then
-        JUDGE_MOUNT="-v `pwd`/../build_judge:/judgecore
-        "
-    fi
+    # if [ "$CSGOJ_DEV" = "1" ]; then
+    #     JUDGE_MOUNT="-v `pwd`/../build_judge:/judgecore
+    #     "
+    # fi
     docker run -dit $LINK_LOCAL \
         --name $CONTAINER_NAME \
         -e OJ_HTTP_BASEURL="$OJ_HTTP_BASEURL" \

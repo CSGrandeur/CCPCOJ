@@ -3,6 +3,7 @@ namespace app\ojtool\controller;
 class Judge extends Ojtoolbase {
     var $judge_user;
     var $utf_regex;
+    var $auto_rejudge_sec = 900;
     public function _initialize() {
         $this->OJMode();
         $this->JudgeInit();
@@ -72,13 +73,13 @@ class Judge extends Ojtoolbase {
         $this->Response('update_solution ok');
     }
     protected function judge_checkout() {
-        // 检出solution，标记为正在判题. 过滤条件：尚未检出或已检出但80秒未判题的题目
+        // 检出solution，标记为正在判题. 过滤条件：尚未检出或已检出但 $auto_rejudge_sec 秒未判题的题目
         $sid = input('sid/d');
         $result = input('result/d');
         $ret = db('solution')->where('solution_id', $sid)->where(function($query){
             $query->where('result', '<', 2)
                 ->whereOr(function($query2) {
-                    $query2->where('result', '<', 4)->whereTime('judgetime', '<', time() - 900);
+                    $query2->where('result', '<', 4)->whereTime('judgetime', '<', time() - $this->auto_rejudge_sec);
                 });
         })->update([
             'result'    => $result,
@@ -98,7 +99,7 @@ class Judge extends Ojtoolbase {
             ->where(function ($query) {
                 $query->where('result', '<', 2)
                     ->whereOr(function ($query) {
-                        $query->where('result', '<', 4)->whereTime('judgetime', '<', time() - 900);
+                        $query->where('result', '<', 4)->whereTime('judgetime', '<', time() - $this->auto_rejudge_sec);
                     });
             })
             ->order(['result' => 'asc', 'solution_id' => 'asc'])

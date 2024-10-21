@@ -25,7 +25,7 @@ rm -rf /home/judge/data
 rm -rf /home/judge/etc
 ln -s /volume/data   /home/judge/data   
 ln -s /volume/etc    /home/judge/etc
-
+chmod 777 -R /volume/etc
 /usr/bin/judged
 # judged /home/judge debug
 sleep infinity

@@ -2482,6 +2482,11 @@ void watch_solution(pid_t pidApp, char *infile, int &ACflg, int spj,
     int first = true;
     int tick = 0;
     long outFileSize = get_file_size(outfile);
+
+    // for walltime
+    struct timeval start_time, current_time;
+    gettimeofday(&start_time, NULL);
+
     while (1)
     {
         tick++;
@@ -2497,6 +2502,17 @@ void watch_solution(pid_t pidApp, char *infile, int &ACflg, int spj,
                    //    |PTRACE_O_TRACEVFORK
                    //   有的发行版带的PTRACE不识别以上宏，因此注释掉
             );
+        }
+
+        // check wall time
+        gettimeofday(&current_time, NULL);
+        double elapsed_time = (current_time.tv_sec - start_time.tv_sec) + (current_time.tv_usec - start_time.tv_usec) / 1000000.0;
+        if (elapsed_time > time_lmt * 2 + 1)
+        {
+            ACflg = OJ_TL;
+            usedtime = time_lmt * 1000;
+            ptrace(PTRACE_KILL, pidApp, NULL, NULL);
+            break;
         }
 
         // jvm gc ask VM before need,so used kernel page fault times and page size
@@ -2573,7 +2589,6 @@ void watch_solution(pid_t pidApp, char *infile, int &ACflg, int spj,
             ptrace(PTRACE_KILL, pidApp, NULL, NULL);
             break;
         }
-
         exitcode = WEXITSTATUS(status) % 256;
         /*exitcode == 5 waiting for next CPU allocation          * ruby using system to run,exit 17 ok
          *  Runtime Error:Unknown signal xxx need be added here
@@ -2728,12 +2743,12 @@ void watch_solution(pid_t pidApp, char *infile, int &ACflg, int spj,
         }
         char resolved_path[PATH_MAX];
         realpath(path, resolved_path);
-        if (strstr(resolved_path, "/volume/data") != NULL)
+        if (strstr(resolved_path, "/volume") != NULL)
         {
             ACflg = OJ_RE;
             if (DEBUG)
             {
-                printf("[OJ_RE(%d)] Forbidden access to %s\n", OJ_RE, "judge/data");
+                printf("[OJ_RE(%d)] Forbidden access \n", OJ_RE);
             }
             ptrace(PTRACE_KILL, pidApp, NULL, NULL);
             break;
@@ -3123,11 +3138,15 @@ int main(int argc, char **argv)
     // java and other VM language are lucky to have the global bonus in judge.conf
     if (lang >= LANG_JAVA && lang != LANG_OBJC && lang != LANG_CLANG && lang != LANG_CLANGPP && lang != LANG_GO)
     { // ObjectivC Clang Clang++ Go not VM or Script
-        if(lang == LANG_PYTHON) {
-            time_lmt *= 2;  // python 2倍
-        } else {
-            time_lmt = time_lmt + java_time_bonus;  // java等有初始化时间的语言加 java_time_bonus 秒
-        }
+    
+        // if(lang == LANG_PYTHON) {
+        //     time_lmt *= 2;  // python 2倍
+        // } else {
+        //     time_lmt = time_lmt + java_time_bonus;  // java等有初始化时间的语言加 java_time_bonus 秒
+        // }
+        
+        time_lmt = time_lmt + java_time_bonus;  // java等有初始化时间的语言加 java_time_bonus 秒
+
         mem_lmt = mem_lmt + java_memory_bonus;
         // copy java.policy
         if (lang == 3)
