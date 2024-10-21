@@ -24,7 +24,7 @@
     <div class="col-md-4 col-sm-4">
         <div class="panel panel-primary">
             <div class="panel-heading">
-                <h3 class="panel-title">公告(Notification):
+                <h3 class="panel-title">公告(Announcement):
                 {if $isContestAdmin || isset($proctorAdmin) && $proctorAdmin }
                     &nbsp;&nbsp;&nbsp;&nbsp;
                     <button class="btn btn-sm btn-default" data-toggle="modal" data-target="#page_modal">Change</button>

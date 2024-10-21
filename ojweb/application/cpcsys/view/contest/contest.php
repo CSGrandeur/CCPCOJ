@@ -1,4 +1,4 @@
-<h3>公告(Notification):</h3>
+<h3>公告(Announcement):</h3>
 <article class="md_display_div">
     {if $contestStatus == -1}
         <span class="alert alert-info" style="display: inline-block;">This contest is not started yet.</span>

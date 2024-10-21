@@ -74,6 +74,7 @@
 {include file="../../csgoj/view/contest/contest_msg_timing" /}
 {/if}
 
+
 <script type="text/javascript">
     var diff = new Date($('#current_time_div').attr('time_stamp') * 1000).getTime()-new Date().getTime();
     function str0(a)
@@ -100,9 +101,27 @@
     });
 </script>
 
-{if $isContestAdmin}
+{if $isContestAdmin || isset($proctorAdmin) && $proctorAdmin}
 <script type="text/javascript">
+    
+function GetTopicNum() {
+    let tmp_module = "<?php echo $module ?>";
+    let tmp_cid = "<?php echo $contest['contest_id'] ?>";
+    $.get(`/${tmp_module}/contest/topic_num_ajax?cid=${tmp_cid}`, function(rep) {
+        if(typeof(rep) != 'undefined') {
+            $('#topic_num').text(`(${rep})`);
+            let old_rep_num = csg.store(`topic_num#cid${tmp_cid}`);
+            if(old_rep_num === null || rep > old_rep_num) {
+                alertify.warning("有新提问");
+                csg.store(`topic_num#cid${tmp_cid}`, rep);
+            }
+        }
+    });
+}
 $(document).ready(function(){
+    GetTopicNum();
+    setInterval(GetTopicNum, 30000);
+
     let contest_export = $('#contest_export');
     contest_export.on('click', function(){
         alertify.confirm("Confirm to export?",
@@ -138,7 +157,9 @@ $(document).ready(function(){
         );
         
     });
-})
+});
+
+
 </script>
 {/if}
 

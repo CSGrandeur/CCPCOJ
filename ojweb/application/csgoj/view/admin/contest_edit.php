@@ -64,7 +64,7 @@
                         &nbsp;&nbsp;
                     </span>
                 </div>
-                <label for="description">Description/Notification (markdown)：</label>
+                <label for="description">Description/Announcement (markdown)：</label>
                 <textarea id="contest_description" class="form-control" placeholder="Content..." rows="5" cols="50" name="description" >{$contest['description']|htmlspecialchars}</textarea>
             </div>
         </div>

@@ -91,7 +91,7 @@
                     <div id="balloon_color_div"></div>
                     <input type="text" class="form-control" id="balloon_colors" placeholder="3F3F3F,202020,AB3062..." name="balloon_colors" {if $edit_mode}value="{$balloon_colors}"{/if} >
                 </div>
-                <label for="description">Description/Notification (markdown)：</label>
+                <label for="description">Description/Announcement (markdown)：</label>
                 <textarea id="contest_description" class="form-control" placeholder="Content..." rows="5" cols="50" name="description" >{if $edit_mode}{$contest['description']|htmlspecialchars}{/if}</textarea>
             </div>
             <div class="col-md-3 col-sm-3">

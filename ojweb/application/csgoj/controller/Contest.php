@@ -640,11 +640,11 @@ class Contest extends Csgojbase
         }
         $description_md = input('description_md/s', '');
         if (strlen($description_md) > 16384)
-            $this->error('Notification too long');
+            $this->error('Announcement too long');
         db('contest_md')->where('contest_id', $this->contest['contest_id'])->setField('description', $description_md);
         $description = ParseMarkdown($description_md);
         db('contest')->where('contest_id', $this->contest['contest_id'])->setField('description', $description);
-        $this->success('Notification updated', null, $description);
+        $this->success('Announcement updated', null, $description);
     }
     /**************************************************/
     // Problem Data
@@ -1951,6 +1951,15 @@ class Contest extends Csgojbase
         $this->assign('abc2id', $this->problemIdMap['abc2id']);
         $this->assign('action', strtolower($this->request->action()));
         return $this->fetch();
+    }
+    public function topic_num_ajax() {
+        if(!$this->IsContestAdmin('admin')) {
+            $this->error("Permission denied");
+        }
+        return db('contest_topic')->where([
+            'contest_id' => $this->contest['contest_id'],
+            'reply' => ['elt', 0]
+        ])->where($this->topicDefaultMap)->count();
     }
     public function topic_list_ajax()
     {

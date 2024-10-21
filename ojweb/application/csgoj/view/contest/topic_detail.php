@@ -107,9 +107,21 @@
     </div>
     <input type="hidden" id="cid_input" class="form-control" name="cid" value="{$contest['contest_id']}" >
     <input type="hidden" id="topic_id_input" class="form-control" name="topic_id" value="{$topic['topic_id']}" >
-    <div class="form-group" id="fn-nav">
-
+    <div class="btn-group">
         <button type="submit" id='submit_button' class="btn btn-primary" {if isset($replyAvoid) && $replyAvoid == true} disabled="disabled"{/if}>Submit Reply</button>
+        <button type="button" id='clear_button' class="btn btn-warning">Clear</button>
+        <!-- 常用回复语句的选项框 -->
+        <select id="reply-select" class="form-control" onchange="insertReply()" style="width: 300px">
+            <option value="">常用回复语句 / Common Reply Phrases</option>
+            <option value="无回复 / No response">无回复 / No response</option>
+            <option value="请认真读题 / Please read the problem carefully">请认真读题 / Please read the problem carefully</option>
+            <option value="请查看公告 / Please check the announcement">请查看公告 / Please check the announcement</option>
+            <option value="请查看通知 / Please check the message">请查看通知 / Please check the message</option>
+            <option value="是的 / Yes">是的 / Yes</option>
+            <option value="不是 / No">不是 / No</option>
+            <option value="存在 / Exists">存在 / Exists</option>
+            <option value="不存在 / Not exist">不存在 / Not exist</option>
+        </select>
     </div>
 </form>
 
@@ -123,7 +135,7 @@
             rules:{
                 topic_content: {
                     required: true,
-                    minlength: 3,
+                    minlength: 2,
                     maxlength: 16384
                 }
             },
@@ -132,22 +144,23 @@
                 submit_button.attr('disabled', true);
                 $(form).ajaxSubmit(function(ret)
                 {
-                    if(ret["code"] == 1)
+                    if(ret.code == 1)
                     {
-                        var data = ret['data'];
-                        alertify.success(ret['msg']);
-                        var reply = "<article class='md_display_div reply_display_div'>\n" +
-                            "<p class='help-block'>\n" +
-                            "<span class='inline_span'>Time: <span class='inline_span text-warning'>" + data['in_date'] + "</span></span>&nbsp;&nbsp;&nbsp;&nbsp;\n" +
-                            "<span class='inline_span'>User: <span class='inline_span text-default'>\n" +
-                            "<a href='/" + data['module'] + "/user/userinfo?user_id=" + data['user_id'] + "'>" + data['user_id'] + "</a></span></span>&nbsp;&nbsp;&nbsp;&nbsp;\n" +
-                            "</p>\n" +
-                            data['content'] + "\n" +
-                            "</article>";
-                        reply_list_content_div.append(reply);
-                        topic_reply_content.val('');
-                        button_delay(submit_button, 10, 'Submit');
-                        return true;
+                        location.reload();
+                        // var data = ret['data'];
+                        // alertify.success(ret['msg']);
+                        // var reply = "<article class='md_display_div reply_display_div'>\n" +
+                        //     "<p class='help-block'>\n" +
+                        //     "<span class='inline_span'>Time: <span class='inline_span text-warning'>" + data['in_date'] + "</span></span>&nbsp;&nbsp;&nbsp;&nbsp;\n" +
+                        //     "<span class='inline_span'>User: <span class='inline_span text-default'>\n" +
+                        //     "<a href='/" + data['module'] + "/user/userinfo?user_id=" + data['user_id'] + "'>" + data['user_id'] + "</a></span></span>&nbsp;&nbsp;&nbsp;&nbsp;\n" +
+                        //     "</p>\n" +
+                        //     data['content'] + "\n" +
+                        //     "</article>";
+                        // reply_list_content_div.append(reply);
+                        // topic_reply_content.val('');
+                        // button_delay(submit_button, 10, 'Submit');
+                        // return true;
                     }
                     else
                     {
@@ -159,6 +172,9 @@
                 return false;
             }
         });
+        $('#clear_button').click(() => {
+            topic_reply_content.val("");
+        })
     });
     $('#reply_button').on('click', function(){
         setTimeout("topic_reply_content.focus()", 100);
@@ -244,7 +260,19 @@
             this.value = this.value.substring(0,start) + selected + this.value.substring(end);
             this.setSelectionRange(start+indent.length,start+selected.length);
         }
-    })
+    });
+    // **************************************************
+
+    // 将选中的回复语句填入 #topic_reply_content
+    function insertReply() {
+        var replySelect = document.getElementById('reply-select');
+        var selectedReply = replySelect.value;
+
+        if (selectedReply) {
+            topic_reply_content.val(selectedReply);
+            replySelect.value = ""; // 重置选择框
+        }
+    }
 </script>
 {/if}
 {include file="../../csgoj/view/contest/topic_change_status" /}

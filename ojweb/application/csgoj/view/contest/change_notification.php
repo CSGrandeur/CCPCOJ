@@ -4,7 +4,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h3 class="modal-title" id="page_modal_Label" style="color:black !important;">Notification of Contest {$contest['contest_id']}
+                <h3 class="modal-title" id="page_modal_Label" style="color:black !important;">Announcement of Contest {$contest['contest_id']}
                     <button type="button" class="btn btn-primary page_modal_submit" id="page_modal_submit_top">Save Changes</button></h3>
             </div>
             <div class="modal-body">
@@ -45,7 +45,7 @@
         var notification = $.trim(page_modal_text.val());
         if(notification.length == 0){
             alertify.confirm(
-                'Notification is cleared. Are you sure to submit?',
+                'Announcement is cleared. Are you sure to submit?',
                 function(){
                     ChangeNotification(notification);
                 },
@@ -58,7 +58,7 @@
             ChangeNotification(notification);
         }
         else{
-            alertify.error('Notification too long');
+            alertify.error('Announcement too long');
         }
 
     });
