@@ -110,6 +110,7 @@
     <div class="btn-group">
         <button type="submit" id='submit_button' class="btn btn-primary" {if isset($replyAvoid) && $replyAvoid == true} disabled="disabled"{/if}>Submit Reply</button>
         <button type="button" id='clear_button' class="btn btn-warning">Clear</button>
+        {if IsAdmin('contest', $contest['contest_id']) || isset($proctorAdmin) && $proctorAdmin }
         <!-- 常用回复语句的选项框 -->
         <select id="reply-select" class="form-control" onchange="insertReply()" style="width: 300px">
             <option value="">常用回复语句 / Common Reply Phrases</option>
@@ -122,6 +123,7 @@
             <option value="存在 / Exists">存在 / Exists</option>
             <option value="不存在 / Not exist">不存在 / Not exist</option>
         </select>
+        {/if}
     </div>
 </form>
 
