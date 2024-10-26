@@ -3053,12 +3053,6 @@ int same_subtask(char *last, char *cur)
 }
 int main(int argc, char **argv)
 {
-        struct rlimit LIM;
-        LIM.rlim_max = 500 * STD_MB;
-        LIM.rlim_cur = 500 * STD_MB;
-        setrlimit(RLIMIT_FSIZE, &LIM);
-
-
     char work_dir[BUFFER_SIZE];
     // char cmd[BUFFER_SIZE];
     char user_id[BUFFER_SIZE];
