@@ -2,6 +2,7 @@ let map_contest_problem = new Map();
 let list_other_problem = [];
 let list_problem = [];
 let polygon_pid = 1;
+var scanning_info = "Scanning problem...";
 
 const SplitPath = (filename) => {
     return filename.split(/[/\\]/);
@@ -10,7 +11,7 @@ const SplitPath = (filename) => {
 
 async function HandlePolygonZipFile(file) {
     // 显示 overlay
-    showOverlay("Trying to find contest.xml");
+    showOverlay('');
     try {
         // 处理数据
         map_contest_problem = new Map();
@@ -51,6 +52,7 @@ async function HandlePolygonZipFile(file) {
 }
 
 async function FindContestProblems(zipFile) {
+    const overlay_main_info = "Trying to find contest.xml";
     // 查找 contest.xml 信息
     const zipReader = new zip.ZipReader(new zip.BlobReader(zipFile));
     const entries = await zipReader.getEntries();
@@ -61,11 +63,12 @@ async function FindContestProblems(zipFile) {
         if (entry.directory) {
             continue;
         }
+        updateOverlay(overlay_main_info, null, entry.filename);
         if (entry.filename.endsWith(".zip")) {
             const nestedZipBlob = await entry.getData(new zip.BlobWriter());
             const nestedNames = await FindContestProblems(nestedZipBlob);
             contest_problem_name_list.push(...nestedNames);
-        } else if (entry.filename === "contest.xml") {
+        } else if (IsFile(entry.filename, "contest.xml")) {
             const text = await entry.getData(new zip.TextWriter());
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(text, "application/xml");
@@ -82,8 +85,12 @@ async function FindContestProblems(zipFile) {
     await zipReader.close();
     return contest_problem_name_list;
 }
-
+function IsFile(fullPath, filename) {
+    const regex = new RegExp(`(^|[\\/])${filename}$`);
+    return regex.test(fullPath);
+}
 async function FindProblemDirectories(zipFile, contest_problem_name_list) {
+    const overlay_main_info = "Trying to find problem directories";
     // 查找题目信息，优先按 contest.xml 信息排序，否则按发现顺序
     const zipReader = new zip.ZipReader(new zip.BlobReader(zipFile));
     const entries = await zipReader.getEntries();
@@ -92,11 +99,11 @@ async function FindProblemDirectories(zipFile, contest_problem_name_list) {
         if (entry.directory) {
             continue;
         }
-
+        updateOverlay(overlay_main_info, null, entry.filename);
         if (entry.filename.endsWith(".zip")) {
             const nestedZipBlob = await entry.getData(new zip.BlobWriter());
             await FindProblemDirectories(nestedZipBlob, contest_problem_name_list);
-        } else if (entry.filename.endsWith("problem.xml")) {
+        } else if (IsFile(entry.filename, "problem.xml")) {
             const parts = SplitPath(entry.filename);
             const dirPath =
                 parts.length > 1
@@ -218,7 +225,14 @@ async function MakeAttachFiles(problem_entries, statement_entry, attach_files) {
 
     return attachFilesData;
 }
-
+function GetDirPath(filename) {
+    return filename.substring(0, filename.lastIndexOf("/"));
+}
+function FindChecker(entries, problemXmlDir) {
+    return entries.find((entry) => 
+        problemXmlDir == ""  ? entry.filename == "check.cpp" : entry.filename == `${problemXmlDir}/check.cpp`
+    );
+} 
 async function MakeTestData(
     proble_title,
     problem_entries,
@@ -227,10 +241,7 @@ async function MakeTestData(
 ) {
     const zipWriter = new zip.ZipWriter(new zip.BlobWriter("application/zip"));
 
-    const problemDir = problem_xml_entry.filename.substring(
-        0,
-        problem_xml_entry.filename.lastIndexOf("/")
-    );
+    const problemDir = GetDirPath(problem_xml_entry.filename);
     const testsDir = problem_entries.filter((entry) => {
         if (problemDir == "") {
             return (
@@ -243,6 +254,7 @@ async function MakeTestData(
     let fileCount = 0;
     let totalSize = 0; // 累计文件大小
     for (const entry of testsDir) {
+        updateOverlay(scanning_info, null, `Processing test data ...<br/>${entry.filename}`);
         if (entry.filename.endsWith(".a")) {
             const baseFilename = entry.filename.substring(
                 0,
@@ -272,9 +284,7 @@ async function MakeTestData(
         }
     }
     if (includeSpj) {
-        const spjEntry = problem_entries.find((entry) =>
-            entry.filename.endsWith("check.cpp")
-        );
+        const spjEntry = FindChecker(problem_entries, problemDir);
         if (spjEntry) {
             const spjContent = await spjEntry.getData(new zip.BlobWriter());
             await zipWriter.add("tpj.cc", new zip.BlobReader(spjContent));
@@ -287,11 +297,10 @@ async function MakeTestData(
     const zipContent = await zipWriter.close();
     return { zipContent, fileCount, totalSize, problem_xml_entry, entries: problem_entries };
 }
-
 async function FetchProblem(problem_entries, problem_xml_entry) {
     let statement_entry = null, statement_lang = null;
     for (const entry of problem_entries) {
-        if (entry.filename.endsWith("problem-properties.json")) {
+        if (IsFile(entry.filename, "problem-properties.json")) {
             if (entry.filename.includes("statements/chinese/")) {
                 statement_entry = entry;
                 statement_lang = "chinese";
@@ -326,9 +335,8 @@ async function FetchProblem(problem_entries, problem_xml_entry) {
                 (acc, problem) => acc + problem.testData.fileCount,
                 0
             ) + map_contest_problem.size;
-        updateOverlay(
-            `Scanning ... Found ${problemCount} problem(s), ${testCount} tests`
-        );
+        scanning_info = `Scanning ... Found ${problemCount} problem(s), ${testCount} tests`;
+        updateOverlay(scanning_info);
     }
 
     let totalSizeMB = testData.totalSize / (1024 * 1024);
@@ -426,12 +434,15 @@ async function DownloadTestData(pid) {
 }
 
 function handleDownloadTestData(pid) {
+    scanning_info = "";
+    showOverlay();
     DownloadTestData(pid).catch((error) => {
         console.error("Error downloading test data:", error);
-    });
+    }).finally(()=> hideOverlay());
 }
 async function DownloadSelectedProblems() {
-    showOverlay("Packing ... 0 problem(s) packed");
+    let packing_info = "Packing ...";
+    showOverlay(packing_info);
     try {
         const selectedProblems = $("#polygon_parse_table").bootstrapTable(
             "getSelections"
@@ -463,8 +474,8 @@ async function DownloadSelectedProblems() {
 
             const entries = await testZipReader.getEntries();
             const addedFiles = new Set(); // 用于跟踪已添加的文件
-
             for (const entry of entries) {
+                updateOverlay(packing_info, null, `Packing test data<br/>${entry.filename}`);
                 const data = await entry.getData(new zip.BlobWriter());
                 const filePath = `${testDir}/${entry.filename}`;
                 if (!addedFiles.has(filePath)) {
@@ -473,10 +484,8 @@ async function DownloadSelectedProblems() {
                 }
             }
 
-            if (problem.problemJson.spj === "1") {
-                const spjEntry = problem.testData.entries.find((entry) =>
-                    entry.filename.endsWith("check.cpp")
-                );
+            if (problem.problemJson.spj === "1") {                
+                const spjEntry = FindChecker(problem.testData.entries, GetDirPath(problem.testData.problem_xml_entry.filename));
                 if (spjEntry) {
                     const spjContent = await spjEntry.getData(new zip.BlobWriter());
                     const spjFilePath = `${testDir}/tpj.cc`;
@@ -495,8 +504,8 @@ async function DownloadSelectedProblems() {
                     await zipWriter.add(`${attachDir}/${file.filename}`, new zip.BlobReader(file.content));
                 }
             }
-
-            updateOverlay(`Packing ... ${i + 1} problem(s) packed`);
+            packing_info = `Packing ... ${i + 1} problem(s) packed`;
+            updateOverlay(packing_info);
         }
 
         await zipWriter.add(

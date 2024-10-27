@@ -19,10 +19,17 @@ function showOverlay(initialText = "Scanning ... Found 0 problem(s), 0 tests") {
     
 }
 
-function updateOverlay(initialText = "", ratio=null) {
+function updateOverlay(initialText = "", ratio=null, additionText=null) {
     const overlayText = document.getElementById("overlay-text");
     if (overlayText) {
-        overlayText.innerHTML = `${ratio ? ratio + '%<br/>' : ''}${initialText}`;
+        let showText = initialText;
+        if(ratio) {
+            showText += `${ratio}%<br/>${showText}`
+        }
+        if(additionText) {
+            showText += `<br/>${additionText}`;
+        }
+        overlayText.innerHTML = showText;
     }
 }
 
