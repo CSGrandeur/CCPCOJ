@@ -2,7 +2,7 @@ let map_contest_problem = new Map();
 let list_other_problem = [];
 let list_problem = [];
 let polygon_pid = 1;
-var scanning_info = "Scanning problem...";
+var scanning_info = "Scanning problem ...";
 
 const SplitPath = (filename) => {
     return filename.split(/[/\\]/);
@@ -237,7 +237,8 @@ async function MakeTestData(
     proble_title,
     problem_entries,
     problem_xml_entry,
-    includeSpj
+    includeSpj,
+    tip_info="Processing"
 ) {
     const zipWriter = new zip.ZipWriter(new zip.BlobWriter("application/zip"));
 
@@ -254,7 +255,7 @@ async function MakeTestData(
     let fileCount = 0;
     let totalSize = 0; // 累计文件大小
     for (const entry of testsDir) {
-        updateOverlay(scanning_info, null, `Processing test data ...<br/>${entry.filename}`);
+        updateOverlay(scanning_info, null, `${tip_info} test data ...<br/>${entry.filename}`);
         if (entry.filename.endsWith(".a")) {
             const baseFilename = entry.filename.substring(
                 0,
@@ -415,7 +416,8 @@ async function DownloadTestData(pid) {
                 problem.problemJson.title,
                 problem.testData.entries,
                 problem.testData.problem_xml_entry,
-                includeSpj
+                includeSpj,
+                "Packing"
             );
             if (testData && testData.zipContent) {
                 const url = URL.createObjectURL(testData.zipContent);
