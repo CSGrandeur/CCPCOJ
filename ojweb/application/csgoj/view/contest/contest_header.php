@@ -109,12 +109,18 @@ function GetTopicNum() {
     let tmp_cid = "<?php echo $contest['contest_id'] ?>";
     $.get(`/${tmp_module}/contest/topic_num_ajax?cid=${tmp_cid}`, function(rep) {
         if(typeof(rep) != 'undefined') {
+            if(typeof(rep) != 'number') {
+                rep = Number(rep);
+                if(isNaN(rep)) {
+                    rep = 0;
+                }
+            }
             $('#topic_num').text(`(${rep})`);
             let old_rep_num = csg.store(`topic_num#cid${tmp_cid}`);
-            if(old_rep_num === null || rep > old_rep_num) {
+            if(old_rep_num !== null && rep > old_rep_num) {
                 alertify.warning("有新提问");
-                csg.store(`topic_num#cid${tmp_cid}`, rep);
             }
+            csg.store(`topic_num#cid${tmp_cid}`, rep);
         }
     });
 }

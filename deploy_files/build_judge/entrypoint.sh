@@ -16,6 +16,9 @@ if [ $JUDGE_TOP_DIFF_BYTES ];   then sed -i "s#OJ_TOP_DIFF_BYTES=.*#OJ_TOP_DIFF_
 if [ $JUDGE_SHM_RUN ];          then sed -i "s#OJ_SHM_RUN=.*#OJ_SHM_RUN=$JUDGE_SHM_RUN#g"                       /volume/etc/judge.conf; fi
 if [ $OJ_OPEN_OI ];             then sed -i "s#OJ_OI_MODE=.*#OJ_OI_MODE=$OJ_OPEN_OI#g"                          /volume/etc/judge.conf; fi
 
+if [ $JUDGE_V_TIME_BONUS ];     then sed -i "s#OJ_JAVA_TIME_BONUS=.*#OJ_JAVA_TIME_BONUS=$JUDGE_V_TIME_BONUS#g"     /volume/etc/judge.conf; fi
+if [ $JUDGE_V_MEM_BONUS ];      then sed -i "s#OJ_JAVA_MEMORY_BONUS=.*#OJ_JAVA_MEMORY_BONUS=$JUDGE_V_MEM_BONUS#g"  /volume/etc/judge.conf; fi
+
 if [ ! -d /volume/data ]; then  
     cp -rp /home/judge/data /volume/data;  
 fi 

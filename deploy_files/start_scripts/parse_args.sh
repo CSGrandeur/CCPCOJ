@@ -36,6 +36,8 @@ JUDGE_IGNORE_ESOL=1
 JUDGE_TOP_DIFF_BYTES=2048
 JUDGE_SHM_RUN=0
 JUDGE_SHM_SIZE=1g
+JUDGE_V_TIME_BONUS=2
+JUDGE_V_MEM_BONUS=512
 OJ_HTTP_BASEURL='http://nginx-server:20080'
 JUDGER_TOTAL=1
 OJ_MOD=0
@@ -80,6 +82,8 @@ parse_args() {
     JUDGE_TOP_DIFF_BYTES:, \
     JUDGE_SHM_RUN:, \
     JUDGE_SHM_SIZE:, \
+    JUDGE_V_TIME_BONUS:, \
+    JUDGE_V_MEM_BONUS:, \
     OJ_HTTP_BASEURL:, \
     JUDGER_TOTAL:, \
     OJ_MOD:, \
@@ -129,6 +133,8 @@ parse_args() {
         --JUDGE_TOP_DIFF_BYTES)         JUDGE_TOP_DIFF_BYTES="$2"; shift 2;;        # judge WA结果比对输出的前多少bytes
         --JUDGE_SHM_RUN)                JUDGE_SHM_RUN="$2"; shift 2;;               # 1: 拷贝数据至内存后进行评测，减少读写波动，每pod需要1GB冗余内存， 0: 数据在原始目录进行评测
         --JUDGE_SHM_SIZE)               JUDGE_SHM_SIZE="$2"; shift 2;;              # JUDGE_SHM_RUN为1时，用该值（带单位的字符串）指定容器shm分区大小，默认“1g”
+        --JUDGE_V_TIME_BONUS)           JUDGE_V_TIME_BONUS="$2"; shift 2;;          # Java Python 等程序的额外时限，默认 2 秒
+        --JUDGE_V_MEM_BONUS)            JUDGE_V_MEM_BONUS="$2"; shift 2;;           # Java Python 等程序的额外内存，默认 512MB
         --OJ_HTTP_BASEURL)              OJ_HTTP_BASEURL="$2"; shift 2;;             # judge访问的OJ地址
         --JUDGER_TOTAL)                 JUDGER_TOTAL="$2"; shift 2;;                # judge多pod判题的机器数
         --OJ_MOD)                       OJ_MOD="$2"; shift 2;;                      # judge多pod判题的本机编号

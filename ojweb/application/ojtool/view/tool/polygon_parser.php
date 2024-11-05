@@ -39,8 +39,8 @@
 </table>
 
 <!-- Help Modal -->
-<div class="modal fade modal-lg" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="helpModalLabel" width="1080px">
-    <div class="modal-dialog" role="document">
+<div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="helpModalLabel">
+    <div class="modal-dialog modal-lg" role="document" style="width: 1080px;">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -79,8 +79,8 @@
                     <li>Polygon 默认每道题带有 check.cpp，对应 CSGOJ 的 Special Judge，对应评测数据目录的 tpj.cc（基于 testlib.h），且题目设置中 Special Judge 处于勾选状态。如不需要，可关掉对应题目的开关，打包时将不包含 tpj.cc。
                         <p class="text-muted">By default, each problem in Polygon includes check.cpp, which corresponds to the Special Judge in CSGOJ and the tpj.cc in the test data directory (based on testlib.h). The Special Judge option is checked in the problem settings. If not needed, you can turn off the switch for the corresponding problem, and tpj.cc will not be included in the package.</p>
                     </li>
-                    <li>插图转换基于 <code>\includegraphics</code> 匹配，不保证全部成功，文件名需为数字、字母、下划线、减号，后跟常见图像扩展名，导入后注意检查。
-                        <p class="text-muted">Image conversion is based on <code>\includegraphics</code> matching and is not guaranteed to be fully successful. The file name should consist of numbers, letters, underscores, hyphens, and common image extensions. Please check after import.</p>
+                    <li>插图转换基于 <code>\includegraphics</code> 匹配，不保证全部成功，文件名需为数字、字母、下划线、减号，后跟常见图像扩展名，<span style='color:red'>不支持 PDF 格式的插图</span>，导入后注意检查。
+                        <p class="text-muted">Image conversion is based on <code>\includegraphics</code> matching and is not guaranteed to be fully successful. The file name should consist of numbers, letters, underscores, hyphens, and common image extensions. <span style='color:red'>PDF format images are not supported</span>. Please check after import.</p>
                     </li>
                 </ul>
             </div>
@@ -90,7 +90,6 @@
         </div>
     </div>
 </div>
-
 <script>
     function isBootstrap5() {
         return typeof bootstrap !== 'undefined' && bootstrap.Modal;
@@ -140,9 +139,10 @@
             if (isBootstrap5()) {
                 const helpModal = new bootstrap.Modal(document.getElementById('helpModal'));
                 helpModal.show();
-            } else {
-                $('#helpModal').modal('show');
             }
+            // else {
+            //     $('#helpModal').modal('show');
+            // }
         });
 
         // 关闭 modal 的兼容处理
@@ -150,9 +150,10 @@
             if (isBootstrap5()) {
                 const helpModal = bootstrap.Modal.getInstance(document.getElementById('helpModal'));
                 helpModal.hide();
-            } else {
-                $('#helpModal').modal('hide');
             }
+            // else {
+            //     $('#helpModal').modal('hide');
+            // }
         });
 
         // 调整 modal header 样式以兼容 Bootstrap 3 和 Bootstrap 5
