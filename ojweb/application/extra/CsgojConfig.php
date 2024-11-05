@@ -68,15 +68,15 @@ return [
         'user_id_maxlen' => 30
     ],
     'OJ_UPLOAD_ATTACH_MAXSIZE'      => 20971520,    // 一般文件上传尺寸限制，比如题目描述的插图
-    'OJ_UPLOAD_TESTDATA_MAXSIZE'    => 134217728,   // 判题数据的尺寸限制
-    'OJ_UPLOAD_IMPORT_MAXSIZE'      => 134217728,   // 导入题目最大尺寸
+    'OJ_UPLOAD_TESTDATA_MAXSIZE'    => 268435456,   // 判题数据的尺寸限制
+    'OJ_UPLOAD_IMPORT_MAXSIZE'      => 268435456,   // 导入题目最大尺寸
     'OJ_UPLOAD_MAXNUM'              => 20,          // 一次最多上传多少个文件
 
-    'OJ_RANK_CACHE_OPTION' => ['type'=>'File', 'expire'=>10, 'path'=>CACHE_PATH, 'prefix'=>'csgoj'],  //比赛Ranklist的cache配置
-    'OJ_RANKDYNAMIC_CACHE_OPTION' => ['type'=>'File', 'expire'=>60, 'path'=>CACHE_PATH, 'prefix'=>'csgoj'],  //新版Rank的cache配置
-    'OJ_SUBMIT_WAIT_TIME' => 5, //两次提交code时间间隔
-    'OJ_TOPIC_WAIT_TIME' => 5, //两次提交topic时间间隔
-    'OJ_TEST_DOWNLOAD_WAIT_TIME' => 720, //两次下载测试数据时间间隔
+    'OJ_RANK_CACHE_OPTION'          => ['type'=>'File', 'expire'=>10, 'path'=>CACHE_PATH, 'prefix'=>'csgoj'],  //比赛Ranklist的cache配置
+    'OJ_RANKDYNAMIC_CACHE_OPTION'   => ['type'=>'File', 'expire'=>60, 'path'=>CACHE_PATH, 'prefix'=>'csgoj'],  //新版Rank的cache配置
+    'OJ_SUBMIT_WAIT_TIME'           => 5, //两次提交code时间间隔
+    'OJ_TOPIC_WAIT_TIME'            => 5, //两次提交topic时间间隔
+    'OJ_TEST_DOWNLOAD_WAIT_TIME'    => 720, //两次下载测试数据时间间隔
 
     'SPIDER_TOKEN'    => [
         // 给virtual judge 提供的抓题token验证
