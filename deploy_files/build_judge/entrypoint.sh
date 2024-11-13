@@ -30,10 +30,20 @@ ln -s /volume/data   /home/judge/data
 ln -s /volume/etc    /home/judge/etc
 chmod 777 -R /volume/etc
 # create safe env
+if mountpoint -q /mnt/overlay_judge/run/dev/shm; then
+    umount /mnt/overlay_judge/run/dev/shm
+fi
+if mountpoint -q /mnt/overlay_judge/run/volume; then
+    umount /mnt/overlay_judge/run/volume
+fi
+
+if mountpoint -q /mnt/overlay_judge/run; then
+    umount -R /mnt/overlay_judge/run
+fi
 rm -rf /mnt/overlay_judge
 mkdir -p /mnt/overlay_judge/run
 mkdir -p /mnt/overlay_judge/empty
-mount --rbind / /mnt/overlay_judge/run
+mount --bind / /mnt/overlay_judge/run
 mount --bind /mnt/overlay_judge/empty /mnt/overlay_judge/run/volume
 mkdir -p /mnt/overlay_judge/run/dev/shm
 mount --bind /dev/shm /mnt/overlay_judge/run/dev/shm

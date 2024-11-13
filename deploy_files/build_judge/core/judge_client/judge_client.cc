@@ -115,9 +115,6 @@ static char data_work_dir[BUFFER_SIZE_SM]; // 使用 SHM 时的数据目录
 static char data_in_tmp[BUFFER_SIZE_SM];
 static char data_out_tmp[BUFFER_SIZE_SM];
 static char data_err_tmp[BUFFER_SIZE_SM];
-static char data_global_mount_dir[BUFFER_SIZE_SM];  // 全局挂载目录
-const char* chroot_excludes[] = {"/volume", "/home/judge/data", "/home/judge/etc"};
-const int chroot_excludes_num = 3;
 
 static char record_call = 0;
 static int use_ptrace = 1;
@@ -127,6 +124,10 @@ static const char *tbname = "solution";
 static char cc_opt[BUFFER_SIZE_SM];
 static char cc_std[BUFFER_SIZE_SM];
 static char cpp_std[BUFFER_SIZE_SM];
+
+// global info
+int now_sol_id, now_p_id, now_cid;
+char now_user_id[BUFFER_SIZE_SM];
 
 int num_of_test = 0;
 // static int sleep_tmp;
@@ -269,6 +270,17 @@ long get_file_size(const char *filename)
     return (long)f_stat.st_size;
 }
 
+long get_file_time(const char *filename)
+{
+    struct stat f_stat;
+
+    if (stat(filename, &f_stat) == -1)
+    {
+        return 0;
+    }
+
+    return (long)f_stat.st_mtime;
+}
 void write_log(const char *_fmt, ...)
 {
     va_list ap;
@@ -1053,6 +1065,7 @@ void update_problem(int pid, int cid)
         _update_problem_http(pid, cid);
     }
 }
+
 void ClearRun(char *work_dir)
 {
     // 清理可能存在的热加载目录
@@ -1060,6 +1073,31 @@ void ClearRun(char *work_dir)
         exit(-1);
     execute_cmd("/bin/rmdir %s/* ", work_dir);
     execute_cmd("/bin/rmdir %s/log/* ", work_dir);
+}
+
+void clean_workdir(char *work_dir)
+{
+    ClearRun(work_dir);
+    if (DEBUG)
+    {
+        execute_cmd("/bin/rmdir %s/log/* 2>/dev/null", work_dir);
+        execute_cmd("/bin/rm -rf %s/log/* 2>/dev/null", work_dir);
+        execute_cmd("mkdir %s/log/ 2>/dev/null", work_dir);
+        execute_cmd("/bin/mv %s/* %s/log/ 2>/dev/null", work_dir, work_dir);
+    }
+    else
+    {
+        execute_cmd("mkdir %s/log/ 2>/dev/null", work_dir);
+        execute_cmd("/bin/mv %s/* %s/log/ 2>/dev/null", work_dir, work_dir);
+        execute_cmd("/bin/rmdir %s/log/* 2>/dev/null", work_dir);
+        execute_cmd("/bin/rm -rf %s/log/* 2>/dev/null", work_dir);
+    }
+    if (shm_run)
+    {
+        execute_cmd("/bin/rm -f %s/*.in", data_work_dir);
+        execute_cmd("/bin/rm -f %s/*.out", data_work_dir);
+        execute_cmd("/bin/rm -f %s/Main*", data_work_dir);
+    }
 }
 int compile(int lang, char *work_dir)
 {
@@ -1264,7 +1302,7 @@ int compile(int lang, char *work_dir)
             status = get_file_size("ce.txt");
         if (DEBUG)
             printf("status=%d\n", status);
-        execute_cmd("/bin/ClearRun -l bin usr lib lib64 etc/alternatives dev 2>/dev/null");
+        execute_cmd("/bin/umount -l bin usr lib lib64 etc/alternatives dev 2>/dev/null");
         ClearRun(work_dir);
 
         return status;
@@ -1367,6 +1405,11 @@ void _get_solution_info_http(int solution_id, int &p_id, char *user_id,
         printf("http language read fail ... \n");
     if (1 != fscanf(pout, "%d", &cid))
         printf("http contest_id read fail ... \n");
+    // set global info
+    now_sol_id = solution_id;
+    now_p_id = p_id;
+    now_cid = cid;
+    strcpy(now_user_id, user_id);
     pclose(pout);
 }
 void get_solution_info(int solution_id, int &p_id, char *user_id, int &lang, int &cid)
@@ -1548,7 +1591,9 @@ void run_solution(int &lang, char *work_dir, double &time_lmt, int &usedtime,
     }
     else
     {
-        // chroot("/mnt/overlay_judge");
+        if(chroot("/mnt/overlay_judge/run")) {
+            write_log("chroot fail...");
+        }
         
         if (chdir(work_dir)) {
             write_log("Working directory :%s switch fail...", work_dir);
@@ -1768,7 +1813,30 @@ float raw_text_judge(char *infile, char *outfile, char *userfile, int *total_mar
     fclose(df);
     return mark;
 }
-void TryBuildSpj(const char *oj_home, const int p_id, const char *spj_code_name, const char *spj_code_ext, bool flag_remote_get)
+
+void EndCE(int solution_id, char *user_id, int p_id, int cid, const char *log_str, const char *addition="") {
+    char cefile[BUFFER_SIZE_SM] = "ce.txt";
+    // sprintf(cefile, "%s/ce.txt", data_work_dir);
+    // printf("***\n\n, %s, %s \n", data_work_dir, cefile);
+    FILE *cef = fopen(cefile, "w");
+    if (cef != NULL) {
+        if (addition && strlen(addition) > 0) {
+            fprintf(cef, "%s\n", addition);
+        }
+        fclose(cef);
+    }
+    addceinfo(solution_id);
+    update_solution(solution_id, OJ_CE, 0, 0, 0, 0, 0.0);
+    if (!turbo_mode)
+        update_user(user_id);
+    if (!turbo_mode)
+        update_problem(p_id, cid);
+    clean_workdir(data_work_dir);
+    write_log(log_str);
+    exit(0);
+}
+
+bool TryBuildSpj(const char *oj_home, const int p_id, const char *spj_code_name, const char *spj_code_ext, bool flag_remote_get)
 {
     sprintf(local_spj_code_file, "%s/data/%d/%s.%s", oj_home, p_id, spj_code_name, spj_code_ext);
     sprintf(local_spj_file, "%s/data/%d/%s", oj_home, p_id, spj_code_name);
@@ -1779,19 +1847,33 @@ void TryBuildSpj(const char *oj_home, const int p_id, const char *spj_code_name,
 
     setrlimit(RLIMIT_STACK, &LIM);  // 主进程开栈
 
-    if (!flag_remote_get && access(local_spj_file, F_OK) == 0)
+    if (!flag_remote_get && access(local_spj_file, F_OK) == 0 && get_file_time(local_spj_file) >= get_file_time(local_spj_code_file))
     {
-        return; // 如果不是远程获取的spj代码，且本地已经有spj可执行文件了，则不再编译
+        return true; // 如果不是远程获取的spj代码，且本地已经有spj可执行文件了，且可执行文件比源码时间晚，则不再编译
     }
     if (access(local_spj_code_file, F_OK) == 0)
     {
         const char *cmd_spj = "g++ %s %s -o %s %s"; // spj.c也可以用g++编译
-        execute_cmd(cmd_spj, cc_opt, cpp_std, local_spj_file, local_spj_code_file);
+        const int checker_build_res = execute_cmd(cmd_spj, cc_opt, cpp_std, local_spj_file, local_spj_code_file);
+        if(DEBUG) {
+            printf("Checker Build Result: %d\n", checker_build_res);
+        }
+        if(checker_build_res != 0) {
+            // 编译 spj 失败
+            if(DEBUG) {
+                printf("spj compile failed\n");
+            }
+            execute_cmd("rm %s", local_spj_file);
+            EndCE(now_sol_id, now_user_id, now_p_id, now_cid, "Checker Build Failed", 
+            "It's not you. It's SYSTEM_ERROR. Ask the admin to check the checker.\n");  // Set result as CE when checker build failed
+            return false;
+        }
         if(DEBUG) {
             printf(cmd_spj, local_spj_file, local_spj_code_file);
         }
         execute_cmd("chmod +x", local_spj_file);
     }
+    return true;
 }
 int special_judge(char *oj_home, int problem_id, char *infile, char *outfile, char *userfile, double *pass_rate, int spj)
 {
@@ -1862,7 +1944,7 @@ int special_judge(char *oj_home, int problem_id, char *infile, char *outfile, ch
             ret = 1;
         }
         if (ret)
-            exit(1);
+            exit(99);
         else
             exit(0);
     }
@@ -1872,6 +1954,10 @@ int special_judge(char *oj_home, int problem_id, char *infile, char *outfile, ch
 
         waitpid(pid, &status, 0);
         ret = WEXITSTATUS(status);
+        if(ret == 99) {
+            EndCE(now_sol_id, now_user_id, now_p_id, now_cid, "Checker Not Found", 
+            "It's not you. It's SYSTEM_ERROR. Ask the admin to reset checker.\n");
+        }
         if (DEBUG)
         {
             printf("recorded spj: %d\n", ret);
@@ -2032,28 +2118,28 @@ void watch_solution(pid_t pidApp, char *infile, int &ACflg, int spj,
     long outFileSize = get_file_size(outfile);
 
     // for walltime
-    struct timeval start_time, current_time, time_before_wait, time_after_wait;
+    struct timeval start_time, current_time;
+    // struct timeval time_before_wait, time_after_wait;
     double elapsed_wait = 0.0;
     gettimeofday(&start_time, NULL);
-
+    const double wall_top = time_lmt * 3 + 1;
     while (1)
     {
         tick++;
         // check the usage
 
-        gettimeofday(&time_before_wait, NULL);
+        // gettimeofday(&time_before_wait, NULL);
         wait4(pidApp, &status, __WALL, &ruse); // 等待子进程切换内核态（调用系统API或者运行状态变化）
-        gettimeofday(&time_after_wait, NULL);
+        // gettimeofday(&time_after_wait, NULL);
 
         // check wall time
         gettimeofday(&current_time, NULL);
         double elapsed_time = (current_time.tv_sec - start_time.tv_sec) + (current_time.tv_usec - start_time.tv_usec) / 1000000.0;
-        elapsed_wait += (time_after_wait.tv_sec - time_before_wait.tv_sec) + (time_after_wait.tv_usec - time_before_wait.tv_usec) / 1000000.0; 
-        double judged_time = (ruse.ru_utime.tv_sec + ruse.ru_utime.tv_usec + ruse.ru_stime.tv_sec + ruse.ru_stime.tv_usec) / 1000000.0;
-        const double wall_top = time_lmt * 4 + 1;
-        if(DEBUG) {
-            printf("### wall top: %g, elapsed_time: %g, elapsed_wait: %g, judged_time: %g\n", wall_top, elapsed_time, elapsed_wait, judged_time);
-        }
+        // elapsed_wait += (time_after_wait.tv_sec - time_before_wait.tv_sec) + (time_after_wait.tv_usec - time_before_wait.tv_usec) / 1000000.0; 
+        // double judged_time = (ruse.ru_utime.tv_sec + ruse.ru_utime.tv_usec + ruse.ru_stime.tv_sec + ruse.ru_stime.tv_usec) / 1000000.0;
+        // if(DEBUG) {
+        //     printf("### wall top: %g, elapsed_time: %g, elapsed_wait: %g, judged_time: %g\n", wall_top, elapsed_time, elapsed_wait, judged_time);
+        // }
         if (elapsed_time > wall_top)
         {
             ACflg = OJ_TL;
@@ -2258,49 +2344,6 @@ void watch_solution(pid_t pidApp, char *infile, int &ACflg, int spj,
         call_id = ((unsigned int)reg.REG_SYSCALL) % call_array_size;
 #endif
 
-        // if (reg.orig_rax == SYS_open || reg.orig_rax == SYS_openat ||
-        //     reg.orig_rax == SYS_stat || reg.orig_rax == SYS_lstat ||
-        //     reg.orig_rax == SYS_fstat || reg.orig_rax == SYS_execve ||
-        //     reg.orig_rax == SYS_access || reg.orig_rax == SYS_readlink ||
-        //     reg.orig_rax == SYS_chdir || reg.orig_rax == SYS_rename ||
-        //     reg.orig_rax == SYS_unlink || reg.orig_rax == SYS_rmdir ||
-        //     reg.orig_rax == SYS_mkdir || reg.orig_rax == SYS_symlink ||
-        //     reg.orig_rax == SYS_link || reg.orig_rax == SYS_truncate ||
-        //     reg.orig_rax == SYS_ftruncate ||
-        //     reg.orig_rax == SYS_statx || reg.orig_rax == SYS_execveat ||
-        //     reg.orig_rax == SYS_faccessat ||
-        //     reg.orig_rax == SYS_newfstatat)
-        // {
-
-        char path[BUFFER_SIZE];
-        memset(path, 0, BUFFER_SIZE);
-        long addr = (reg.orig_rax == SYS_openat || reg.orig_rax == SYS_execveat ||
-                     reg.orig_rax == SYS_faccessat ||
-                     reg.orig_rax == SYS_newfstatat)
-                        ? reg.rsi
-                        : reg.rdi;
-        int i = 0;
-        while (i < BUFFER_SIZE / sizeof(long))
-        {
-            long data = ptrace(PTRACE_PEEKDATA, pidApp, addr + i * sizeof(long), NULL);
-            memcpy(path + i * sizeof(long), &data, sizeof(long));
-            if (memchr(&data, 0, sizeof(long)) != NULL)
-                break;
-            i++;
-        }
-        char resolved_path[PATH_MAX];
-        realpath(path, resolved_path);
-        if (strstr(resolved_path, ".out") != NULL)
-        {
-            ACflg = OJ_RE;
-            if (DEBUG)
-            {
-                printf("[OJ_RE(%d)] Forbidden access \n", OJ_RE);
-            }
-            ptrace(PTRACE_KILL, pidApp, NULL, NULL);
-            break;
-        }
-        // }
         if (record_call)
         {
             printf("new call id:%d\n", call_id);
@@ -2325,8 +2368,7 @@ void watch_solution(pid_t pidApp, char *infile, int &ACflg, int spj,
 
             write_log(error);
             print_runtimeerror(infile + strlen(oj_home) + 5, error);
-            // ptrace(PTRACE_SYSCALL, pidApp, NULL, NULL);
-            // continue;
+
             ptrace(PTRACE_KILL, pidApp, NULL, NULL);
         }
         call_id = 0;
@@ -2344,30 +2386,6 @@ void watch_solution(pid_t pidApp, char *infile, int &ACflg, int spj,
     // clean_session(pidApp);
 }
 
-void clean_workdir(char *work_dir)
-{
-    ClearRun(work_dir);
-    if (DEBUG)
-    {
-        execute_cmd("/bin/rmdir %s/log/* 2>/dev/null", work_dir);
-        execute_cmd("/bin/rm -rf %s/log/* 2>/dev/null", work_dir);
-        execute_cmd("mkdir %s/log/ 2>/dev/null", work_dir);
-        execute_cmd("/bin/mv %s/* %s/log/ 2>/dev/null", work_dir, work_dir);
-    }
-    else
-    {
-        execute_cmd("mkdir %s/log/ 2>/dev/null", work_dir);
-        execute_cmd("/bin/mv %s/* %s/log/ 2>/dev/null", work_dir, work_dir);
-        execute_cmd("/bin/rmdir %s/log/* 2>/dev/null", work_dir);
-        execute_cmd("/bin/rm -rf %s/log/* 2>/dev/null", work_dir);
-    }
-    if (shm_run)
-    {
-        execute_cmd("/bin/rm -f %s/*.in", data_work_dir);
-        execute_cmd("/bin/rm -f %s/*.out", data_work_dir);
-        execute_cmd("/bin/rm -f %s/Main*", data_work_dir);
-    }
-}
 
 void init_parameters(int argc, char **argv, int &solution_id, int &runner_id)
 {
@@ -2617,7 +2635,6 @@ int main(int argc, char **argv)
     init_judge_conf();
     // set work directory to start running & judging
     sprintf(work_dir, "%s/run%s/", oj_home, argv[2]);
-    sprintf(data_global_mount_dir, "/mnt/overlay%s", argv[2]);
     if (shm_run)
     {
         sprintf(data_work_dir, "/dev/shm/csgoj/run%s/", argv[2]);
@@ -2723,15 +2740,7 @@ int main(int argc, char **argv)
     // if (Compile_OK != 0 && !spj)
     if (Compile_OK != 0) //  !spj 会导致错误的CE
     {
-        addceinfo(solution_id);
-        update_solution(solution_id, OJ_CE, 0, 0, 0, 0, 0.0);
-        if (!turbo_mode)
-            update_user(user_id);
-        if (!turbo_mode)
-            update_problem(p_id, cid);
-        clean_workdir(work_dir);
-        write_log("compile error");
-        exit(0);
+        EndCE(solution_id, user_id, p_id, cid, "compile error");
     }
     else
     {
