@@ -22,14 +22,7 @@ else
     sudo gpasswd -a $USER docker
     daemonjson='{
         "registry-mirrors": [
-            "https://dockerpull.com",
-            "https://docker.m.daocloud.io", 
-            "https://docker.jianmuhub.com",
-            "https://huecker.io",
-            "https://dockerhub.timeweb.cloud",
-            "https://dockerhub1.beget.com",
-            "https://dockerhub1.beget.com",
-            "https://docker.jianmuhub.com"
+            "https://dockerpull.org"
         ]
     }'
     sudo mkdir -p /etc/docker

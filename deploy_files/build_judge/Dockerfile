@@ -1,4 +1,4 @@
-FROM judge_base
+FROM csgrandeur/judge_base
 # init judge
 COPY . /judgecore
 RUN bash /judgecore/setup.sh

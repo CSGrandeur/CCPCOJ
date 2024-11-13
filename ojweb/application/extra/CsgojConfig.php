@@ -68,8 +68,8 @@ return [
         'user_id_maxlen' => 30
     ],
     'OJ_UPLOAD_ATTACH_MAXSIZE'      => 20971520,    // 一般文件上传尺寸限制，比如题目描述的插图
-    'OJ_UPLOAD_TESTDATA_MAXSIZE'    => 268435456,   // 判题数据的尺寸限制
-    'OJ_UPLOAD_IMPORT_MAXSIZE'      => 268435456,   // 导入题目最大尺寸
+    'OJ_UPLOAD_TESTDATA_MAXSIZE'    => 536870912,   // 判题数据的尺寸限制
+    'OJ_UPLOAD_IMPORT_MAXSIZE'      => 536870912,   // 导入题目最大尺寸
     'OJ_UPLOAD_MAXNUM'              => 20,          // 一次最多上传多少个文件
 
     'OJ_RANK_CACHE_OPTION'          => ['type'=>'File', 'expire'=>10, 'path'=>CACHE_PATH, 'prefix'=>'csgoj'],  //比赛Ranklist的cache配置

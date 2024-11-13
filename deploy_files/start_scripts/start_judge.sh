@@ -75,6 +75,7 @@ else
     #     "
     # fi
     docker run -dit $LINK_LOCAL \
+        --privileged=true \
         --name $CONTAINER_NAME \
         -e OJ_HTTP_BASEURL="$OJ_HTTP_BASEURL" \
         -e OJ_HTTP_PASSWORD=$PASS_JUDGER \

@@ -29,6 +29,15 @@ rm -rf /home/judge/etc
 ln -s /volume/data   /home/judge/data   
 ln -s /volume/etc    /home/judge/etc
 chmod 777 -R /volume/etc
+# create safe env
+rm -rf /mnt/overlay_judge
+mkdir -p /mnt/overlay_judge/run
+mkdir -p /mnt/overlay_judge/empty
+mount --rbind / /mnt/overlay_judge/run
+mount --bind /mnt/overlay_judge/empty /mnt/overlay_judge/run/volume
+mkdir -p /mnt/overlay_judge/run/dev/shm
+mount --bind /dev/shm /mnt/overlay_judge/run/dev/shm
+# start judge
 /usr/bin/judged
 # judged /home/judge debug
 sleep infinity
