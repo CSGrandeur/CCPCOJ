@@ -133,7 +133,6 @@
                 } else {
                     $('#topic_num').text(rep.data?.count ? `(${rep.data.count})` : '');
                 }
-                console.log(rep.data)
                 if(action_page == 'topic_list') {
                     // 确保管理员查看了 topic_list 页面，消除高亮显示（更新提问/回复数）
                     if (rep.data?.count !== undefined && rep.data?.count !== null) {

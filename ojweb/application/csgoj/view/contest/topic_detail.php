@@ -89,6 +89,13 @@
     }
 </style>
 
+<script>
+var reply_cnt = <?php echo count($replyList); ?>;
+var topic_id = <?php echo $topic['topic_id']; ?>;
+// 进入 topic_detail 再更新 reply_cnt cache
+let reply_store_key = `topic_reply#${topic_id}`;
+csg.store(reply_store_key, reply_cnt);
+</script>
 
 {if($running) }
 <form role="form" id="topic_reply_form" action="/{$module}/{$contest_controller}/topic_reply_ajax" method="POST">
@@ -132,12 +139,6 @@
     var reply_list_content_div = $('#reply_list_content_div');
     var cid = $('#contest_id_input').val();
     var topic_reply_content = $('#topic_reply_content');
-    var reply_cnt = <?php echo count($replyList); ?>;
-    var topic_id = <?php echo $topic['topic_id']; ?>;
-
-    // 进入 topic_detail 再更新 reply_cnt cache
-    let reply_store_key = `topic_reply#${topic_id}`;
-    csg.store(reply_store_key, reply_cnt);
     $(document).ready(function(){
         $('#topic_reply_form').validate({
             rules:{
