@@ -2,3 +2,5 @@ post_max_size = 128M
 upload_max_filesize = 128M
 request_terminate_timeout = 128
 pm.max_children = 512
+
+session.gc_maxlifetime = 21600

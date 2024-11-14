@@ -98,10 +98,10 @@ if [ "$FLAG_ZIP_SCRIPTS" = "true" ]; then
     zip csgoj_scripts_$TAG_VERSION.zip start_scripts/*.sh -j
 fi
 
+cd $PATH_DIR/../ && echo $TAG_VERSION > version
+
 if [ "$FLAG_TAG_PUSH" = "true" ]; then
     cd $PATH_DIR
     git tag $TAG_VERSION
     git push origin $TAG_VERSION
 fi
-
-cd $PATH_DIR/../ && echo $TAG_VERSION > version

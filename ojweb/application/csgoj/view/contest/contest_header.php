@@ -123,8 +123,8 @@
                 const reply_num_key = `topic_reply#cid${tmp_cid}`;
                 const topic_num_cache = csg.store(topic_num_key);
                 const reply_num_cache = csg.store(reply_num_key);
-                const flg_new_topic = topic_num_cache === null || topic_num_cache !== null && rep.data?.count && rep.data.count > topic_num_cache;
-                const flg_new_reply = reply_num_cache === null || reply_num_cache !== null && rep.data?.reply_sum && rep.data.reply_sum > reply_num_cache;
+                const flg_new_topic = topic_num_cache === null && rep.data?.count || topic_num_cache !== null && rep.data?.count && rep.data.count > topic_num_cache;
+                const flg_new_reply = reply_num_cache === null && rep.data?.reply_sum || reply_num_cache !== null && rep.data?.reply_sum && rep.data.reply_sum > reply_num_cache;
                 if (flg_new_topic || flg_new_reply) {
                     // alertify.warning("有新提问 / 回复");
                     $('#topic_num').html(`(<strong style="color:red;" 
@@ -133,12 +133,13 @@
                 } else {
                     $('#topic_num').text(rep.data?.count ? `(${rep.data.count})` : '');
                 }
+                console.log(rep.data)
                 if(action_page == 'topic_list') {
                     // 确保管理员查看了 topic_list 页面，消除高亮显示（更新提问/回复数）
-                    if(rep.data?.count) {
+                    if (rep.data?.count !== undefined && rep.data?.count !== null) {
                         csg.store(topic_num_key, rep.data.count);
                     }
-                    if(rep.data?.reply_sum) {
+                    if(rep.data?.reply_sum !== undefined && rep.data?.reply_sum !== null) {
                         csg.store(reply_num_key, rep.data.reply_sum);
                     }
                 }                

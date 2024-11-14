@@ -2073,6 +2073,7 @@ class Contest extends Csgojbase
             ->field('COUNT(*) as count, SUM(reply) as reply_sum')
             ->find();
         
+        $result['reply_sum'] = $result['reply_sum'] ?? 0;
         return $this->success('ok', null, $result);
     }
     public function topic_list_ajax()
