@@ -96,7 +96,7 @@ class Contest extends Csgojbase
     public function CanJoin()
     {
         //是否有参加比赛权限，private设置的参赛权或public比赛无密码，输入正确的密码的public比赛也会获得参赛session
-        if (!session('?c' . $this->contest['contest_id'])) {
+        if (!ItemSession('c', $this->contest['contest_id'])) {
             if ($this->contest['private'] % 10 == 1) {
                 $this->needAuth = false;
                 return false;
@@ -187,9 +187,11 @@ class Contest extends Csgojbase
         if (session('?user_id')) {
             $this->contest_user = session('user_id');
             $this->assign('contest_user', $this->contest_user);
+            $this->assign('login_teaminfo', session('login_user_info'));
         } else {
             $this->contest_user = null;
             $this->assign('contest_user', $this->contest_user);
+            $this->assign('login_teaminfo', null);
         }
     }
     public function ContestStatus($contest = null)
@@ -255,7 +257,9 @@ class Contest extends Csgojbase
             'id2abc' => [],
             'id2num' => [],
             'num2score' => [],
-            'id2score' => []
+            'id2score' => [],
+            'num2color' => [],
+            'num2abc' => [],
         ];
         if ($this->contest_problem_list == null) {
             //这种情况一般不会发生，如果真的有，那是管理员操作不当，页面出问题也难免
@@ -282,6 +286,8 @@ class Contest extends Csgojbase
                 $this->problemIdMap['num2score'][$problemId['num']] = $problemId['pscore'];
                 $this->problemIdMap['id2score'][$problemId['problem_id']] = $problemId['pscore'];
             }
+            $this->problemIdMap['num2color'][$problemId['num']] = $problemId['title'];
+            $this->problemIdMap['num2abc'][$problemId['num']] = $alphabetId;
         }
     }
     public function index()
@@ -299,7 +305,7 @@ class Contest extends Csgojbase
             $this->error('Please login first');
         $contest_pass = trim(input('contest_pass'));
         if ($contest_pass == $this->contest['password']) {
-            session('c' . $this->contest['contest_id'], true);
+            ItemSession('c', $this->contest['contest_id'], true);
             $this->success('Verification passed', null, ['redirect_url' => "/" . $this->module . "/" . $this->controller . "/problemset?cid=" . $this->contest['contest_id']]);
         } else
             $this->error('Wrong password');
@@ -1152,7 +1158,79 @@ class Contest extends Csgojbase
         }
         return $ret['rows'];
     }
+    public function team_score_now_ajax() {
+        // 获取队伍当前解题情况
+        $team_id = input('team_id/s');
+        if($team_id == null) {
+            $team_id = $this->contest_user;
+        }
+        if($team_id == null) {
+            $this->error("No team_id provided");
+        }
+        $rank = $this->ranklist_ajax();
+        $award_ratio = $this->GetAwardRatio();
+        $ret = [
+            // 'problem_abc_list'  => $this->problemIdMap['num2abc'],
+            'solved'        => 0,
+            'tried'         => 0,
+            'penalty'       => 0,
+            'rank'          => '-',
+            'ratio_gold'    => $award_ratio[0],
+            'ratio_silver'  => $award_ratio[1],
+            'ratio_bronze'  => $award_ratio[2],
+        ];
+        $total_team_cnt = 0;
+        $total_valid_cnt = 0;
+        $rank_with_star = 0;
+        $rank_virtual = 0;  // 无论打星还是正式队，计算一个在正式队排名中的排名
+        $cnt_with_star = 0;
+        $flg_find = false;
+        $last = null;
+        $recnt_formal_team = ['rank' => 0, 'solved' => 1000, 'penalty' => 0];
+        foreach($rank as $item) {
+            if($item['solved'] > 0) {
+                $total_team_cnt++;
+                if($item['tkind'] != 2) {
+                    $total_valid_cnt++;
+                }
+            }
+            if(!$flg_find) {
+                if($last == null || $last['solved'] != $item['solved'] || $last['penalty'] != $item['penalty']) {
+                    $cnt_with_star ++;
+                }
+                $last = $item;
+                $rank_with_star = $cnt_with_star;
+            }
+            if($recnt_formal_team['solved'] != $item['solved'] || $recnt_formal_team['penalty'] != $item['penalty']) {
+                $rank_virtual = $recnt_formal_team['rank'] + 1;
+            } else {
+                $rank_virtual = $recnt_formal_team['rank'];
+            }
+            if($item['tkind'] != 2) {
+                $recnt_formal_team = $item;
+            }
+            if($item['user_id'] == $team_id) {
+                $tried_count = 0;
+                foreach ($this->problemIdMap['num2abc'] as $pid_abc) {
+                    if (isset($item[$pid_abc]) && $item[$pid_abc]['pst'] == 1) {
+                        $tried_count ++;
+                    }
+                }
+                $ret['solved']   = $item['solved'];
+                $ret['tried']    = $tried_count;
+                $ret['penalty']  = $item['penalty'];
+                $ret['rank']     = $rank_virtual;
+                $flg_find = true;
+            }
+        }
+        if($flg_find) {
 
+        }
+        $ret['total_team_cnt'] = $total_team_cnt;               // 总有效含打星队伍数
+        $ret['total_valid_cnt'] = $total_valid_cnt;             // 总有效正式队伍数
+        $ret['rank_with_star'] = $rank_with_star;               // 含打星的排名
+        $this->success("no team", null, $ret);
+    }
     public function GetContestTeam($contest_list, $solution)
     {
         $team_map = array();

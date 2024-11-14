@@ -75,7 +75,7 @@ class Adminbase extends Globalbasecontroller
         $privilege = $Privilege->where($map)->find();
         if($privilege == null)
             $Privilege->insert($map);
-        session($rightstr, true);
+        session('login_user_info')['privilege'][$rightstr] = true;
     }
     public function AttachFolderCalculation($randStr = '')
     {

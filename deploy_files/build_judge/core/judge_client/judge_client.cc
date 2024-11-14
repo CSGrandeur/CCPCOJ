@@ -1814,14 +1814,14 @@ float raw_text_judge(char *infile, char *outfile, char *userfile, int *total_mar
     return mark;
 }
 
-void EndCE(int solution_id, char *user_id, int p_id, int cid, const char *log_str, const char *addition="") {
+void EndCE(int solution_id, char *user_id, int p_id, int cid, const char *log_str, const char *addition="", bool overwrite=false) {
     char cefile[BUFFER_SIZE_SM] = "ce.txt";
     // sprintf(cefile, "%s/ce.txt", data_work_dir);
     // printf("***\n\n, %s, %s \n", data_work_dir, cefile);
-    FILE *cef = fopen(cefile, "w");
+    FILE *cef = overwrite ? fopen(cefile, "w") : fopen(cefile, "a");
     if (cef != NULL) {
         if (addition && strlen(addition) > 0) {
-            fprintf(cef, "%s\n", addition);
+            fprintf(cef, "\n%s\n", addition);
         }
         fclose(cef);
     }
@@ -1865,7 +1865,7 @@ bool TryBuildSpj(const char *oj_home, const int p_id, const char *spj_code_name,
             }
             execute_cmd("rm %s", local_spj_file);
             EndCE(now_sol_id, now_user_id, now_p_id, now_cid, "Checker Build Failed", 
-            "It's not you. It's SYSTEM_ERROR. Ask the admin to check the checker.\n");  // Set result as CE when checker build failed
+            "It's not you. It's SYSTEM_ERROR. Ask the admin to check the checker.\n", true);  // Set result as CE when checker build failed
             return false;
         }
         if(DEBUG) {
@@ -1941,12 +1941,15 @@ int special_judge(char *oj_home, int problem_id, char *infile, char *outfile, ch
         else
         {
             printf("spj tpj not found problem: %d\n", problem_id);
-            ret = 1;
+            ret = 99;
         }
-        if (ret)
+        if (ret == 99) {
             exit(99);
-        else
+        } else if(ret) {
+            exit(1);
+        } else {
             exit(0);
+        }
     }
     else
     {
@@ -1956,7 +1959,7 @@ int special_judge(char *oj_home, int problem_id, char *infile, char *outfile, ch
         ret = WEXITSTATUS(status);
         if(ret == 99) {
             EndCE(now_sol_id, now_user_id, now_p_id, now_cid, "Checker Not Found", 
-            "It's not you. It's SYSTEM_ERROR. Ask the admin to reset checker.\n");
+            "It's not you. It's SYSTEM_ERROR. Ask the admin to reset checker.\n", true);
         }
         if (DEBUG)
         {
@@ -2833,13 +2836,15 @@ int main(int argc, char **argv)
 
     if (num_of_test == 0)
     {
-        print_runtimeerror((char *)"no test data ", (char *)" no *.in file found");
-        ACflg = OJ_RE;
-        if (DEBUG)
-        {
-            printf("[OJ_RE(%d)] no test data found\n", OJ_RE);
-        }
-        finalACflg = OJ_RE;
+        // no test.in found, report to system administrator
+        EndCE(solution_id, user_id, p_id, cid, "no test.in found", "It's not you. It's SYSTEM_ERROR.\nAsk the admin to check if the input data files has been uploaded and successfully synchronized on the judger machine,\nthen rejudge.\n", true);
+        // print_runtimeerror((char *)"no test data ", (char *)" no *.in file found");
+        // ACflg = OJ_RE;
+        // if (DEBUG)
+        // {
+        //     printf("[OJ_RE(%d)] no test data found\n", OJ_RE);
+        // }
+        // finalACflg = OJ_RE;
     }
     char last_name[BUFFER_SIZE];
     int minus_mark = 0;

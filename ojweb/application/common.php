@@ -119,8 +119,9 @@ function SetCarousel()
 function IsAdmin($item='administrator', $id=null)
 {
     $item = trim($item);
+    $privilege_session = session('?login_user_privilege') ? session('login_user_privilege') : [];
     if($item == 'super_admin') {
-        return session('?super_admin');
+        return array_key_exists('super_admin', $privilege_session);
     }
     $OJ_MODE = config('OJ_ENV.OJ_MODE');
     $OJ_ADMIN = config('OjAdmin.' . ($OJ_MODE == 'both' ?  'cpcsys' : $OJ_MODE));
@@ -132,8 +133,9 @@ function IsAdmin($item='administrator', $id=null)
     $ret = false;
     if(array_key_exists($item, $ojAllPrivilegeList)) {
         // 如果 $item 存在于管理员列表中，直接验证
-        if($ret = session('?' . $item))
+        if(array_key_exists($item, $privilege_session)) {
             return $ret;
+        }
     }
     else if(array_key_exists($item, $ojItemPri)) {
         // 如果 $item 存在于管理项目名称中，如'problem'，则分有没有 id 来判断
@@ -141,23 +143,31 @@ function IsAdmin($item='administrator', $id=null)
         $adminName = $ojPreAdmin[$adminPre];
         if($id != null) {
             // 有id，验证对特定项目的权限
-            if(session('?administrator')) {
+            if(array_key_exists('administrator', $privilege_session)) {
                 return true;
             }
-            // if($ret = session('?' . $ojItemPri[$item] . $id) && session('?'.$adminName))
-            if($ret = session('?' . $ojItemPri[$item] . $id)) {
+            if($ret = array_key_exists($ojItemPri[$item] . $id, $privilege_session)) {
                 return $ret;
             }
         }
         else {
-            if($ret = session('?'.$adminName))
+            if(array_key_exists($adminName, $privilege_session)) {
                 return $ret;
+            }
         }
     }
-    $ret = $ret || session('?administrator') || session('?super_admin');
+    $ret = $ret || array_key_exists('administrator', $privilege_session) || array_key_exists('super_admin', $privilege_session);
     return $ret;
 }
-
+function ItemSession($prefix, $id) {
+    $privilege_session = session('?login_user_privilege') ? session('login_user_privilege') : [];
+    return array_key_exists($prefix . $id, $privilege_session);
+}
+function ItemSessionSet($prefix, $id, $val) {
+    $privilege_session = session('?login_user_privilege') ? session('login_user_privilege') : [];
+    $privilege_session[$prefix . $id] = $val;
+    session('login_user_privilege', $privilege_session);
+}
 function LangMask($languages)
 {
     if(!isset($languages) || count($languages) == 0)

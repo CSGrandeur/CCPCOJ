@@ -75,7 +75,6 @@ else
     #     "
     # fi
     docker run -dit $LINK_LOCAL \
-        --privileged=true \
         --name $CONTAINER_NAME \
         -e OJ_HTTP_BASEURL="$OJ_HTTP_BASEURL" \
         -e OJ_HTTP_PASSWORD=$PASS_JUDGER \
@@ -91,6 +90,7 @@ else
         --cpus=$JUDGE_DOCKER_CPUS $CPUSET_CONFIG \
         --memory=$JUDGE_DOCKER_MEMORY \
         --cap-add=SYS_PTRACE $SHM_CONFIG \
+        --cap-add=SYS_ADMIN \
         --restart unless-stopped \
         csgrandeur/ccpcoj-judge:$CSGOJ_VERSION
 

@@ -47,12 +47,23 @@ class User extends Csgojbase
         $Privilege = db('privilege');
         $privilegelist = $Privilege->where('user_id', $userinfo['user_id'])->field(['rightstr', 'defunct'])->select();
         $ret = [];
+        $privilege_session = [];
         foreach($privilegelist as $privilege) {
-            session($privilege['rightstr'], $privilege['defunct']);
+            $privilege_session[$privilege['rightstr']] = $privilege['defunct'];
             if(array_key_exists($privilege['rightstr'], $this->OJ_ADMIN['OJ_ADMIN_LIST'])) {
                 $ret[] = $privilege['rightstr'];
             }
         }
+        // 用户信息
+        session('login_user_info', [
+            'team_id'   => $userinfo['user_id'],
+            'name'      => $userinfo['nick'],
+            'tmember'   => '',
+            'coach'     => '',
+            'school'    => $userinfo['school'],
+            'room'      => ''
+        ]);
+        session('login_user_privilege', $privilege_session);
         return $ret;
     }
     public function add_loginlog($user_id, $success)
@@ -73,12 +84,14 @@ class User extends Csgojbase
     }
     public function logout_ajax()
     {
-        if(!session('?user_id'))
-        {
+        if(!session('?user_id')) {
             $this->error('User already logged out.');
         }
         $this->update_user_solved_submit(session('user_id'));
-        session(null);
+        
+        session('login_user_privilege', null);
+        session('login_user_info', null);
+        session('user_id', null);
         $this->success('Logout Successful!<br/>Reloading data.');
     }
     public function userinfo()

@@ -24,11 +24,12 @@ class Sso extends UserBase {
         }
     }
     public function sso_logout() {
+        session('login_user_privilege', null);
+        session('login_user_info', null);
+        session('user_id', null);
         if(session('?sso_login')) {
-            session(null);
             $this->redirect($this->OJ_SSO . '/sso/ssologout?logout_redirect=/index&sclient_id=' . $this->OJ_SCLIENT_ID);
         } else {
-            session(null);
             $this->redirect('/index');
         }
     }

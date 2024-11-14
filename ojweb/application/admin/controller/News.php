@@ -290,7 +290,7 @@ class News extends Adminbase
 				'category'			=> 'about',
 				'content'			=> '',
 				'user_id'			=> session('user_id'),
-				'modify_user_id'	=> session('modify_user_id'),
+				'modify_user_id'	=> session('user_id'),
 				'time'				=> date('Y-m-d H:i:s'),
 				'modify_time'		=> date('Y-m-d H:i:s'),
 			];

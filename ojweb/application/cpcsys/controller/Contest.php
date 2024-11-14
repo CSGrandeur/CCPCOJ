@@ -54,22 +54,22 @@ class Contest extends Contestbase
             $this->assign('contest_user', null);
             $this->assign('login_teaminfo', null);
         }
-        $this->proctorAdmin = $this->IsContestAdmin('admin');
-        $this->watcherUser = $this->IsContestAdmin('watcher');
-        $this->balloonManager = $this->IsContestAdmin('balloon_manager');
-        $this->balloonSender = $this->IsContestAdmin('balloon_sender');
-        $this->printManager = $this->IsContestAdmin('printer');
-        $this->isReviewer = $this->IsContestAdmin('reviewer');
-        $this->isContestStaff = $this->proctorAdmin || $this->balloonManager || $this->balloonSender || $this->printManager || $this->isReviewer;
-        $this->isContestWorker = $this->balloonSender || $this->printManager;
-        $this->assign('proctorAdmin', $this->proctorAdmin);
-        $this->assign('watcherUser', $this->watcherUser);
-        $this->assign('balloonManager', $this->balloonManager);
-        $this->assign('balloonSender', $this->balloonSender);
-        $this->assign('printManager', $this->printManager);
-        $this->assign('isReviewer', $this->isReviewer);
-        $this->assign('isContestStaff', $this->isContestStaff);
-        $this->assign('isContestWorker', $this->isContestWorker);
+        $this->proctorAdmin     =   $this->IsContestAdmin('admin');
+        $this->watcherUser      =   $this->IsContestAdmin('watcher');
+        $this->balloonManager   =   $this->IsContestAdmin('balloon_manager');
+        $this->balloonSender    =   $this->IsContestAdmin('balloon_sender');
+        $this->printManager     =   $this->IsContestAdmin('printer');
+        $this->isReviewer       =   $this->IsContestAdmin('reviewer');
+        $this->isContestStaff   =   $this->proctorAdmin || $this->balloonManager || $this->balloonSender || $this->printManager || $this->isReviewer;
+        $this->isContestWorker  =   $this->balloonSender || $this->printManager;
+        $this->assign('proctorAdmin',       $this->proctorAdmin);
+        $this->assign('watcherUser',        $this->watcherUser);
+        $this->assign('balloonManager',     $this->balloonManager);
+        $this->assign('balloonSender',      $this->balloonSender);
+        $this->assign('printManager',       $this->printManager);
+        $this->assign('isReviewer',         $this->isReviewer);
+        $this->assign('isContestStaff',     $this->isContestStaff);
+        $this->assign('isContestWorker',    $this->isContestWorker);
     }
     public function GetSession($sessionStr=null) {
         if(!isset($this->teamSessionName) || $this->teamSessionName == '' || $this->teamSessionName == null)
