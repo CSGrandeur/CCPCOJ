@@ -3,7 +3,7 @@
         提问<span id="topic_num"></span><span class="caret"></span><br/><span class="en-text">Clarification</span> 
     </a>
     <ul class="dropdown-menu">
-        {if $running}
+        {if $running && !$isContestAdmin && (!isset($proctorAdmin) || !$proctorAdmin)}
         <li>
             <a href="/{$module}/{$contest_controller}/topic_add?cid={$contest['contest_id']}">发送提问<br/><span class="en-text">Add Topic</span></a>
         </li>

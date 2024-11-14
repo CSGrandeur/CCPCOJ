@@ -71,6 +71,10 @@ bronze="<?php echo isset($ratio_bronze) ? $ratio_bronze : 20;?>"
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.rank_header_pro_summary {
+    font-size: 11px;
+    white-space: nowrap;
+}
 </style>
 
 </div> <!-- id="rank_div" -->

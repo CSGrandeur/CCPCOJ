@@ -26,6 +26,7 @@ let ratio_bronze;
 let rank_gold;
 let rank_silver;
 let rank_bronze;
+var rank_pro_solved_summary = {}, rankHeaderProSummarySpans;
 function UpdateAwardInfo() {
     ratio_gold = parseFloat($("#award_ratio").attr("gold"));
     ratio_silver = parseFloat($("#award_ratio").attr("silver"));
@@ -53,6 +54,21 @@ function RankLoadSuccessCallback(data) {
         valid_team_num = 0;
         star_team_num = 0;
         star_valid_team_num = 0;
+        // def summary pro solved tried
+        rankHeaderProSummarySpans = $('.rank_header_pro_summary');
+        var apids = rankHeaderProSummarySpans.map(function() {
+            return $(this).attr('apid');
+        }).get();
+        rank_pro_solved_summary = {
+            tried: {},
+            solved: {}
+        };
+        apids.forEach(function(apid) {
+            rank_pro_solved_summary.tried[apid] = 0;
+            rank_pro_solved_summary.solved[apid] = 0;
+        });
+        // endef
+
         for(var i = 0; i < data.length; i ++) {
             if(data[i].solved > 0) {
                 valid_team_num ++;;
@@ -68,6 +84,18 @@ function RankLoadSuccessCallback(data) {
                 if(school != '')
                     schoolDict[data[i]['school']] = true;
             }
+            
+            // summary pro solved tried
+            apids.forEach(function(apid) {
+                var item = data[i][apid];
+                if (item && item.pst !== undefined) {
+                    if (item.pst == 1) {
+                        rank_pro_solved_summary.tried[apid]++;
+                    } else if (item.pst >= 2) {
+                        rank_pro_solved_summary.solved[apid]++;
+                    }
+                }
+            });
         }
         formalValidTeamNum = valid_team_num - star_valid_team_num;
         UpdateAwardInfo();
@@ -78,6 +106,7 @@ function RankLoadSuccessCallback(data) {
             UpdateTkindFilter();
         }
         UpdateFilterRank();
+        UpdateRankHeader();
     }
 };
 function UpdateSchoollistFromCookie() {
@@ -198,7 +227,17 @@ function UpdateFilterRank() {
         });
     }
 }
-
+function UpdateRankHeader() {
+    // 更新Rank表头
+    var rankHeaderProSummarySpans = $('.rank_header_pro_summary');
+    rankHeaderProSummarySpans.each(function() {
+        var apid = $(this).attr('apid');
+        var solved = rank_pro_solved_summary.solved[apid] || 0;
+        var tried = rank_pro_solved_summary.tried[apid] || 0;
+        $(this).text(`${solved} / ${solved + tried}`);
+        $(this).attr('title', `通过队伍(Teams Solved) ${solved} / 尝试队伍(Teams Tried) ${solved + tried}`);
+    });
+}
 function FormatterRank(value, row, index, field) {
     return `<span acforprize='${row.solved}'>${value}</span>`;
 }

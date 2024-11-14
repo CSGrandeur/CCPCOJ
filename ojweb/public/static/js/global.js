@@ -397,6 +397,17 @@ function SetF5RefreshTable(target_table) {
         }
     });
 }
+function TextAllowTab(textarea_id) {
+    document.getElementById(textarea_id).addEventListener('keydown', function(e) {
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            this.value = this.value.substring(0, start) + '\t' + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start + 1;
+        }
+    });
+}
 $(document).ready(function(){
     $('.bootstrap_table_table').on('post-body.bs.table', function(){
         //处理table宽度，不出现横向scrollbar

@@ -1,5 +1,5 @@
-<div id="cteaminfo_panel">
-    {if isset($login_teaminfo) && $login_teaminfo}
+{if isset($login_teaminfo) && $login_teaminfo}
+<div id="cteaminfo_panel" style="min-width: {if !isset($isContestStaff) || !$isContestStaff }256{else /}160{/if}px;">
     <div id="contest_logout_div">
         <div class="cteam_line_info" title="🆔队伍(TeamID): {$login_teaminfo['team_id']}
             {if $login_teaminfo['room']}🏘️机房/区域(Zone): {$login_teaminfo['room']}{/if}">
@@ -21,6 +21,7 @@
             🤝{$login_teaminfo['tmember']}{if $login_teaminfo['coach']} 👨‍🏫{$login_teaminfo['coach']}{/if}
         </div>
     </div>
+    <hr class="custom-hr">
     <div id="cteam_scoreinfo">
         {include file="../../csgoj/view/contest/team_score_panel" /}
     </div>
@@ -56,7 +57,9 @@
             display: flex;
             flex-direction: column;
             margin-left: auto;
-            width: 256px;
+        }
+        #cteam_baseinfo > div {
+            margin-bottom: 2px;
         }
 
         #contest_logout_div {
@@ -75,6 +78,11 @@
             width: 100%;
             display: block;
         }
+        .custom-hr {
+            margin: 5px 0; /* 控制上下间距 */
+            border: none; /* 去掉默认边框 */
+            border-top: 1px solid #ccc; /* 设置顶部边框 */
+        }
     </style>
-    {/if}
 </div>
+{/if}

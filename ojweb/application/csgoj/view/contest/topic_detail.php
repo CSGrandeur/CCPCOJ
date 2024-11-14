@@ -132,6 +132,12 @@
     var reply_list_content_div = $('#reply_list_content_div');
     var cid = $('#contest_id_input').val();
     var topic_reply_content = $('#topic_reply_content');
+    var reply_cnt = <?php echo count($replyList); ?>;
+    var topic_id = <?php echo $topic['topic_id']; ?>;
+
+    // 进入 topic_detail 再更新 reply_cnt cache
+    let reply_store_key = `topic_reply#${topic_id}`;
+    csg.store(reply_store_key, reply_cnt);
     $(document).ready(function(){
         $('#topic_reply_form').validate({
             rules:{
@@ -146,26 +152,12 @@
                 submit_button.attr('disabled', true);
                 $(form).ajaxSubmit(function(ret)
                 {
-                    if(ret.code == 1)
-                    {
+                    if(ret.code == 1) {
+                        let reply_store_key = `topic_reply#${topic_id}`;
+                        csg.store(reply_store_key, reply_cnt + 1);
                         location.reload();
-                        // var data = ret['data'];
-                        // alertify.success(ret['msg']);
-                        // var reply = "<article class='md_display_div reply_display_div'>\n" +
-                        //     "<p class='help-block'>\n" +
-                        //     "<span class='inline_span'>Time: <span class='inline_span text-warning'>" + data['in_date'] + "</span></span>&nbsp;&nbsp;&nbsp;&nbsp;\n" +
-                        //     "<span class='inline_span'>User: <span class='inline_span text-default'>\n" +
-                        //     "<a href='/" + data['module'] + "/user/userinfo?user_id=" + data['user_id'] + "'>" + data['user_id'] + "</a></span></span>&nbsp;&nbsp;&nbsp;&nbsp;\n" +
-                        //     "</p>\n" +
-                        //     data['content'] + "\n" +
-                        //     "</article>";
-                        // reply_list_content_div.append(reply);
-                        // topic_reply_content.val('');
-                        // button_delay(submit_button, 10, 'Submit');
-                        // return true;
                     }
-                    else
-                    {
+                    else {
                         alertify.alert(ret["msg"]);
                         button_delay(submit_button, 3, 'Submit');
                     }

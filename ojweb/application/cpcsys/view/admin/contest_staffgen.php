@@ -10,7 +10,7 @@
 </div>
 <div class="container">
     <article id="staff_gen_help_div" class="md_display_div alert alert-info collapse">
-        <p>每行由“#”或“\t”隔开的账号、姓名、密码、权限、房间组成。例如<code>admin01#郭大侠#123456#admin#A区</code>。可用权限如下：</p>
+        <p>每行“\t”隔开的账号、姓名、密码、权限、房间组成。例如<code>admin01	郭大侠	123456	admin	A区</code>。可用权限如下：</p>
         <li><code>admin</code>: 监考员，可管理部分比赛配置</li>
         <li><code>printer</code>: 打印管理员，负责打印机</li>
         <li><code>balloon_manager</code>: 气球管理员，建议只设置一名</li>
@@ -59,6 +59,7 @@
 </div>
 <input type="hidden" id="page_info" cid="{$contest['contest_id']}">
 <script>
+TextAllowTab('staff_description');
 let page_info = $('#page_info');
 let cid = page_info.attr('cid');
 let staff_submit_button = $('#staff_submit_button');
@@ -102,20 +103,25 @@ $(document).ready(function() {
         }
         for(let i in review_list) {
             let line = review_list[i];
-            let info_list = line.split(/[#\t]/);
+            let info_list = line.split(/[\t]/);
             if(info_list.length < 4) {
                 alertify.error(`${line} 内容不完整.`);
                 return;
             }
-            if(info_list[0].trim().length < 3) {
+            info_list[0] = info_list[0].trim();
+            if(info_list[0].length < 3) {
                 alertify.error(`${line} 账号至少3个字符.`);
+                return;
+            }
+            if (!/^[a-zA-Z0-9]+$/.test(info_list[0])) {
+                alertify.error(`${line} 账号只能包含数字和字母.`);
                 return;
             }
             if(!staff_name.has(info_list[3].trim())) {
                 alertify.error(`${line} 权限不在可选范围内.`);
                 return;
             }
-            info_submit += `${D(0, info_list)}#${D(1, info_list)}####${D(4, info_list)}##${D(2, info_list)}##${D(3, info_list)}\n`;
+            info_submit += `${D(0, info_list)}\t${D(1, info_list)}\t\t\t\t${D(4, info_list)}\t\t${D(2, info_list)}\t\t${D(3, info_list)}\n`;
         }
         $.post(staff_submit_button.attr("post_url"), {'team_description': info_submit, 'staff': 1}, function(ret){
             if(ret.code == 1) {                
@@ -149,7 +155,7 @@ $('#staff_gen_template').click(function() {
     }
     for(let i = 0; i < 6; i ++) {
         let alp = String.fromCharCode('A'.charCodeAt(0) + i);
-        for(let j = 0; j < 6; j ++) {
+        for(let j = 0; j < 3; j ++) {
             tpe += `bal${alp}${j}\t${alp}区配送\t${GenPass()}\tballoon_sender\t${alp}\n`;
         }
     }

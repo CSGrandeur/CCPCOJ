@@ -60,7 +60,8 @@ class Contest extends Contestbase
         $this->balloonSender    =   $this->IsContestAdmin('balloon_sender');
         $this->printManager     =   $this->IsContestAdmin('printer');
         $this->isReviewer       =   $this->IsContestAdmin('reviewer');
-        $this->isContestStaff   =   $this->proctorAdmin || $this->balloonManager || $this->balloonSender || $this->printManager || $this->isReviewer;
+        $this->isContestStaff   =   $this->proctorAdmin || $this->balloonManager || $this->balloonSender || 
+                                    $this->printManager || $this->isReviewer || $this->watcherUser;
         $this->isContestWorker  =   $this->balloonSender || $this->printManager;
         $this->assign('proctorAdmin',       $this->proctorAdmin);
         $this->assign('watcherUser',        $this->watcherUser);

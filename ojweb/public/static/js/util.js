@@ -210,6 +210,7 @@ var csg = {
         this.SetCookie(key, "", new Date(0), path, domain, secure);
     },
     store: function(key, val=null, expire=null) {
+        // expire 单位毫秒
         if(val === null) {
             return this.GetStore(key);
         }

@@ -61,7 +61,7 @@ You can only see <strong class="text-warning">your own</strong> topics and the t
         {if IsAdmin('contest', $contest['contest_id']) }
         <th data-field="public_show" data-align="center" data-valign="middle"  data-sortable="false" data-width="70" >Status</th>
         {/if}
-        <th data-field="reply" data-align="center" data-valign="middle"  data-sortable="false" data-width="70" >Reply</th>
+        <th data-field="reply" data-align="center" data-valign="middle"  data-sortable="false" data-width="70" data-formatter="FormatterTopicReply">Reply</th>
         <th data-field="in_date" data-align="center" data-valign="middle"  data-sortable="false"  data-width="160">Time</th>
     </tr>
     </thead>
@@ -128,5 +128,13 @@ You can only see <strong class="text-warning">your own</strong> topics and the t
     topic_refresh.on('click', function(){
         RefreshTable();
     });
+    function FormatterTopicReply(value, row, index, field) {
+        let reply_store_key = `topic_reply#${row.topic_id}`;
+        let reply_cache = csg.store(reply_store_key);
+        if(reply_cache === null || reply_cache != value) {
+            return `<strong style="color:red;">${value}</strong>`;
+        }
+        return value;
+    }
 </script>
 {include file="../../csgoj/view/contest/topic_change_status" /}

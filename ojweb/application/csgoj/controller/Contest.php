@@ -216,7 +216,9 @@ class Contest extends Csgojbase
         if ($now > $this->closeRankTime && $now < $frozen_end_time) {  // 封榜时间段
             $this->rankFrozen = true;
         }
-        if ($this->IsContestAdmin() || $this->IsContestAdmin('balloon_manager') || $this->IsContestAdmin('balloon_sender') || $this->IsContestAdmin('admin')) { //管理员和气球管理员不显示封榜
+        if ($this->IsContestAdmin() || $this->IsContestAdmin('balloon_manager') || 
+        $this->IsContestAdmin('balloon_sender') || $this->IsContestAdmin('admin') ||
+        $this->IsContestAdmin('watcher')) { //管理员、气球管理员、观察员（直播员）不封榜
             $this->rankFrozen = false;
         }
         return $ret;
@@ -1173,11 +1175,12 @@ class Contest extends Csgojbase
             // 'problem_abc_list'  => $this->problemIdMap['num2abc'],
             'solved'        => 0,
             'tried'         => 0,
-            'penalty'       => 0,
             'rank'          => '-',
             'ratio_gold'    => $award_ratio[0],
             'ratio_silver'  => $award_ratio[1],
             'ratio_bronze'  => $award_ratio[2],
+            'pro_res'       => [],
+            'star_team'     => false,
         ];
         $total_team_cnt = 0;
         $total_valid_cnt = 0;
@@ -1211,24 +1214,51 @@ class Contest extends Csgojbase
             }
             if($item['user_id'] == $team_id) {
                 $tried_count = 0;
-                foreach ($this->problemIdMap['num2abc'] as $pid_abc) {
-                    if (isset($item[$pid_abc]) && $item[$pid_abc]['pst'] == 1) {
-                        $tried_count ++;
-                    }
-                }
-                $ret['solved']   = $item['solved'];
-                $ret['tried']    = $tried_count;
-                $ret['penalty']  = $item['penalty'];
                 $ret['rank']     = $rank_virtual;
+                if($item['tkind'] == 2) {
+                    $ret['star_team'] = true;
+                }
                 $flg_find = true;
             }
         }
-        if($flg_find) {
-
+        // 获取真实的 solved、tried、pro_res
+        $contestId = $this->contest['contest_id'];
+        $userId = $this->SolutionUser($this->contest_user, true);
+        
+        // 构建查询
+        $subQuery = db('solution')
+            ->field('problem_id, MIN(result) as min_result')
+            ->where([
+                'result'     => ['egt', 4],
+                'contest_id' => $contestId,
+                'user_id'    => $userId
+            ])
+            ->group('problem_id')
+            ->buildSql();
+        
+        $sol_pro_res = db()->table($subQuery . ' sub')
+            ->field('problem_id, min_result as result')
+            ->cache(30)
+            ->select();
+        $pro_status = [];
+        foreach($sol_pro_res as $pro_res) {
+            if(!array_key_exists($pro_res['problem_id'], $this->problemIdMap['id2abc'])) {
+                continue;
+            }
+            $ret['solved'] += $pro_res['result'] == 4;
+            $ret['tried'] += $pro_res['result'] != 4;
+            $pro_status[$this->problemIdMap['id2abc'][$pro_res['problem_id']]] = $pro_res['result'] == 4 ? 2 : 1;
+        }        
+        foreach ($this->problemIdMap['num2abc'] as $pid_abc) {
+            $ret['pro_res'][] = [
+                'pid_abc'   =>  $pid_abc,
+                'pst'       =>  array_key_exists($pid_abc, $pro_status) ? $pro_status[$pid_abc] : 0
+            ];
         }
         $ret['total_team_cnt'] = $total_team_cnt;               // 总有效含打星队伍数
         $ret['total_valid_cnt'] = $total_valid_cnt;             // 总有效正式队伍数
         $ret['rank_with_star'] = $rank_with_star;               // 含打星的排名
+        $ret['rank_frozen'] = $this->rankFrozen;
         $this->success("no team", null, $ret);
     }
     public function GetContestTeam($contest_list, $solution)
@@ -2034,10 +2064,16 @@ class Contest extends Csgojbase
         if(!$this->IsContestAdmin('admin')) {
             $this->error("Permission denied");
         }
-        return db('contest_topic')->where([
-            'contest_id' => $this->contest['contest_id'],
-            'reply' => ['elt', 0]
-        ])->where($this->topicDefaultMap)->count();
+        $result = db('contest_topic')
+            ->where([
+                'contest_id' => $this->contest['contest_id'],
+                'reply' => ['elt', 0]
+            ])
+            ->where($this->topicDefaultMap)
+            ->field('COUNT(*) as count, SUM(reply) as reply_sum')
+            ->find();
+        
+        return $this->success('ok', null, $result);
     }
     public function topic_list_ajax()
     {

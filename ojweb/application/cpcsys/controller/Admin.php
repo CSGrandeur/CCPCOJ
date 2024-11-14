@@ -201,7 +201,7 @@ class Admin extends Contestbase
             $teamList = explode("\n", $teamDescription);
         }
         if(count($teamList) == 1) {
-            $line = preg_split("/[#\\t ]/", $teamList[0]);
+            $line = preg_split("/[\\t ]/", $teamList[0]);
             if(count($line) <= 2) {
                 $gen_num = null;
                 $gen_seed = null;

@@ -46,7 +46,7 @@
             <li role="presentation" {if $action=='schoolrank' } class="active" {/if}><a href="/{$module}/{$contest_controller}/schoolrank?cid={$contest['contest_id']}">学校排名<br /><span class="en-text">School Rank</span></a></li>
             {/if}
             {if $canJoin==true}
-            {if $controller == 'contest'}
+            {if $controller == 'contest' && !$isContestAdmin }
             <li role="presentation"><a href="#" id="show_msg_btn">通知(<span id="msg_num">0</span>)<br /><span class="en-text">Message</span></a></li>
             {/if}
             <li role="presentation" {if strpos($action, 'statistic' )===0 } class="active" {/if}><a href="/{$module}/{$contest_controller}/statistics?cid={$contest['contest_id']}">统计<br /><span class="en-text">Statistics</span></a></li>
@@ -77,7 +77,7 @@
     {include file="../../csgoj/view/contest/team_info_panel" /}
 </div>
 
-{if $canJoin }
+{if $canJoin && !$isContestAdmin }
 {include file="../../csgoj/view/contest/contest_msg_timing" /}
 {/if}
 
@@ -111,22 +111,37 @@
 {if $isContestAdmin || isset($proctorAdmin) && $proctorAdmin}
 <script type="text/javascript">
     function GetTopicNum() {
+        if (document.visibilityState !== 'visible') {
+            return;
+        }
         let tmp_module = "<?php echo $module ?>";
         let tmp_cid = "<?php echo $contest['contest_id'] ?>";
+        let action_page = "<?php echo $action ?>";
         $.get(`/${tmp_module}/contest/topic_num_ajax?cid=${tmp_cid}`, function(rep) {
-            if (typeof(rep) != 'undefined') {
-                if (typeof(rep) != 'number') {
-                    rep = Number(rep);
-                    if (isNaN(rep)) {
-                        rep = 0;
+            if (rep.code == 1) {
+                const topic_num_key = `topic_num#cid${tmp_cid}`;
+                const reply_num_key = `topic_reply#cid${tmp_cid}`;
+                const topic_num_cache = csg.store(topic_num_key);
+                const reply_num_cache = csg.store(reply_num_key);
+                const flg_new_topic = topic_num_cache === null || topic_num_cache !== null && rep.data?.count && rep.data.count > topic_num_cache;
+                const flg_new_reply = reply_num_cache === null || reply_num_cache !== null && rep.data?.reply_sum && rep.data.reply_sum > reply_num_cache;
+                if (flg_new_topic || flg_new_reply) {
+                    // alertify.warning("有新提问 / 回复");
+                    $('#topic_num').html(`(<strong style="color:red;" 
+                            title="${flg_new_topic ? '有新提问 / New Topic' : ''}${flg_new_reply ? '有新回复 / New Reply' : ''}">
+                            ${rep.data.count}</strong>)`);
+                } else {
+                    $('#topic_num').text(rep.data?.count ? `(${rep.data.count})` : '');
+                }
+                if(action_page == 'topic_list') {
+                    // 确保管理员查看了 topic_list 页面，消除高亮显示（更新提问/回复数）
+                    if(rep.data?.count) {
+                        csg.store(topic_num_key, rep.data.count);
                     }
-                }
-                $('#topic_num').text(`(${rep})`);
-                let old_rep_num = csg.store(`topic_num#cid${tmp_cid}`);
-                if (old_rep_num !== null && rep > old_rep_num) {
-                    alertify.warning("有新提问");
-                }
-                csg.store(`topic_num#cid${tmp_cid}`, rep);
+                    if(rep.data?.reply_sum) {
+                        csg.store(reply_num_key, rep.data.reply_sum);
+                    }
+                }                
             }
         });
     }

@@ -31,9 +31,10 @@
             <th data-field="penalty" data-align="center" data-valign="middle"  data-sortable="false" data-width="100" data-formatter="FormatterPenalty">Penalty</th>
             {foreach($problemIdMap['abc2id'] as $apid=>$pid)}
             <th data-field="{$apid}" data-align="center" data-valign="middle"  data-sortable="false" data-width="90" data-cell-style="acCellStyle" data-formatter="FormatterRankPro">
-                <a href="problem?cid={$contest['contest_id']}&pid={$apid}">
-                    {$apid}
-                </a>
+                <div style="display:flex; flex-direction: column;">
+                    <a href="problem?cid={$contest['contest_id']}&pid={$apid}">{$apid}</a>
+                    <span class="rank_header_pro_summary" apid={$apid} title="通过队伍 / 尝试队伍">- / -</span>
+                </div>
             </th>
             {/foreach}
             {if $module == 'cpcsys' }

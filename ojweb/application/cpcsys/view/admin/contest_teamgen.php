@@ -7,11 +7,11 @@
 </div>
 <div class="container">
     <article id="teamgen_help_div" class="md_display_div alert alert-info collapse">
-        <p>每行一个队伍，该队伍信息由制表符<code>\t</code>或半角字符<code>#</code>隔开。信息从左到右依次为：</p>
+        <p>每行一个队伍，该队伍信息由制表符<code>\t</code>隔开（从Excel文档复制即可）。信息从左到右依次为：</p>
         <p>队号（纯数字）、队名、学校、队员、教练、房间（如果有的话）、队伍类型（0普通/1女队/2打星）、预设密码，例如：</p>
-        <p><code>001#XX大学一队#XX大学#队员一、队员二、队员三#教练名#机房A#0#123456</code></p>
-        <p>队号、密码、房间可为空，由系统自动生成，但“<code>\t</code>”或“<code>#</code>”分隔符必须有，信息是以第几个分隔符来对应的。</p>
-        <p>比如 <code>##测试##333#</code>，即会自动生成一个这样的队伍：</p>
+        <p><code>001[\t]XX大学一队[\t]XX大学[\t]队员一、队员二、队员三[\t]教练名[\t]机房A[\t]0[\t]123456</code></p>
+        <p>队号、密码、房间可为空，由系统自动生成，但“<code>\t</code>”分隔符必须有，信息是以第几个分隔符来对应的。</p>
+        <p>比如 <code>[\t][\t]测试[\t][\t]333[\t]</code>，即会自动生成一个这样的队伍：</p>
         <table class="md_display_div">
             <thead><tr><th>Team ID</th><th>Team Name</th><th>School</th><th>Member</th><th>Coach</th><th>Room</th><th>Team Kind</th><th>Password</th></tr></thead>
             <tbody>
@@ -23,7 +23,7 @@
     </article>
     
     {if $contestStatus != 2}
-    <form id="contest_gen_form" method='post' action="__CPC__/admin/contest_teamgen_ajax?cid={$contest['contest_id']}">
+    <form id="contest_teamgen_form" method='post' action="__CPC__/admin/contest_teamgen_ajax?cid={$contest['contest_id']}">
         <div class="form-group">
             <label for="reset_team">Regenerate All Teams：</label>
             <input type="checkbox" id="reset_team" name='reset_team' class="switch_ctr">
@@ -40,6 +40,23 @@
     {/if}
 
 <script type="text/javascript">
+    TextAllowTab('team_description');
+    function CheckTeamData() {
+        // 简要检查队伍数据
+        let team_description = $('#team_description').val();
+        let team_list = team_description.split('\n');
+        for (let i = 0; i < team_list.length; i++) {
+            let line = team_list[i].trim();
+            if (line === '') continue;
+            let elements = line.split('\t');
+            let team_id = elements[0].trim();
+            if (!/^[a-zA-Z0-9]+$/.test(team_id)) {
+                alertify.alert("格式错误", `队伍ID只能包含数字和字母. 错误行： <br/>${line}`);
+                return false;
+            }
+        }
+        return true;
+    }
     $(document).ready(function()
     {
         $('.switch_ctr').each(function() {
@@ -70,14 +87,16 @@
                 }
             });
         });
-        $('#contest_gen_form').validate({
+        $('#contest_teamgen_form').validate({
             rules:{
                 team_description: {
                     maxlength: 65536
                 }
             },
-            submitHandler: function(form)
-            {
+            submitHandler: function(form) {
+                if(!CheckTeamData()) {
+                    return false;
+                }
                 $(form).ajaxSubmit(
                     {
                         success: function(ret)
