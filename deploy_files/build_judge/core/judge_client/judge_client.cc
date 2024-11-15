@@ -1569,7 +1569,7 @@ void run_solution(int &lang, char *work_dir, double &time_lmt, int &usedtime,
     if (access(noip_file_name, R_OK) == -1)
     { // 不存在指定文件名，使用标准输入
         printf("oridata: [%s]\nstdin: [%s]\n", data_file_path, data_in_tmp);
-        stdin = freopen(data_in_tmp, "r", stdin);
+        stdin = freopen(data_in_tmp, "r", stdin);   // before chroot
     }
 
     execute_cmd("touch %s", data_out_tmp);
@@ -2123,9 +2123,10 @@ void watch_solution(pid_t pidApp, char *infile, int &ACflg, int spj,
     // for walltime
     struct timeval start_time, current_time;
     // struct timeval time_before_wait, time_after_wait;
-    double elapsed_wait = 0.0;
+    // double elapsed_wait = 0.0;
     gettimeofday(&start_time, NULL);
     const double wall_top = time_lmt * 3 + 1;
+    bool flg_timefull = false;
     while (1)
     {
         tick++;
@@ -2134,6 +2135,16 @@ void watch_solution(pid_t pidApp, char *infile, int &ACflg, int spj,
         // gettimeofday(&time_before_wait, NULL);
         wait4(pidApp, &status, __WALL, &ruse); // 等待子进程切换内核态（调用系统API或者运行状态变化）
         // gettimeofday(&time_after_wait, NULL);
+        if (first)
+        {
+            ptrace(PTRACE_SETOPTIONS, pidApp, NULL, PTRACE_O_TRACESYSGOOD | PTRACE_O_TRACEEXIT
+                   //    |PTRACE_O_EXITKILL
+                   //    |PTRACE_O_TRACECLONE
+                   //    |PTRACE_O_TRACEFORK
+                   //    |PTRACE_O_TRACEVFORK
+                   //   有的发行版带的PTRACE不识别以上宏，因此注释掉
+            );
+        }
 
         // check wall time
         gettimeofday(&current_time, NULL);
@@ -2147,7 +2158,8 @@ void watch_solution(pid_t pidApp, char *infile, int &ACflg, int spj,
         {
             ACflg = OJ_TL;
             usedtime = time_lmt * 1000;
-            kill(pidApp, SIGKILL);
+            flg_timefull = true;
+            ptrace(PTRACE_KILL, pidApp, NULL, NULL);
             break;
         }
 
@@ -2260,6 +2272,7 @@ void watch_solution(pid_t pidApp, char *infile, int &ACflg, int spj,
                 case SIGXCPU:
                     ACflg = OJ_TL;
                     usedtime = time_lmt * 1000;
+                    flg_timefull = true;
                     if (DEBUG)
                     {
                         printf("[OJ_TL(%d)] TLE: %d\n", OJ_TL, usedtime);
@@ -2383,8 +2396,10 @@ void watch_solution(pid_t pidApp, char *infile, int &ACflg, int spj,
 
     ptrace(PTRACE_KILL, pidApp, NULL, NULL); // 杀死出问题的进程
 
-    usedtime += (ruse.ru_utime.tv_sec * 1000 + ruse.ru_utime.tv_usec / 1000) * cpu_compensation; // 统计用户态耗时，在更快速的CPU上加以cpu_compensation倍数放大
-    usedtime += (ruse.ru_stime.tv_sec * 1000 + ruse.ru_stime.tv_usec / 1000) * cpu_compensation; // 统计内核态耗时，在更快速的CPU上加以cpu_compensation倍数放大
+    if(!flg_timefull) {
+        usedtime += (ruse.ru_utime.tv_sec * 1000 + ruse.ru_utime.tv_usec / 1000) * cpu_compensation; // 统计用户态耗时，在更快速的CPU上加以cpu_compensation倍数放大
+        usedtime += (ruse.ru_stime.tv_sec * 1000 + ruse.ru_stime.tv_usec / 1000) * cpu_compensation; // 统计内核态耗时，在更快速的CPU上加以cpu_compensation倍数放大
+    }
 
     // clean_session(pidApp);
 }

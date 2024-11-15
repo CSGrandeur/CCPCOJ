@@ -102,6 +102,7 @@ csg.store(reply_store_key, reply_cnt);
 
     <div class="form-group">
         <label for="topic_content">Reply Content：</label>
+        {if isset($contest_user) && $contest_user }
         <textarea
                 id="topic_reply_content"
                 class="form-control"
@@ -111,12 +112,19 @@ csg.store(reply_store_key, reply_cnt);
                 placeholder="^_^"
                 style="max-width:900px;"
                 {if isset($replyAvoid) && $replyAvoid == true} disabled="disabled"{/if}>{if isset($replyAvoid) && $replyAvoid == true}This topic has been changed to public, reply is forbidden to avoid information change between teams.{/if}</textarea>
+        {else /}
+            <textarea disabled class="form-control" rows="5">
+                需登录比赛内账号才可回复 / Need to login with contest inner account to reply
+            </textarea>
+        {/if}
     </div>
     <input type="hidden" id="cid_input" class="form-control" name="cid" value="{$contest['contest_id']}" >
     <input type="hidden" id="topic_id_input" class="form-control" name="topic_id" value="{$topic['topic_id']}" >
     <div class="btn-group">
-        <button type="submit" id='submit_button' class="btn btn-primary" {if isset($replyAvoid) && $replyAvoid == true} disabled="disabled"{/if}>Submit Reply</button>
-        <button type="button" id='clear_button' class="btn btn-warning">Clear</button>
+        <button type="submit" {if !(isset($contest_user) && $contest_user) }disabled{/if}
+        id='submit_button' class="btn btn-primary" {if isset($replyAvoid) && $replyAvoid == true} disabled="disabled"{/if}>Submit Reply</button>
+        <button type="button" {if !(isset($contest_user) && $contest_user) }disabled{/if}
+        id='clear_button' class="btn btn-warning">Clear</button>
         {if IsAdmin('contest', $contest['contest_id']) || isset($proctorAdmin) && $proctorAdmin }
         <!-- 常用回复语句的选项框 -->
         <select id="reply-select" class="form-control" onchange="insertReply()" style="width: 300px">

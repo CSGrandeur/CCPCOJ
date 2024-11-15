@@ -1878,7 +1878,7 @@ class Contest extends Csgojbase
     // 因为学校政策禁止OJ交互式内容，所以不能直接public topic
     // reply正数表示被回复ID，负数表示被回复的次数
     public function TopicAuth() {
-        if (!$this->contest_user)
+        if (!$this->contest_user && !$this->IsContestAdmin('admin'))
             $this->error("Please login first", 'contest?cid=' . $this->contest['contest_id'], '', 1);
     }
     public function topic_detail()
