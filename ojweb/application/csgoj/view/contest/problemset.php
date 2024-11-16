@@ -16,7 +16,8 @@
                 <th data-field="problem_id_show" data-align="center" data-valign="middle"  data-sortable="false" data-width="70">ID</th>
                 <th data-field="title" data-align="left" data-valign="middle"  data-sortable="false" data-width="500" data-formatter="FormatterProTitle">Title</th>
                 <th data-field="accepted" data-align="center" data-valign="middle"  data-sortable="false" data-width="80" data-formatter="FormatterProAc">AC</th>
-                <th data-field="submit" data-align="right" data-valign="middle"  data-sortable="false" data-width="100">Submit</th>
+                <th data-field="submit" data-align="right" data-valign="middle"  data-sortable="false" data-width="100" data-formatter="FormatterProSubmit">Submit</th>
+                <th data-field="color" data-align="center" data-valign="middle"  data-sortable="false" data-width="32" data-formatter="FormatterProBal">Bal</th>
             </tr>
             </thead>
         </table>

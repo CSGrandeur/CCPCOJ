@@ -138,17 +138,26 @@
         let balloon_color_block = [];
         let map_color_record = {};
         for(let i = 0; i < problem_list.length; i ++) {
+            let cl_show = '';
             let cl = -1;
-            if(i < balloon_color_list.length) {
-                cl = parseInt(balloon_color_list[i], 16);
+            if (/^[a-z]+$/.test(balloon_color_list[i])) {
+                cl_show = `${balloon_color_list[i]}`;
+                balloon_color_list_new.push(balloon_color_list[i]);
+            } else {
+
+                if(i < balloon_color_list.length) {
+                    cl = parseInt(balloon_color_list[i], 16);
+                }
+                if(cl < 0 || cl >= 16777216 || isNaN(cl) || (cl in map_color_record)) {
+                    cl = Math.floor(Math.random() * 16777216);
+                }
+                map_color_record[cl] = true;
+                cl = cl.toString(16).toUpperCase().padStart(6, '0');
+                cl_show = `#${cl}`;
+                balloon_color_list_new.push(cl);
+
             }
-            if(cl < 0 || cl >= 16777216 || isNaN(cl) || (cl in map_color_record)) {
-                cl = Math.floor(Math.random() * 16777216);
-            }
-            map_color_record[cl] = true;
-            cl = cl.toString(16).toUpperCase().padStart(6, '0');
-            balloon_color_list_new.push(cl);
-            balloon_color_block.push(`<div style="background-color:#${cl};" class="balloon_color_block">${String.fromCharCode('A'.charCodeAt(0) + i)}</div>`);
+            balloon_color_block.push(`<div style="background-color:${cl_show};" class="balloon_color_block">${String.fromCharCode('A'.charCodeAt(0) + i)}</div>`);
         }
         balloon_color_div.html(balloon_color_block.join(''));
         balloon_colors_input.val(balloon_color_list_new.join(','));

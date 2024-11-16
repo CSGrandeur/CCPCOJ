@@ -28,7 +28,7 @@
         <ul class="nav nav-tabs" id="contest_menu">
             <li role="presentation" {if $action=='contest' } class="active" {/if}><a href="/{$module}/{$contest_controller}/contest?cid={$contest['contest_id']}">比赛首页<br /><span class="en-text">Index</span></a></li>
             {if $isContestAdmin || !isset($balloonSender) || !$balloonSender }
-            {if $canJoin==true && $contestStatus > -1 || $isContestAdmin }
+            {if $canJoin==true && $contestStatus > -1 && (!isset($isContestStaff) || !$isContestStaff) || (isset($proctorAdmin) && $proctorAdmin) || $isContestAdmin }
             <li role="presentation" {if strpos($action, 'problem' )===0} class="active" {/if}><a href="/{$module}/{$contest_controller}/problemset?cid={$contest['contest_id']}">题目<br /><span class="en-text">Problems</span></a></li>
             {/if}
             {if $contestStatus > -1}

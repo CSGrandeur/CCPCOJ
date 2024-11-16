@@ -45,6 +45,9 @@ function FormatterStatusUser(value, row, index, field) {
     return "<a href='/" + module + "/user/userinfo?user_id=" + value + "'>" + value + "</a>";
 }
 function FormatterStatusResult(value, row, index, field) {
+    if(typeof(value) == undefined || value == '-') {
+        return '-';
+    }
     if(value < 4) {
         return "<div class='inline-waiting'><div class='load-container loadingblock'><div class='loader'>Loading...</div></div>" + row['res_text'] + "</div>";
     } else if(row['res_show']) {

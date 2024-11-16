@@ -89,9 +89,9 @@ function RankLoadSuccessCallback(data) {
             apids.forEach(function(apid) {
                 var item = data[i][apid];
                 if (item && item.pst !== undefined) {
-                    if (item.pst == 1) {
+                    if (item.pst == 1 || item.pst == 5) {
                         rank_pro_solved_summary.tried[apid]++;
-                    } else if (item.pst >= 2) {
+                    } else if (item.pst == 2 || item.pst == 3) {
                         rank_pro_solved_summary.solved[apid]++;
                     }
                 }

@@ -108,7 +108,7 @@ class Rankroll extends Ojtoolbase {
         return $this->success('ok', null, GetDir($team_photo_path));
     }
     public function team_image_upload_ajax() { 
-        if(!IsAdmin('contest', $this->contest['contest_id'])) {
+        if(!IsAdmin('contest', $this->contest['contest_id']) && !$this->IsContestAdmin('admin')) {
             $this->error("仅管理员有权上传", '/ojtool', null, 1);
         }
         $team_id = input('team_id');
@@ -145,7 +145,7 @@ class Rankroll extends Ojtoolbase {
         $this->error('未获取到文件');;
     }
     public function team_image_del_ajax() {
-        if(!IsAdmin('contest', $this->contest['contest_id'])) {
+        if(!IsAdmin('contest', $this->contest['contest_id']) && !$this->IsContestAdmin('admin')) {
             $this->error("仅管理员有权删除", '/ojtool', null, 1);
         }
         $ojPath = config('ojPath');

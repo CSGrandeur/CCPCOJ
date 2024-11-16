@@ -2,13 +2,18 @@
     {foreach name="problemIdMap['num2color']" item="item" key="key"}
     {php}
     $pid_abc = array_key_exists($key, $problemIdMap['num2abc']) ? $problemIdMap['num2abc'][$key] : '-';
+    if (isset($item)) {
+        if (!preg_match('/^[a-z]+$/', $item)) {
+            $item = '#' . $item;
+        }
+    }
     {/php}
     <a class="a_noline" href="/{$module}/contest/problem?cid={$contest['contest_id']}&pid={$pid_abc}">
         <div
             class="cteam_info_balloon cteam_info_outline"
             data-letter="{$pid_abc}"
             pnum="$key" id="cteam_score_pro_{$pid_abc}"
-            style="--balloon-color: #{$item};">
+            style="--balloon-color: {$item};">
         </div>
     </a>
     {/foreach}
@@ -51,7 +56,7 @@
         } else if (ret.rank <= rank_bronze) {
             temp_award = `<span class="award_span_bronze" title="铜 / Bronze ${title_addition}">铜${temp_award_star}</span>`;
         } else if (ret.solved > 0) {
-            temp_award = `<span class="award_span_iron" title="铁 / Iron ${title_addition}">铁/iron${temp_award_star}</span>`;
+            temp_award = `<span class="award_span_iron" title="铁 / Iron ${title_addition}">铁${temp_award_star}</span>`;
         } else {
             temp_award = `<span >-</span>`;
         }
