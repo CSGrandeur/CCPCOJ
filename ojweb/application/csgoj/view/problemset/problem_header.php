@@ -27,7 +27,7 @@
 {include file="../../csgoj/view/problemset/submit_button" /}
 &nbsp;&nbsp;
 <span class="inline_span">Time Limit:     <span class="inline_span text-warning">{$problem['time_limit']} Sec</span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="inline_span">Memory Limit: <span class="inline_span text-warning">{$problem['memory_limit']} Mb</span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="inline_span">Memory Limit: <span class="inline_span text-warning">{$problem['memory_limit']} MB</span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
 <span class="inline_span">Submitted:     <span class="inline_span text-warning">{$problem['submit']}</span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
 <span class="inline_span">Solved:         <span class="inline_span text-warning">{$problem['accepted']}</span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
 
