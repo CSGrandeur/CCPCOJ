@@ -196,6 +196,7 @@ function UpdateTkindFilter() {
         }
         selectOptionList.push(tkindList[nl]);
     }
+    tkind_filter.empty();
     for(var i = 0; i < selectOptionList.length; i ++) {
         tkind_filter.append("<option value="+i+">" + selectOptionList[i] + "</option>");
     }
