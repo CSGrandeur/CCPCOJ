@@ -12,7 +12,7 @@ function FormatterProAc(value, row, index, field) {
     return `<div title="AC的提交数 / Total AC Submits">${value}</div>`;
 }
 function FormatterProBal(value, row, index, field) {
-    let cl=value;
+    let cl=value, cl_title = value;
     // cl 全为小写字母，保持不变
     if (!(/^[a-z]+$/.test(value))) {
         // 否则按16进制颜色处理
@@ -20,11 +20,13 @@ function FormatterProBal(value, row, index, field) {
         if(cl < 0 || cl >= 16777216 || isNaN(cl)) {
             cl = 3373751;
         }
-        cl = `#${cl.toString(16).toUpperCase().padStart(6, '0')}`;
+        cl = cl.toString(16).toUpperCase().padStart(6, '0');
+        cl_title = `0x${cl}`;
+        cl = `#${cl}`;
     }
     
     return `<div style="display: flex; justify-content: flex-end; align-items: center;" title="Color: ${cl}">
-                <div class="oj_balloon_icon" style="color:${cl}; width: 32px;height:32px" title="0x${cl}">${oj_balloon_icon}</div>
+                <div class="oj_balloon_icon" style="color:${cl}; width: 32px;height:32px" title="${cl_title}">${oj_balloon_icon}</div>
             </div>`;
 }
 function FormatterProSubmit(value, row, index, field) {
