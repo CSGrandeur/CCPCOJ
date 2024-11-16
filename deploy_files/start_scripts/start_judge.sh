@@ -90,7 +90,7 @@ else
         --cpus=$JUDGE_DOCKER_CPUS $CPUSET_CONFIG \
         --memory=$JUDGE_DOCKER_MEMORY \
         --cap-add=SYS_PTRACE $SHM_CONFIG \
-        --cap-add=SYS_ADMIN \
+        --privileged \
         --restart unless-stopped \
         csgrandeur/ccpcoj-judge:$CSGOJ_VERSION
 
