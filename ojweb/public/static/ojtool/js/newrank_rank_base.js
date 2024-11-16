@@ -300,6 +300,51 @@ $(document).on('click', function (e) {
 
 let flag_forbid_f5 = false;
 
+// 倒计时相关
+let flag_overlay_timing = false;
+let countdownInterval;
+
+function updateCountdown() {
+    let overlay_timing = document.getElementById('overlay_timing');
+    const now = new Date();
+    let startTime, endTime;
+
+    try {
+        startTime = new Date(cdata.contest.start_time.replace(/-/g, '/'));
+        endTime = new Date(cdata.contest.end_time.replace(/-/g, '/'));
+    } catch (error) {
+        overlay_timing.innerHTML = `now<br>${now.toLocaleTimeString()}`;
+        return;
+    }
+
+    if (now < startTime) {
+        const diff = Math.floor((startTime - now) / 1000);
+        const minutes = Math.floor(diff / 60);
+        const seconds = diff % 60;
+        overlay_timing.innerHTML = `-${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+    } else if (now < endTime) {
+        const diff = Math.floor((endTime - now) / 1000);
+        const hours = Math.floor(diff / 3600);
+        const minutes = Math.floor((diff % 3600) / 60);
+        const seconds = diff % 60;
+        overlay_timing.innerHTML = `${hours}:${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+    } else {
+        overlay_timing.innerHTML = 'Ended';
+    }
+}
+
+function startOverlay() {
+    let overlay_timing = document.getElementById('overlay_timing');
+    overlay_timing.style.display = 'flex';
+    updateCountdown();
+    countdownInterval = setInterval(updateCountdown, 1000);
+}
+
+function stopOverlay() {
+    let overlay_timing = document.getElementById('overlay_timing');
+    overlay_timing.style.display = 'none';
+    clearInterval(countdownInterval);
+}
 window.onkeydown = (e) => {
     if(!FLG_PKG_MODE && PAGE_TYPE != 'roll') {
         if (!e || !e.isTrusted || !e.cancelable) {
@@ -324,6 +369,14 @@ window.onkeydown = (e) => {
                 }
                 auto_scroll_task_id = [];
                 alertify.message("关闭自动滚动");
+            }
+    
+        } else if(e.key == 'T' || e.key == 't') {
+            flag_overlay_timing = !flag_overlay_timing;
+            if(flag_overlay_timing) {
+                startOverlay();
+            } else {
+                stopOverlay();
             }
     
         } else if(e.keyCode == 116 && !e.ctrlKey) {

@@ -44,6 +44,7 @@
 <div id="loading_div" class='overlay'>
     <div id="loading_spinner" class="spinner-border">&nbsp;初始化中...</div>
 </div>
+<div id="overlay_timing" style="display: none;"></div>
 {if $action == 'rank'}
 <div class="modal fade" id="summary_modal_div" tabindex="-1" role="dialog" aria-labelledby="summary_modal_div_label" aria-hidden="true">
     <div class="modal-dialog modal-summary" >
