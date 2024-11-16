@@ -217,10 +217,10 @@ class Contest extends Csgojbase
             $this->rankFrozen = true;
         }
         if ($this->IsContestAdmin() || $this->IsContestAdmin('balloon_manager') || 
-        $this->IsContestAdmin('balloon_sender') || $this->IsContestAdmin('admin') ||
-        $this->IsContestAdmin('watcher')) { //管理员、气球管理员、观察员（直播员）不封榜
+        $this->IsContestAdmin('balloon_sender') || $this->IsContestAdmin('admin') ) { //管理员、气球管理员、气球配送员 不封榜
             $this->rankFrozen = false;
         }
+        // PS: 直播员 watcher 需要封榜
         return $ret;
     }
     public function ContestProblemId($ith)
