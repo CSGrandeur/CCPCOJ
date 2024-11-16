@@ -394,3 +394,37 @@ window.onkeydown = (e) => {
     }
 }
 
+// 全屏隐藏滚动条
+function addFullscreenStyles() {
+    const style = document.createElement('style');
+    style.id = 'fullscreen-scrollbar-style';
+    style.innerHTML = `
+      ::-webkit-scrollbar {
+        display: none;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+  
+  function removeFullscreenStyles() {
+    const style = document.getElementById('fullscreen-scrollbar-style');
+    if (style) {
+      document.head.removeChild(style);
+    }
+  }
+  
+  function checkFullScreen() {
+    if (
+      window.innerHeight == screen.height &&
+      window.innerWidth == screen.width
+    ) {
+      addFullscreenStyles();
+    } else {
+      removeFullscreenStyles();
+    }
+  }
+  
+  window.addEventListener('resize', checkFullScreen);
+  
+  // 初始检查
+  checkFullScreen();
