@@ -11,6 +11,7 @@ let data_table = [];
 let data_show = [];
 let page_module = page_info.attr("module");
 let page_cid = page_info.attr("cid");
+let custom_award_cache_key = `award_custom#cid_${page_cid}`;
 
 let ratio_gold = parseInt(page_info.attr("gold"));
 let ratio_silver = parseInt(page_info.attr("silver"));
@@ -652,10 +653,56 @@ const templateContent = [ {
         "width": 50,
     }
 ];
+const templateDict = {
+    '{{team_id}}':  '队伍账号',
+    '{{rank}}':     '队伍排名',
+    '{{school}}':   '队伍校排',
+    '{{member}}':   '成员姓名',
+    '{{coach}}':    '教练',
+    '{{tkind}}':    '队伍类型',
+    '{{solved}}':   '解题数',
+    '{{penalty}}':  '罚时',
+    '{{award}}':    '获奖',
+    '{{year}}':     '比赛开始年',
+    '{{month}}':    '比赛开始月',
+    '{{day}}':      '比赛开始日',
+    '{{start_h}}':  '比赛开始时',
+    '{{start_m}}':  '比赛开始分',
+    '{{start_s}}':  '比赛开始秒',
+    '{{end_h}}':    '比赛结束时',
+    '{{end_m}}':    '比赛结束分',
+    '{{end_s}}':    '比赛结束秒'
+};
 
 // 点击 help 图标时显示说明文字并提供下载模板按钮
 document.getElementById('help_icon_span').addEventListener('click', function() {
-    document.getElementById('template_code').innerText = JSON.stringify(templateContent, null, 4);
+    // 动态生成表格 HTML
+    const keys = Object.keys(templateDict);
+    const halfLength = Math.ceil(keys.length / 2);
+    let tableHtml = '<table class="award_custom_explain_table"><tr>';
+
+    for (let i = 0; i < halfLength; i++) {
+        tableHtml += `<td>${keys[i]}:</td><td>${templateDict[keys[i]]}</td>`;
+        if (i + halfLength < keys.length) {
+            tableHtml += `<td>${keys[i + halfLength]}:</td><td>${templateDict[keys[i + halfLength]]}</td>`;
+        }
+        tableHtml += '</tr><tr>';
+    }
+
+    tableHtml += '</tr></table>';
+
+    // 动态生成 modal 内容
+    const modalBody = document.getElementById('helpModalBody');
+    modalBody.innerHTML = `
+        <p>编辑配置json后提交，导出的获奖xlsx文件将增加根据该配置生成的子表，可用模板信息引用系统信息。</p>
+        ${tableHtml}
+        <p>参考模板：</p>
+        <div style="position: relative;">
+            <pre><code id="template_code">${JSON.stringify(templateContent, null, 4)}</code></pre>
+            <button id="copy_template" class="btn btn-secondary" style="position: absolute; top: 0; right: 0;">复制 / Copy</button>
+        </div>
+    `;
+
     // 显示 modal
     $('#helpModal').modal('show');
 
@@ -664,7 +711,6 @@ document.getElementById('help_icon_span').addEventListener('click', function() {
     if (copyButton.length) {
         copyButton.unbind('click').on('click', async ()=>{
             const codeElement = document.getElementById('template_code').innerText;
-            console.log(121, codeElement)
             if(await ClipboardWrite(codeElement)) {
                 alertify.success('Template Copied');
             } else {
@@ -676,19 +722,63 @@ document.getElementById('help_icon_span').addEventListener('click', function() {
 
 // 点击 Custom 按钮时显示 textarea 输入框
 document.getElementById('self_define_template').addEventListener('click', function() {
-    alertify.prompt('自定义 JSON', '请输入自定义的 JSON:', '',
-        function(evt, value) {
-            try {
-                const json = JSON.parse(value);
-                const cid = 'your_contest_id'; // 替换为实际的 contest_id
-                csg.store(`award_custom#cid${cid}`, json);
-                alertify.success('JSON 格式正确，已保存。');
-            } catch (e) {
-                alertify.error('JSON 格式错误，请检查后重新输入。');
+    alertify.confirm('自定义导出表', `
+        <p>请输入自定义的导出定义JSON:</p>
+        <textarea id="custom_json_input" style="width: 100%; height: calc(100% - 40px);"></textarea>
+    `,
+    function(evt, value) {
+        // 这个回调函数不会被使用，因为我们在 onok 中处理
+    },
+    function() {
+        alertify.message('什么也没有发生 / Nothing Happened');
+    }).set('labels', {ok:'确定', cancel:'取消'}).set('resizable', true).resizeTo(800, 600).set('onok', function(closeEvent) {
+        const value = document.getElementById('custom_json_input').value;
+        try {
+            const json = JSON.parse(value);
+
+            // 检查是否是一个数组
+            if (!Array.isArray(json)) {
+                throw new Error('JSON 必须是一个数组');
             }
-        },
-        function() {
-            alertify.error('取消输入。');
+
+            // 允许的模板内容
+            const allowedTemplates = Object.keys(templateDict);
+
+            // 检查数组的每一项
+            json.forEach(item => {
+                if (typeof item !== 'object' || item === null) {
+                    throw new Error('数组的每一项必须是对象');
+                }
+
+                const { title, template, width } = item;
+
+                // 检查是否包含 title、template、width 三个字段
+                if (typeof title !== 'string' || typeof template !== 'string' || typeof width !== 'number') {
+                    throw new Error('每一项必须包含 title、template、width 三个字段，且类型正确');
+                }
+
+                // 检查 template 字段
+                const templateMatches = template.match(/{{\w+}}/g);
+                if (templateMatches) {
+                    templateMatches.forEach(match => {
+                        if (!allowedTemplates.includes(match)) {
+                            throw new Error(`模板内容 ${match} 不在允许的模板内容内`);
+                        }
+                    });
+                }
+
+                // 检查 width 字段
+                if (!Number.isInteger(width) || width <= 0 || width > 2000) {
+                    throw new Error('width 必须是不大于 2000 的正整数');
+                }
+            });
+
+            // 保存 JSON
+            csg.store(custom_award_cache_key, json);
+            alertify.success('JSON 格式正确，已保存。');
+        } catch (e) {
+            alertify.error(`JSON 格式错误：${e.message}`);
+            closeEvent.cancel = true; // 阻止窗口关闭
         }
-    );
+    });
 });

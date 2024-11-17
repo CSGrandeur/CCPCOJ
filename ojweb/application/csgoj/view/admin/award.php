@@ -80,30 +80,13 @@
     </table>
 </div>
 <div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="helpModalLabel">
-  <div class="modal-dialog" role="document">
+  <div class="modal-dialog" role="document" style="width: 800px;">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         <h4 class="modal-title" id="helpModalLabel">帮助</h4>
       </div>
-      <div class="modal-body">
-        <p>编辑配置json后提交，导出的获奖xlsx文件将增加根据该配置生成的子表，可用模板信息引用系统信息。</p>
-        <table class="award_custom_explain_table">
-            <tr><td>{{team_id}}:</td>  <td>队伍账号</td>    <td>{{year}}:</td>     <td>比赛开始年</td>  </tr>
-            <tr><td>{{rank}}:</td>     <td>队伍排名</td>    <td>{{month}}:</td>    <td>比赛开始月</td> </tr>
-            <tr><td>{{school}}:</td>   <td>队伍校排</td>    <td>{{day}}:</td>      <td>比赛开始日</td>  </tr>
-            <tr><td>{{member}}:</td>   <td>成员姓名</td>    <td>{{start_h}}:</td>  <td>比赛开始时</td>  </tr>
-            <tr><td>{{coach}}:</td>    <td>教练</td>        <td>{{start_m}}:</td>  <td>比赛开始分</td>  </tr>
-            <tr><td>{{tkind}}:</td>    <td>队伍类型</td>    <td>{{start_s}}:</td>  <td>比赛开始秒</td>  </tr>
-            <tr><td>{{solved}}:</td>   <td>解题数</td>      <td>{{end_h}}:</td>    <td>比赛结束时</td>  </tr>
-            <tr><td>{{penalty}}:</td>  <td>罚时</td>        <td>{{end_m}}:</td>    <td>比赛结束分</td>  </tr>
-            <tr><td>{{award}}:</td>    <td>获奖</td>        <td>{{end_s}}:</td>    <td>比赛结束秒</td>  </tr>
-        </table>
-        <p>参考模板：</p>
-        <div style="position: relative;">
-            <pre><code id="template_code">${JSON.stringify(templateContent, null, 4)}</code></pre>
-            <button id="copy_template" class="btn btn-secondary" style="position: absolute; top: 0; right: 0;">复制 / Copy</button>
-        </div>
+      <div class="modal-body" id="helpModalBody">
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
@@ -130,5 +113,8 @@
     .danger-tip {
         font-size: 16px;
         margin-top: 0;
+    }
+    .award_custom_explain_table td {
+        padding-left: 10px;
     }
 </style>
