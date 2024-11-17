@@ -1314,7 +1314,7 @@ class Contest extends Csgojbase
             // 'result' => ['egt', 4]
         ];
         if ($min_solution_id != null) {
-            $sol_map['solution_id'] = ['gt', $min_solution_id];
+            $sol_map['solution_id'] = ['egt', $min_solution_id];
         }
         $solution = $witout_solution ? null : db('solution')->where($sol_map)->field(['solution_id', 'problem_id', 'user_id', 'in_date', 'result', 'contest_id'])->order('solution_id', 'asc')->select();
         if ($only_solution) {
@@ -1409,7 +1409,7 @@ class Contest extends Csgojbase
             'contest_id' => ['in', $cid_list]
         ];
         if ($min_solution_id != null) {
-            $sol_map['solution_id'] = ['gt', $min_solution_id];
+            $sol_map['solution_id'] = ['egt', $min_solution_id];
         }
         $solution = $witout_solution ? null : db('solution')->where($sol_map)->field(['solution_id', 'problem_id', 'user_id', 'in_date', 'result', 'contest_id'])->order('solution_id', 'asc')->select();
         if ($only_solution) {
