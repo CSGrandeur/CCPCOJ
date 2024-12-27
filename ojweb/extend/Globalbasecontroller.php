@@ -11,6 +11,7 @@ class Globalbasecontroller extends Controller
     var $OJ_SCLIENT_ID;
     var $ICP_RECORD;
     var $GA_CODE;
+    var $BA_CODE;
     var $GIT_DISCUSSION;
     var $OJ_MODE_ALLOW_MODULE;
     var $OJ_SESSION_PREFIX;
@@ -46,6 +47,7 @@ class Globalbasecontroller extends Controller
         $this->OJ_SCLIENT_ID = config('OJ_ENV.OJ_SCLIENT_ID');
         $this->ICP_RECORD = config('OJ_ENV.ICP_RECORD');
         $this->GA_CODE = config('OJ_ENV.GA_CODE');
+        $this->BA_CODE = config('OJ_ENV.BA_CODE');
         $this->GIT_DISCUSSION = config('OJ_ENV.GIT_DISCUSSION');
         $this->isAdmin = IsAdmin();
         // for expsys mode
@@ -65,6 +67,7 @@ class Globalbasecontroller extends Controller
         $this->assign('OJ_SCLIENT_ID', $this->OJ_SCLIENT_ID);
         $this->assign('ICP_RECORD', $this->ICP_RECORD);
         $this->assign('GA_CODE', $this->GA_CODE);
+        $this->assign('BA_CODE', $this->BA_CODE);
         $this->assign('GIT_DISCUSSION', $this->GIT_DISCUSSION);
         $this->assign('isAdmin', $this->isAdmin);
         $this->assign('ojAdminList', $this->OJ_ADMIN['OJ_ADMIN_LIST']);

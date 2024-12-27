@@ -12,6 +12,7 @@ return [
     'OJ_NAME'               => Env::get('OJ_NAME', 'CCPC'),                 // OJ name to display
     'ICP_RECORD'            => Env::get('ICP_RECORD', ''),                  // ICP RECORD
     'GA_CODE'               => Env::get('GA_CODE', false),                  // Google Analytics
+    'BA_CODE'               => Env::get('BA_CODE', false),                  // Baidu Analytics
     'GIT_DISCUSSION'        => Env::get('GIT_DISCUSSION', ''),              // Github Discussion Url
     'OJ_SESSION'            => Env::get('OJ_SESSION', 'CCPC'),              // SESSION prefix online/local/otherxxxx
     'OJ_SECRET'             => Env::get('OJ_SECRET', 'cpc_secret'),         // SECRET for OJ encryptions

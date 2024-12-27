@@ -17,4 +17,16 @@
         gtag('config', "{$GA_CODE}");
     </script>
     {/if}
+    
+    {if isset($BA_CODE) && $BA_CODE != false}
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?{$BA_CODE}";
+        var s = document.getElementsByTagName("script")[0]; 
+        s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+    {/if}
 </footer>
