@@ -129,11 +129,10 @@ function IsAdmin($item='administrator', $id=null)
     $ojItemPri      = $OJ_ADMIN['OJ_ITEM_PRI'];     // 'problem' => 'pro_'
     $ojPreAdmin     = $OJ_ADMIN['OJ_PRE_ADMIN'];    // 'pro_' => 'problem_editor'
     $ojAllPrivilegeList = array_merge($ojAdminList, $OJ_ADMIN['OJ_PRIVILEGE']);
-
     $ret = false;
     if(array_key_exists($item, $ojAllPrivilegeList)) {
         // 如果 $item 存在于管理员列表中，直接验证
-        if(array_key_exists($item, $privilege_session)) {
+        if($ret = array_key_exists($item, $privilege_session)) {
             return $ret;
         }
     }
@@ -151,7 +150,7 @@ function IsAdmin($item='administrator', $id=null)
             }
         }
         else {
-            if(array_key_exists($adminName, $privilege_session)) {
+            if($ret = array_key_exists($adminName, $privilege_session)) {
                 return $ret;
             }
         }
