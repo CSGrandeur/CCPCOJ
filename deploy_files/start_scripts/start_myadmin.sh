@@ -27,6 +27,7 @@ else
 
     docker run -dit $LINK_LOCAL \
         -e PMA_HOST=$SQL_HOST \
+        -e UPLOAD_LIMIT=128M \
         --name myadmin \
         --restart=unless-stopped \
         -d phpmyadmin:5.2.1
