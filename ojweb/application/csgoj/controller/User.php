@@ -51,7 +51,7 @@ class User extends Csgojbase
         foreach($privilegelist as $privilege) {
             $privilege_session[$privilege['rightstr']] = $privilege['defunct'];
             if(array_key_exists($privilege['rightstr'], $this->OJ_ADMIN['OJ_ADMIN_LIST'])) {
-                $ret[] = $privilege['rightstr'];
+                $ret[$privilege['rightstr']] = true;
             }
         }
         // 用户信息
