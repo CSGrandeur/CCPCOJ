@@ -116,12 +116,26 @@ function SetCarousel()
     return ['news'=>$news, 'carousel'=>$carousel];
 }
 //管理员权限验证
+function IsLogin() {
+    // 判断是否登录
+    return session('?user_id');
+}
 function IsAdmin($item='administrator', $id=null)
 {
     $item = trim($item);
     $privilege_session = session('?login_user_privilege') ? session('login_user_privilege') : [];
+    
+    // 检查权限是否有效（存在且未被禁用）
+    $hasValidPrivilege = function($privilege) use ($privilege_session) {
+        return isset($privilege_session[$privilege]) && $privilege_session[$privilege] !== false;
+    };
+    
+    if($item == 'judger') {
+        // judger 特判，不允许其他账号哪怕是 super_admin 进行评测
+        return $hasValidPrivilege('judger');
+    }
     if($item == 'super_admin') {
-        return array_key_exists('super_admin', $privilege_session);
+        return $hasValidPrivilege('super_admin');
     }
     $OJ_MODE = config('OJ_ENV.OJ_MODE');
     $OJ_ADMIN = config('OjAdmin.' . ($OJ_MODE == 'both' ?  'cpcsys' : $OJ_MODE));
@@ -132,7 +146,7 @@ function IsAdmin($item='administrator', $id=null)
     $ret = false;
     if(array_key_exists($item, $ojAllPrivilegeList)) {
         // 如果 $item 存在于管理员列表中，直接验证
-        if($ret = array_key_exists($item, $privilege_session)) {
+        if($ret = $hasValidPrivilege($item)) {
             return $ret;
         }
     }
@@ -142,25 +156,30 @@ function IsAdmin($item='administrator', $id=null)
         $adminName = $ojPreAdmin[$adminPre];
         if($id != null) {
             // 有id，验证对特定项目的权限
-            if(array_key_exists('administrator', $privilege_session)) {
+            if($hasValidPrivilege('administrator')) {
                 return true;
             }
-            if($ret = array_key_exists($ojItemPri[$item] . $id, $privilege_session)) {
+            if($ret = $hasValidPrivilege($ojItemPri[$item] . $id)) {
                 return $ret;
             }
         }
         else {
-            if($ret = array_key_exists($adminName, $privilege_session)) {
+            if($ret = $hasValidPrivilege($adminName)) {
                 return $ret;
             }
         }
     }
-    $ret = $ret || array_key_exists('administrator', $privilege_session) || array_key_exists('super_admin', $privilege_session);
+    // 检查是否有管理员或超级管理员权限
+    if($hasValidPrivilege('administrator') || $hasValidPrivilege('super_admin')) {
+        return true;
+    }
     return $ret;
 }
 function ItemSession($prefix, $id) {
+    // 判断权限内容是否存在，主要针对 pro.id、con.id、new.id 等权限内容
     $privilege_session = session('?login_user_privilege') ? session('login_user_privilege') : [];
-    return array_key_exists($prefix . $id, $privilege_session);
+    $privilege = $prefix . $id;
+    return isset($privilege_session[$privilege]) && $privilege_session[$privilege] !== false;
 }
 function ItemSessionSet($prefix, $id, $val) {
     $privilege_session = session('?login_user_privilege') ? session('login_user_privilege') : [];

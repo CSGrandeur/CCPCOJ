@@ -20,7 +20,7 @@ class Judge extends Ojtoolbase {
         if($this->action == 'judge_login') {
             return;
         }
-        if(!session('?user_id') || !session('?judger')) {
+        if(!IsLogin() || !IsAdmin('judger')) {
             $this->Response("0");
         }
         $this->judge_user = session('user_id');
@@ -251,7 +251,7 @@ class Judge extends Ojtoolbase {
         exit();
     }
     public function judge_login() {
-        if(session('?user_id')) {
+        if(IsLogin()) {
             $this->Response('Success');
         }
         $user_id = trim(input('user_id'));
@@ -286,7 +286,8 @@ class Judge extends Ojtoolbase {
         if($privilege == null) {
             $this->Response('Not judger');
         }
-        session($privilege['rightstr'], true);
+        // session($privilege['rightstr'], true);
+        session('login_user_privilege', [$privilege['rightstr'] => true]);
     }
     
     public function judge() {
