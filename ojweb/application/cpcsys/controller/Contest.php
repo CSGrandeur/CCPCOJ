@@ -36,6 +36,7 @@ class Contest extends Contestbase
         if($this->controller == 'contest' && !in_array($this->request->action(), $this->outsideContestAction) || $this->controller == 'admin' || $this->controller == 'contestadmin') {
             $this->GetContestInfo();
             $this->teamSessionName = '#cpcteam' . $this->contest['contest_id']; // 先获取contest，后组合teamSessionName，最后计算rankUseCache
+            $this->TryLoginByFixedIp();
             $this->rankUseCache = !$this->IsContestAdmin() && !$this->IsContestAdmin('balloon_manager') && !$this->IsContestAdmin('balloon_sender') && !$this->IsContestAdmin('admin') && !$this->IsContestAdmin('watcher') ? 1 : 0;
             $this->isContestAdmin = $this->IsContestAdmin();
             $this->GetVars();
@@ -107,6 +108,29 @@ class Contest extends Contestbase
             return $this->GetSession('privilege') === $privilegeName || $isAdmin;
         }
     }
+    protected function TryLoginByFixedIp()
+    {
+        if($this->GetSession('?')){
+            return;
+        }
+        // 通过固定IP登录比赛账号
+        $real_ip = GetRealIp();
+        $map = array(
+            'contest_id' => $this->contest['contest_id'],
+            'fixed_ip' => $real_ip,
+        );
+        $teamInfo = db('cpc_team')->where($map)->find();
+        if($teamInfo != null) {
+            if($this->contestStatus == 2) {
+                return;
+            }
+            $this->contest_login_oper($teamInfo);
+            $data['team_id'] = $teamInfo['team_id'];
+            $data['name'] = $teamInfo['name'];
+            $this->contest_loginlog($teamInfo['team_id'], 1);
+        }
+    }
+
     protected function contest_login_oper($teamInfo)
     {
         session($this->teamSessionName, [

@@ -43,6 +43,11 @@
             <input type="text" id="modify_password" class="form-control teaminfo_input" placeholder="Let it blank or at least 6 characters" name="password" >
             <label for="password" class="notification_label"></label>
         </div>
+        <div class="form-inline">
+            <label class="description_label">Fixed IP ：</label>
+            <input type="text" class="form-control teaminfo_input" name="fixed_ip" placeholder="Fixed IP: xxx.xxx.xxx.xxx" value="">
+            <label for="fixed_ip" class="notification_label"></label>
+        </div>
         <input type='hidden' id="cid_input" name='cid' value="{$contest['contest_id']}" >
         <button class="btn btn-primary" id="submit_button" type="submit">Submit</button>
     </form>
@@ -98,12 +103,22 @@
                 );
             }
         });
+
+        $.validator.addMethod('ipcheck', function(value, element) {
+            if(value.trim() == '') return true;
+            let ip_pattern = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+            return this.optional(element) || ip_pattern.test(value);
+        }, 'Invalid IP format.');
+
         $('#team_modify_form').validate({
             rules:{
                 team_id: {
                     required: true,
                     minlength: 3,
                     maxlength: 30
+                },
+                fixed_ip: {
+                    ipcheck: true
                 }
             },
             submitHandler: function(form)

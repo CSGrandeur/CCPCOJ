@@ -154,15 +154,16 @@
 >
     <thead>
     <tr>
-        <th data-field="team_id" data-align="center" data-valign="middle" data-sortable="true" data-width="55">Team ID</th>
-        <th data-field="name" data-align="left" data-valign="middle" data-width="160" >Team Name</th>
-        <th data-field="school" data-align="center" data-valign="middle"  data-width="200">School</th>
-        <th data-field="tmember" data-align="center" data-valign="middle" >Member</th>
-        <th data-field="coach" data-align="center" data-valign="middle"  data-width="150">Coach</th>
-        <th data-field="room" data-align="center" data-valign="middle"  >Room</th>
-        <th data-field="tkind" data-align="center" data-valign="middle"  >Tkind</th>
-        <th data-field="password" data-align="center" data-valign="middle"  data-width="60" >Password</th>
-        <th data-field="delete" data-align="center" data-valign="middle"  data-width="60" data-formatter="FormatterDel">Del(Dbl Click)</th>
+        <th data-field="team_id" data-align="center" data-valign="middle" data-sortable="true" data-width="50">Team ID</th>
+        <th data-field="name" data-align="left" data-valign="middle" data-width="130">Team Name</th>
+        <th data-field="school" data-align="center" data-valign="middle" data-width="190">School</th>
+        <th data-field="tmember" data-align="center" data-valign="middle">Member</th>
+        <th data-field="coach" data-align="center" data-valign="middle" data-width="90">Coach</th>
+        <th data-field="room" data-align="center" data-valign="middle">Room</th>
+        <th data-field="tkind" data-align="center" data-valign="middle">Tkind</th>
+        <th data-field="password" data-align="center" data-valign="middle" data-width="60">Password</th>
+        <th data-field="fixed_ip" data-align="center" data-valign="middle" data-width="110">Fixed IP</th>
+        <th data-field="delete" data-align="center" data-valign="middle" data-width="60" data-formatter="FormatterDel">Del(Dbl Click)</th>
     </tr>
     </thead>
 </table>

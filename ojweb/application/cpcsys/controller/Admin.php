@@ -44,6 +44,7 @@ class Admin extends Contestbase
         if($teamInfo['privilege'] == 'admin' && !IsAdmin('contest', $this->contest['contest_id'])) {
             $this->error("Information of administrator could not be modified.");
         }
+        $teamIpList = db('cpc_team')->where(['contest_id' => $this->contest['contest_id']])->where('team_id', 'neq', $team_id)->where('fixed_ip', 'neq', '')->column('fixed_ip');
         $teamUpdate = [
             'name'      => input('name'),
             'tmember'   => input('tmember'),
@@ -52,9 +53,15 @@ class Admin extends Contestbase
             'password'  => input('password'),
             'room'      => input('room'),
             'tkind'     => intval(input('tkind')),
+            'fixed_ip'  => input('fixed_ip'),
         ];
         if(strlen($teamUpdate['name']) > 90) {
             $this->error("team name too long");
+        }
+        if($teamUpdate['fixed_ip'] != '') {
+            if(in_array($teamUpdate['fixed_ip'], $teamIpList)) {
+                $this->error("fixed_ip duplicated: " . $teamUpdate['fixed_ip']);
+            }
         }
         if(trim($teamUpdate['password']) == '') 
             unset($teamUpdate['password']);
@@ -242,8 +249,9 @@ class Admin extends Contestbase
             $this->error('Too many teams');
         $teamToInsert = [];
         $teamToShow = [];
+        $teamIpList = $CpcTeam->where(['contest_id' => $this->contest['contest_id']])->where('fixed_ip', 'neq', '')->column('fixed_ip');
         // email是member，emailSuf是coach
-        $fieldList = ['team_id', 'name', 'school', 'tmember', 'coach', 'room', 'tkind', 'password', 'contest_id', 'privilege'];
+        $fieldList = ['team_id', 'name', 'school', 'tmember', 'coach', 'room', 'tkind', 'password', 'fixed_ip', 'contest_id', 'privilege'];
         $fieldNum = count($fieldList);
         $validate = new Validate(config('CpcSysConfig.teaminfo_rule'), config('CpcSysConfig.teaminfo_msg'));
         $validateNotList = '';
@@ -291,6 +299,15 @@ class Admin extends Contestbase
                         if($nowTeam['tkind'] > 2 || $nowTeam['tkind'] < 0) {
                             $nowTeam['tkind'] = 0;
                         }
+                        break;
+                    case 'fixed_ip':
+                        if($field != '') {
+                            if(in_array($field, $teamIpList)) {
+                                $validateNotList .= "<br/>[$teamStr] fixed_ip duplicated: $field.";
+                            }
+                            $teamIpList[] = $field;
+                        }
+                        $nowTeam['fixed_ip'] = $field;
                         break;
                     case 'contest_id':
                         $nowTeam['contest_id'] = $this->contest['contest_id'];

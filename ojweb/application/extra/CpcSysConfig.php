@@ -19,7 +19,8 @@ return [
         'tmember'     => 'max:100',
         'school'     => 'max:64',
         'coach'     => 'max:32',
-        'password'     => 'min:6|max:250'
+        'password'     => 'min:6|max:250',
+        'fixed_ip'     => ['min:8', 'max:16', '/^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/'],
     ],
     'teaminfo_msg' => [
         'team_id.require'             => 'User ID needed.',
@@ -31,7 +32,10 @@ return [
         'school.max'                => 'School name should not exceed 64 characters.',
         'coach.max'                => 'Coach name should not exceed 32 characters.',
         'password.min'                => 'Password should have more than 6 characters.',
-        'password.max'                => 'Password should have less than 64 characters.'
+        'password.max'                => 'Password should have less than 64 characters.',
+        'fixed_ip.min'                => 'Fixed IP should have more than 8 characters.',
+        'fixed_ip.max'                => 'Fixed IP should have less than 16 characters.',
+        'fixed_ip./^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/' => 'Fixed IP format is invalid.'
     ],
     'userinfo_rule'	=> [
 		'user_id'	=> ['require', 'min:5', 'max:20', '/^[a-zA-Z0-9_]+$/'],
