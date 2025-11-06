@@ -120,25 +120,35 @@ function IsLogin() {
     // 判断是否登录
     return session('?user_id');
 }
+function GetLoginUser() {
+    return session('user_id');
+}
+function GetOjMode() {
+    return config('OJ_ENV.OJ_MODE');
+}
+function GetOjAdminConfig() {
+    return config('OjAdmin.online');
+}
 function IsAdmin($item='administrator', $id=null)
 {
     $item = trim($item);
     $privilege_session = session('?login_user_privilege') ? session('login_user_privilege') : [];
-    
+
     // 检查权限是否有效（存在且未被禁用）
     $hasValidPrivilege = function($privilege) use ($privilege_session) {
         return isset($privilege_session[$privilege]) && $privilege_session[$privilege] !== false;
     };
-    
+    if($hasValidPrivilege('super_admin')) {
+        return true;
+    }
     if($item == 'judger') {
-        // judger 特判，不允许其他账号哪怕是 super_admin 进行评测
+        // judger 特判，不允许其他账号哪怕是 administrator 进行评测
         return $hasValidPrivilege('judger');
     }
     if($item == 'super_admin') {
         return $hasValidPrivilege('super_admin');
     }
-    $OJ_MODE = config('OJ_ENV.OJ_MODE');
-    $OJ_ADMIN = config('OjAdmin.' . ($OJ_MODE == 'both' ?  'cpcsys' : $OJ_MODE));
+    $OJ_ADMIN = GetOjAdminConfig();
     $ojAdminList    = $OJ_ADMIN['OJ_ADMIN_LIST'];   // 'problem_editor' => 'Problem Editor'$
     $ojItemPri      = $OJ_ADMIN['OJ_ITEM_PRI'];     // 'problem' => 'pro_'
     $ojPreAdmin     = $OJ_ADMIN['OJ_PRE_ADMIN'];    // 'pro_' => 'problem_editor'
@@ -175,6 +185,53 @@ function IsAdmin($item='administrator', $id=null)
     }
     return $ret;
 }
+function LoginOper($userinfo) {
+    $OJ_ADMIN = GetOjAdminConfig();
+    // 设置登录后的session
+    session('user_id', $userinfo['user_id']);
+    // 用户权限
+    $Privilege = db('privilege');
+    $privilegelist = $Privilege->where('user_id', $userinfo['user_id'])->field(['rightstr', 'defunct'])->select();
+    $ret = [];
+    $privilege_session = [];
+    foreach($privilegelist as $privilege) {
+        $privilege_session[$privilege['rightstr']] = $privilege['defunct'];
+        if(array_key_exists($privilege['rightstr'], $OJ_ADMIN['OJ_ADMIN_LIST'])) {
+            $ret[$privilege['rightstr']] = true;
+        }
+    }
+    // 用户信息
+    session('login_user_info', [
+        'team_id'   => $userinfo['user_id'],
+        'name'      => $userinfo['nick'],
+        'tmember'   => '',
+        'coach'     => '',
+        'school'    => $userinfo['school'],
+        'room'      => ''
+    ]);
+    session('login_user_privilege', $privilege_session);
+    return $ret;
+}
+function AddLoginlog($user_id, $success){
+    // 添加登录日志
+    $ip = GetRealIp();
+    $time = date("Y-m-d H:i:s");
+    db('loginlog')->insert(
+        [
+            'user_id'=>$user_id,
+            'success' => $success,
+            'ip' => $ip,
+            'time'=> $time
+        ]);
+    db('users')
+        ->where('user_id', $user_id)
+        ->update(['ip'=>$ip, 'accesstime'=>$time]);
+}
+function LogoutOper() {
+    session('login_user_privilege', null);
+    session('login_user_info', null);
+    session('user_id', null);
+}
 function ItemSession($prefix, $id) {
     // 判断权限内容是否存在，主要针对 pro.id、con.id、new.id 等权限内容
     $privilege_session = session('?login_user_privilege') ? session('login_user_privilege') : [];
@@ -186,7 +243,7 @@ function ItemSessionSet($prefix, $id, $val) {
     $privilege_session[$prefix . $id] = $val;
     session('login_user_privilege', $privilege_session);
 }
-function LangMask($languages)
+function LangList2LangMask($languages)
 {
     if(!isset($languages) || count($languages) == 0)
         return -1; //('Please select at least 1 language.');
@@ -200,6 +257,31 @@ function LangMask($languages)
         $langMask |= 1 << $la;
     }
     return $langMask;
+}
+
+function LangMask2LangList($langMask, $flg_type='origin'){
+    if($langMask < 0) return [];
+    
+    $ojLang = config('CsgojConfig.OJ_LANGUAGE');
+    $langList = [];
+    
+    // 遍历所有可能的语言位
+    for($i = 0; $i < 32; $i++) {
+        if($langMask & (1 << $i)) {
+            if(array_key_exists($i, $ojLang)) {
+                $langName = $ojLang[$i];
+                if($flg_type == 'lowercase') {
+                    $langName = strtolower($langName);
+                } else if($flg_type == 'id') {
+                    $langName = $i;
+                }
+                $langList[] = $langName;
+            } else {
+                $langList[] = $flg_type == 'id' ? -1 : 'UNKNOWN';
+            }
+        }
+    }
+    return $langList;
 }
 function Alphabet2Num($al)
 {
@@ -588,4 +670,239 @@ function RequestSend($url, $data, $header=['Content-type: application/x-www-form
     }
     curl_close($ch);
     return $ret;
+}
+
+/**
+ * 获取评测机配置
+ * @param bool $flg_get_default 是否获取默认配置，默认false
+ * @return array 评测机配置数组
+ */
+function GetJudgerConfig($flg_get_default = false) {
+    // 获取默认配置
+    $defaultConfig = config('JudgeDefaultConfig');
+    
+    // 获取配置文件路径
+    $configPath = config('OjPath.judger_config');
+    $fullPath = config('OjPath.PUBLIC') . $configPath;
+    
+    $loadSuccess = true;
+    $config = $defaultConfig['config']; // 只使用实际配置数据
+    
+    // 如果要求获取默认配置，直接返回
+    if ($flg_get_default) {
+        return [
+            'config' => $config,
+            'definitions' => $defaultConfig['definitions'],
+            'load_success' => true
+        ];
+    }
+    
+    // 尝试读取配置文件
+    if (file_exists($fullPath)) {
+        $configContent = file_get_contents($fullPath);
+        if ($configContent !== false) {
+            $jsonConfig = json_decode($configContent, true);
+                    if ($jsonConfig !== null && is_array($jsonConfig)) {
+                        // 合并配置，确保包含所有默认字段
+                        $config = array_replace_recursive($config, $jsonConfig);
+                    } else {
+                        $loadSuccess = false;
+                    }
+        } else {
+            $loadSuccess = false;
+        }
+    }
+    
+    // 如果读取失败，尝试创建默认配置文件
+    if (!$loadSuccess) {
+        try {
+            // 确保目录存在
+            $dir = dirname($fullPath);
+            if (!is_dir($dir)) {
+                MakeDirs($dir);
+            }
+            
+            // 写入默认配置（只写入实际配置数据）
+            $jsonContent = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+            if (file_put_contents($fullPath, $jsonContent) !== false) {
+                $loadSuccess = true;
+            }
+        } catch (Exception $e) {
+            $loadSuccess = false;
+        }
+    }
+    
+    // 返回完整配置（包含定义和实际配置）
+    return [
+        'config' => $config,
+        'definitions' => $defaultConfig['definitions'],
+        'load_success' => $loadSuccess
+    ];
+}
+
+/**
+ * 设置评测机配置
+ * @param array $configData 配置数据
+ * @return array 返回结果 ['success' => bool, 'message' => string, 'data' => array]
+ */
+function SetJudgerConfig($configData) {
+    try {
+        // 获取默认配置用于验证
+        $defaultConfig = config('JudgeDefaultConfig');
+        $definitions = $defaultConfig['definitions'];
+        
+        // 验证配置数据
+        $validationResult = validateJudgerConfig($configData, $definitions);
+        if (!$validationResult['success']) {
+            return [
+                'success' => false,
+                'message' => $validationResult['message'],
+                'data' => []
+            ];
+        }
+        
+        // 获取配置文件路径
+        $configPath = config('OjPath.judger_config');
+        $fullPath = config('OjPath.PUBLIC') . $configPath;
+        
+        // 确保目录存在
+        $dir = dirname($fullPath);
+        if (!is_dir($dir)) {
+            if (!MakeDirs($dir)) {
+                return [
+                    'success' => false,
+                    'message' => '无法创建配置目录',
+                    'data' => []
+                ];
+            }
+        }
+        
+        // 写入配置文件
+        $jsonContent = json_encode($configData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        if (file_put_contents($fullPath, $jsonContent) === false) {
+            return [
+                'success' => false,
+                'message' => '配置文件写入失败',
+                'data' => []
+            ];
+        }
+        
+        return [
+            'success' => true,
+            'message' => '配置保存成功',
+            'data' => $configData
+        ];
+        
+    } catch (Exception $e) {
+        return [
+            'success' => false,
+            'message' => '配置保存失败：' . $e->getMessage(),
+            'data' => []
+        ];
+    }
+}
+
+/**
+ * 验证评测机配置
+ * @param array $configData 配置数据
+ * @param array $definitions 配置定义
+ * @return array 验证结果 ['success' => bool, 'message' => string]
+ */
+function validateJudgerConfig($configData, $definitions) {
+    // 检查必需的分组
+    $requiredSections = ['common', 'c', 'cpp', 'java', 'python'];
+    foreach ($requiredSections as $section) {
+        if (!isset($configData[$section])) {
+            return [
+                'success' => false,
+                'message' => "缺少必需的配置分组：{$section}"
+            ];
+        }
+    }
+    
+    // 验证每个分组的字段
+    foreach ($definitions as $sectionKey => $section) {
+        if (!isset($configData[$sectionKey])) {
+            continue; // 跳过不存在的分组
+        }
+        
+        $sectionData = $configData[$sectionKey];
+        
+        foreach ($section['fields'] as $fieldKey => $field) {
+            if (!isset($sectionData[$fieldKey])) {
+                return [
+                    'success' => false,
+                    'message' => "配置分组 {$sectionKey} 缺少必需字段：{$fieldKey}"
+                ];
+            }
+            
+            $value = $sectionData[$fieldKey];
+            
+            // 根据字段类型验证
+            if ($field['type'] === 'number') {
+                // 宽松的数字验证
+                if (!is_numeric($value) && !is_int($value) && !is_float($value) && !(is_string($value) && is_numeric(trim($value)))) {
+                    return [
+                        'success' => false,
+                        'message' => "字段 {$sectionKey}.{$fieldKey} 必须是数字，当前值：{$value} (类型：" . gettype($value) . ")"
+                    ];
+                }
+                
+                $numValue = floatval($value);
+                
+                // 检查最小值
+                if (isset($field['min']) && $numValue < $field['min']) {
+                    return [
+                        'success' => false,
+                        'message' => "字段 {$sectionKey}.{$fieldKey} 不能小于 {$field['min']}"
+                    ];
+                }
+                
+                // 检查最大值
+                if (isset($field['max']) && $numValue > $field['max']) {
+                    return [
+                        'success' => false,
+                        'message' => "字段 {$sectionKey}.{$fieldKey} 不能大于 {$field['max']}"
+                    ];
+                }
+                
+            } elseif ($field['type'] === 'select') {
+                // 检查选择值是否在允许的选项中
+                $validValues = array_column($field['options'], 'value');
+                if (!in_array($value, $validValues)) {
+                    return [
+                        'success' => false,
+                        'message' => "字段 {$sectionKey}.{$fieldKey} 的值不在允许的选项中"
+                    ];
+                }
+                
+            } elseif ($field['type'] === 'switch') {
+                // 开关类型应该是布尔值
+                if (!is_bool($value) && !in_array($value, [0, 1, '0', '1', 'true', 'false'])) {
+                    return [
+                        'success' => false,
+                        'message' => "字段 {$sectionKey}.{$fieldKey} 必须是布尔值"
+                    ];
+                }
+            }
+        }
+    }
+    
+    return [
+        'success' => true,
+        'message' => '配置验证通过'
+    ];
+}
+
+function Json2Array($str) {
+    // 尝试解析 JSON 为数组（第二个参数 true 表示返回数组）
+    $array = json_decode($str, true);
+    // 获取解析错误码
+    $error = json_last_error();
+    // 无错误，或错误为 "语法错误" 以外的情况（如解析结果为 null 但原字符串是 "null"）
+    if ($error === JSON_ERROR_NONE) {
+        return $array; // 返回解析后的数组
+    }
+    // 解析失败，返回 false 或错误信息
+    return false;
 }

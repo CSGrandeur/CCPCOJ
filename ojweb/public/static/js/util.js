@@ -240,6 +240,25 @@ var csg = {
     },
     DelStore: function(key) {
         localStorage.removeItem(key);
+    },
+    
+    // 清洗文件名，移除非法字符，处理空白字符
+    sanitizeFilename: function(filename) {
+        if (!filename) return 'unknown';
+        
+        // 移除或替换非法文件名字符
+        let sanitized = filename.replace(/[<>:"/\\|?*]/g, '');
+        
+        // 处理空白字符：连续空白字符替换为单个下划线
+        sanitized = sanitized.replace(/\s+/g, '_');
+        
+        // 移除开头和结尾的下划线
+        sanitized = sanitized.replace(/^_+|_+$/g, '');
+        
+        // 如果结果为空，返回默认值
+        if (!sanitized) return 'unknown';
+        
+        return sanitized;
     }
 
 }

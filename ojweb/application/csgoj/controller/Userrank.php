@@ -1,5 +1,6 @@
 <?php
 namespace app\csgoj\controller;
+use think\Db;
 use think\Controller;
 class Userrank extends Csgojbase
 {
@@ -17,6 +18,9 @@ class Userrank extends Csgojbase
         $map = [];
         if(strlen($search) > 0)
             $map['user_id|nick|school'] =  ['like', "%$search%"];
+
+        // 只查询user_id长度不少于5的用户
+		$map[] = ['exp', Db::raw('CHAR_LENGTH(user_id) >= 5')];
 
         $ret = [];
         $Users = db('users');

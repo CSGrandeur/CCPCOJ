@@ -1,0 +1,569 @@
+/**
+ * CSG Switch - 通用美化开关组件
+ * 业务无关，支持多种主题和尺寸
+ */
+
+/* 基础开关容器 */
+.csg-switch {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    /* 定义基础变量 - 仅用于尺寸控制，位移由JavaScript计算 */
+    --track-width: 3.5rem;
+    --track-padding-x: 0.5rem;
+    --slider-width: 1.5rem;
+    --border-width: 1px;
+}
+
+/* 隐藏原生checkbox */
+.csg-switch-input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+    margin: 0;
+    padding: 0;
+}
+
+/* 开关轨道 */
+.csg-switch-track {
+    display: flex;
+    align-items: center;
+    background: #e9ecef;
+    border-radius: 0.5rem;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: var(--border-width) solid #dee2e6;
+    overflow: hidden;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #6c757d;
+    user-select: none;
+    min-width: var(--track-width);
+    width: max-content;
+    padding: 0.4rem 0.25rem;
+}
+
+/* 开关滑块 */
+.csg-switch-slider {
+    position: absolute;
+    background: #ffffff;
+    border-radius: 0.25rem;
+    transition: all 0.3s ease;
+    border: var(--border-width) solid #dee2e6;
+    top: 50%;
+    left: var(--border-width);
+    transform: translateX(0) translateY(-50%); /* 明确设置初始位置 */
+    width: var(--slider-width);
+    height: var(--slider-width);
+    z-index: 1; /* 降低z-index，避免遮挡文字 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #495057;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* 开关文字 */
+.csg-switch-text {
+    position: relative;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #6c757d;
+    transition: all 0.3s ease;
+    z-index: 1;
+    white-space: nowrap;
+    pointer-events: none;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.csg-switch-text-on {
+    opacity: 0;
+    color: #ffffff;
+}
+
+.csg-switch-text-off {
+    opacity: 1;
+    color: #6c757d;
+}
+
+/* 无文字时的轨道样式 */
+.csg-switch-track:not(.csg-switch-has-text) {
+    padding: 0;
+    min-width: var(--track-width);
+    width: var(--track-width);
+}
+
+/* 有文字时的轨道样式 */
+.csg-switch-track.csg-switch-has-text {
+    padding: 0.4rem 0.5rem;
+    min-height: 2rem;
+    width: max-content;
+    min-width: max-content;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+/* 有文字时的滑块样式 */
+.csg-switch-track.csg-switch-has-text .csg-switch-slider {
+    position: absolute;
+    top: 50%;
+    left: 0.25rem;
+    transform: translateX(0) translateY(-50%); /* 明确设置初始位置 */
+    z-index: 2;
+}
+
+.csg-switch-track:not(.csg-switch-has-text) .csg-switch-text {
+    display: none;
+}
+
+/* 激活状态 - 使用CSS选择器和类名双重控制 */
+.csg-switch-input:checked + .csg-switch-track,
+.csg-switch-track.csg-switch-active {
+    background: #0d6efd;
+    border-color: #0d6efd;
+    color: #ffffff;
+}
+
+/* 滑块位置由JavaScript动态计算，CSS不设置transform */
+
+.csg-switch-input:checked + .csg-switch-track .csg-switch-text-on,
+.csg-switch-track.csg-switch-active .csg-switch-text-on {
+    opacity: 1;
+}
+
+.csg-switch-input:checked + .csg-switch-track .csg-switch-text-off,
+.csg-switch-track.csg-switch-active .csg-switch-text-off {
+    opacity: 0;
+}
+
+/* 焦点状态 */
+.csg-switch-input:focus + .csg-switch-track {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    outline: none;
+}
+
+/* 禁用状态 */
+.csg-switch-input:disabled + .csg-switch-track {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #e9ecef;
+}
+
+.csg-switch-input:disabled:checked + .csg-switch-track {
+    background: #6c757d;
+}
+
+/* 悬停效果 */
+.csg-switch:hover .csg-switch-track {
+    border-color: #adb5bd;
+}
+
+.csg-switch-input:checked + .csg-switch-track:hover {
+    background: #0b5ed7;
+}
+
+/* 尺寸变体 */
+.csg-switch-sm {
+    --track-width: 2.5rem;
+    --track-padding-x: 0.25rem;
+    --slider-width: 1rem;
+}
+
+.csg-switch-sm .csg-switch-track {
+    min-width: var(--track-width);
+    height: 1.25rem;
+    font-size: 0.65rem;
+    padding: 0 var(--track-padding-x);
+}
+
+.csg-switch-sm .csg-switch-track:not(.csg-switch-has-text) {
+    width: var(--track-width);
+    padding: 0;
+}
+
+.csg-switch-sm .csg-switch-slider {
+    width: var(--slider-width);
+    height: var(--slider-width);
+    top: 50%;
+    left: var(--border-width);
+    transform: translateX(0) translateY(-50%); /* 明确设置初始位置 */
+    font-size: 0.6rem;
+}
+
+/* 滑块位置由JavaScript动态计算 */
+
+.csg-switch-md {
+    --track-width: 3.5rem;
+    --track-padding-x: 0.5rem;
+    --slider-width: 1.5rem;
+}
+
+.csg-switch-md .csg-switch-track {
+    min-width: var(--track-width);
+    height: 1.75rem;
+    font-size: 0.75rem;
+    padding: 0 var(--track-padding-x);
+}
+
+.csg-switch-md .csg-switch-track:not(.csg-switch-has-text) {
+    width: var(--track-width);
+    padding: 0;
+}
+
+.csg-switch-md .csg-switch-slider {
+    width: var(--slider-width);
+    height: var(--slider-width);
+    top: 50%;
+    left: var(--border-width);
+    transform: translateX(0) translateY(-50%); /* 明确设置初始位置 */
+    font-size: 0.7rem;
+}
+
+/* 滑块位置由JavaScript动态计算 */
+
+.csg-switch-lg {
+    --track-width: 4.5rem;
+    --track-padding-x: 0.75rem;
+    --slider-width: 2rem;
+}
+
+.csg-switch-lg .csg-switch-track {
+    min-width: var(--track-width);
+    height: 2.25rem;
+    font-size: 0.85rem;
+    padding: 0 var(--track-padding-x);
+}
+
+.csg-switch-lg .csg-switch-track:not(.csg-switch-has-text) {
+    width: var(--track-width);
+    padding: 0;
+}
+
+.csg-switch-lg .csg-switch-slider {
+    width: var(--slider-width);
+    height: var(--slider-width);
+    top: 50%;
+    left: var(--border-width);
+    transform: translateX(0) translateY(-50%); /* 明确设置初始位置 */
+    font-size: 0.8rem;
+}
+
+/* 滑块位置由JavaScript动态计算 */
+
+/* 主题变体 */
+.csg-switch-success .csg-switch-input:checked + .csg-switch-track {
+    background: #198754;
+    border-color: #198754;
+}
+
+.csg-switch-success .csg-switch-input:checked + .csg-switch-track:hover {
+    background: #157347;
+}
+
+.csg-switch-warning .csg-switch-input:checked + .csg-switch-track {
+    background: #ffc107;
+    border-color: #ffc107;
+    color: #000000;
+}
+
+.csg-switch-warning .csg-switch-input:checked + .csg-switch-track:hover {
+    background: #ffca2c;
+}
+
+.csg-switch-danger .csg-switch-input:checked + .csg-switch-track {
+    background: #dc3545;
+    border-color: #dc3545;
+}
+
+.csg-switch-danger .csg-switch-input:checked + .csg-switch-track:hover {
+    background: #bb2d3b;
+}
+
+.csg-switch-info .csg-switch-input:checked + .csg-switch-track {
+    background: #0dcaf0;
+    border-color: #0dcaf0;
+    color: #000000;
+}
+
+.csg-switch-info .csg-switch-input:checked + .csg-switch-track:hover {
+    background: #3dd5f3;
+}
+
+/* 设置项样式 */
+.csg-switch-setting {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    transition: all 0.2s ease-in-out;
+    margin-bottom: 1rem;
+}
+
+.csg-switch-setting:hover {
+    background: #f1f3f4;
+    border-color: #dee2e6;
+}
+
+.csg-switch-setting-content {
+    flex: 1;
+    margin-right: 1rem;
+}
+
+.csg-switch-setting-title {
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 0.25rem;
+    font-size: 0.95rem;
+}
+
+.csg-switch-setting-subtitle {
+    font-size: 0.8rem;
+    color: #6c757d;
+    opacity: 0.8;
+}
+
+.csg-switch-setting-control {
+    display: flex;
+    align-items: center;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .csg-switch-setting {
+        padding: 0.75rem;
+    }
+    
+    .csg-switch-setting .d-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    .csg-switch-setting-content {
+        margin-right: 0;
+        margin-bottom: 0.75rem;
+        width: 100%;
+    }
+    
+    .csg-switch-setting-control {
+        align-self: flex-end;
+    }
+    
+    .csg-switch-sm .csg-switch-track {
+        width: 1.75rem;
+        height: 0.875rem;
+    }
+    
+    .csg-switch-sm .csg-switch-slider {
+        width: 0.625rem;
+        height: 0.625rem;
+    }
+    
+    /* 滑块位置由JavaScript动态计算 */
+}
+
+/* 动画效果 */
+@keyframes csg-switch-bounce {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes csg-switch-slide-in {
+    0% { 
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    100% { 
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes csg-switch-glow {
+    0% { 
+        box-shadow: 
+            inset 0 2px 4px rgba(0, 0, 0, 0.1),
+            0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    50% { 
+        box-shadow: 
+            inset 0 2px 4px rgba(0, 0, 0, 0.1),
+            0 2px 8px rgba(13, 110, 253, 0.4),
+            0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    100% { 
+        box-shadow: 
+            inset 0 2px 4px rgba(0, 0, 0, 0.1),
+            0 2px 6px rgba(13, 110, 253, 0.3),
+            0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+}
+
+.csg-switch-animate .csg-switch-slider {
+    animation: csg-switch-bounce 0.3s ease-in-out;
+}
+
+.csg-switch-animate .csg-switch-track {
+    animation: csg-switch-glow 0.6s ease-in-out;
+}
+
+/* 高级动画效果 */
+.csg-switch-advanced .csg-switch-slider {
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.csg-switch-advanced .csg-switch-track {
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* 弹性动画 */
+.csg-switch-elastic .csg-switch-slider {
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.csg-switch-elastic .csg-switch-track {
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* 加载状态 */
+.csg-switch-loading .csg-switch-track {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.csg-switch-loading .csg-switch-slider {
+    animation: csg-switch-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes csg-switch-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* 涟漪效果动画 */
+@keyframes csg-ripple {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 0;
+    }
+}
+
+/* 高级视觉效果 */
+.csg-switch-premium .csg-switch-track {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #dee2e6 100%);
+    box-shadow: 
+        inset 0 2px 4px rgba(0, 0, 0, 0.1),
+        0 2px 8px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.csg-switch-premium .csg-switch-input:checked + .csg-switch-track {
+    background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 50%, #0a58ca 100%);
+    box-shadow: 
+        inset 0 2px 4px rgba(0, 0, 0, 0.1),
+        0 4px 12px rgba(13, 110, 253, 0.4),
+        0 2px 6px rgba(13, 110, 253, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.3);
+}
+
+.csg-switch-premium .csg-switch-slider {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 50%, #e9ecef 100%);
+    box-shadow: 
+        0 4px 8px rgba(0, 0, 0, 0.15),
+        0 2px 4px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* 玻璃质感效果 */
+.csg-switch-glass .csg-switch-track {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.csg-switch-glass .csg-switch-input:checked + .csg-switch-track {
+    background: rgba(13, 110, 253, 0.3);
+    border: 1px solid rgba(13, 110, 253, 0.4);
+    box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        0 4px 12px rgba(13, 110, 253, 0.2);
+}
+
+/* 双语文字样式 */
+.csg-switch-text-main {
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.csg-switch-text-en {
+    font-size: 0.7rem;
+    font-weight: 400;
+    line-height: 1.2;
+    opacity: 0.8;
+    margin-top: 2px;
+}
+
+/* 文字容器布局 - 参考bootstrap-switch实现 */
+.csg-switch-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 文字元素 - 绝对定位，不占用布局空间 */
+.csg-switch-text {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.7rem;
+    font-weight: 600;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+/* 关闭状态文字 - 滑块在左端，文字从左边开始但要避开滑块 */
+.csg-switch-text-off {
+    left: 2rem; /* 距离左边2rem，避开滑块 */
+    opacity: 1;
+    color: #6c757d;
+}
+
+/* 开启状态文字 - 滑块在右端，文字从右边开始但要避开滑块 */
+.csg-switch-text-on {
+    right: 2rem; /* 距离右边2rem，避开滑块 */
+    opacity: 0;
+    color: #ffffff;
+}
+
+/* 开启时显示开启文字，隐藏关闭文字 */
+.csg-switch-input:checked + .csg-switch-track .csg-switch-text-on {
+    opacity: 1;
+}
+
+.csg-switch-input:checked + .csg-switch-track .csg-switch-text-off {
+    opacity: 0;
+}

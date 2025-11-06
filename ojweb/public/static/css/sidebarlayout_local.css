@@ -1,12 +1,15 @@
 @import url(sidebarlayout.css);
 
+/* 本地环境样式覆盖 - Bootstrap 5 优化 */
 .cpc-navbar.cpc-navbar-csgoj,
 .cpc-navbar.cpc-navbar-expsys,
 .cpc-navbar.cpc-navbar-cr,
 .cpc-navbar.cpc-navbar-index,
 .cpc-navbar.cpc-navbar-cpcsys,
 .cpc-navbar.cpc-navbar-admin,
-.cpc-navbar.cpc-navbar-tt
+.cpc-navbar.cpc-navbar-tt,
+.cpc-navbar.cpc-navbar-ojtool
 {
-    background-color: darkgray
+    background-color: #6c757d;
+    background-image: linear-gradient(135deg, #6c757d 0%, #495057 100%);
 }

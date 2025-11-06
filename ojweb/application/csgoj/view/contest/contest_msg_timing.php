@@ -1,14 +1,23 @@
 {if $controller == 'contest'}
 
-<div class="modal fade" id="contentModal" tabindex="-1" role="dialog" aria-labelledby="contentModalLabel">
-    <div class="modal-dialog modal-lg" role="document" style="width:1280px; max-width: 100%;">
+<div class="modal fade" id="contentModal" tabindex="-1" aria-labelledby="contentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
-
+            <div class="modal-header">
+                <h5 class="modal-title bilingual-inline" id="contentModalLabel">
+                    <span class="cn-text"><i class="bi bi-bell me-2"></i>
+                    比赛通知</span><span class="en-text">Contest Messages</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
             <div class="modal-body">
                 {include file="../../csgoj/view/contest/msg_show" /}
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary bilingual-button" data-bs-dismiss="modal">
+                    <span><i class="bi bi-x-circle me-1"></i>关闭</span>
+                    <span class="en-text">Close</span>
+                </button>
             </div>
         </div>
     </div>
@@ -74,7 +83,8 @@
                 });
                 if (show && (!remote_msg_callback || other_msg_dif)) { // 仅有远程message撤回的情况下不弹窗
                     renderMessages(msg_list);
-                    $('#contentModal').modal('show');
+                    const modal = new bootstrap.Modal(document.getElementById('contentModal'));
+                    modal.show();
                 }
             }
 
@@ -122,10 +132,10 @@
         }
     }
 
-    function init() {
+    function ContestMsgTimingInit() {
         let currentTime = MsgGetCurrentTime();
         if (!currentTime) {
-            setTimeout(init, 1000);
+            setTimeout(ContestMsgTimingInit, 1000);
             return;
         }
         let startTime = new Date(document.getElementById('start_time_span').textContent.trim()).getTime();
@@ -151,10 +161,11 @@
                 msg_list_local = {msg_list: []};
             }
             renderMessages(msg_list_local.msg_list);
-            $('#contentModal').modal('show');
+            const modal = new bootstrap.Modal(document.getElementById('contentModal'));
+            modal.show();
         });
     }
 
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', ContestMsgTimingInit);
 </script>
 {/if}

@@ -22,6 +22,35 @@ class Admin extends Contestbase
         }
         return $teamList;
     }
+    
+    /**
+     * 获取气球配送员列表（staff，privilege为balloon_sender）
+     */
+    public function team_list_ajax() {
+        // 检查权限（需要balloonManager或isContestAdmin）
+        if (!$this->balloonManager && !$this->isContestAdmin) {
+            $this->error('Permission denied');
+        }
+        
+        $ttype = input('ttype/d', 0);
+        $cid = input('cid/d');
+        
+        if (!$cid) {
+            $this->error('Missing contest ID');
+        }
+        
+        // 如果ttype=1，筛选privilege为balloon_sender的staff
+        if ($ttype == 1) {
+            $teamList = db('cpc_team')->where([
+                'contest_id' => $cid,
+                'privilege' => 'balloon_sender'
+            ])->field(['team_id', 'name', 'room'])->order('team_id', 'asc')->select();
+        } else {
+            $teamList = [];
+        }
+        
+        $this->success('', null, ['team_list' => $teamList]);
+    }
     public function team_modify() {
         return $this->fetch();
     }
@@ -46,26 +75,34 @@ class Admin extends Contestbase
         }
         $teamUpdate = [
             'name'      => input('name'),
+            'name_en'   => input('name_en'),
             'tmember'   => input('tmember'),
             'coach'     => input('coach'),
             'school'    => input('school'),
+            'region'    => input('region'),
             'password'  => input('password'),
             'room'      => input('room'),
             'tkind'     => intval(input('tkind')),
         ];
-        if(strlen($teamUpdate['name']) > 90) {
+        if(strlen($teamUpdate['name']) > $this->TINFO_NAME_MAX) {
             $this->error("team name too long");
         }
-        if(trim($teamUpdate['password']) == '') 
+        if(strlen($teamUpdate['name_en']) > $this->TINFO_NAME_EN_MAX) {
+            $this->error("team name_en too long");
+        }
+        if(trim($teamUpdate['password']) == '') {
             unset($teamUpdate['password']);
-        else
+        }
+        else {
             $teamUpdate['password'] = MkPasswd($teamUpdate['password'], True);
+        }
         if($teamUpdate['tkind'] > 2 || $teamUpdate['tkind'] < 0) {
             $teamUpdate['tkind'] = 0;
         }
         $teamInfo = array_replace($teamInfo, $teamUpdate);
         db('cpc_team')->where(['team_id' => $team_id, 'contest_id' => $this->contest['contest_id']])->update($teamInfo);
-        $this->success("<a href='/$this->module/contest/teaminfo?cid=" . $this->contest['contest_id'] . "&team_id=$team_id'>$team_id</a> Updated");
+        $teamInfo['password'] = RecoverPasswd($teamInfo['password']);
+        $this->success("ok", null, $teamInfo);
     }
     
     /**************************************************/
@@ -154,6 +191,7 @@ class Admin extends Contestbase
         if($this->contestStatus == 2 && !IsAdmin('super_admin')) {
             $this->error("You'd better not modify teams after contest ended.");
         }
+        $this->assign('action', 'contest_teamgen');
         return $this->fetch();
     }
     public function contest_staffgen() {
@@ -170,7 +208,7 @@ class Admin extends Contestbase
         if($this->contestStatus == 2 && !IsAdmin('super_admin')) {
             $this->error("You'd better not modify staffs after contest ended.");
         }
-        return $this->fetch();
+        return $this->fetch('contest_teamgen');
     }
     
     public function contest_teamgen_ajax() {
@@ -186,144 +224,136 @@ class Admin extends Contestbase
         if($this->contestStatus == 2 && !IsAdmin('super_admin')) {
             $this->error("You'd better not modify teams after contest ended.");
         }
-        $flagAddStaff = input('staff/d') === 1;
-        $reset_team = input('reset_team', false) == 'on';
+        
+        // 获取POST数据
+        $teamList = input('team_list');
+        $reset_team = input('reset_team', false);
+        $password_seed = input('password_seed', 0);
+        
+        if (!$teamList) {
+            $this->error('No team data provided');
+        }
+        
+        // 解析JSON数据
+        $teams = json_decode($teamList, true);
+        if (!$teams || !is_array($teams)) {
+            $this->error('Invalid team data format');
+        }
         if($reset_team) {
             $this->ClearTeam();
         }
+        
         $CpcTeam = db('cpc_team');
-        $teamPrefix = "team";   // 如果提供了个性化team编号（带字母），则不再带这个前缀
-        $teamDescription = trim(input('team_description'), "\n\r");
-        if(strlen(trim($teamDescription)) == 0) {
-            $teamList = [];
+        $teamPrefix = "team";
+        
+        if(count($teams) == 0) {
+            $this->error('No teams to generate');
         }
-        else {
-            $teamList = explode("\n", $teamDescription);
-        }
-        if(count($teamList) == 1) {
-            $line = preg_split("/[\\t ]/", $teamList[0]);
-            if(count($line) <= 2) {
-                $gen_num = null;
-                $gen_seed = null;
-                if(is_numeric($line[0])) {
-                    $gen_num = min(intval($line[0]), 4096);
-                }
-                if(count($line) == 2 && is_numeric($line[1])) {
-                    $gen_seed = intval($line[1]);
-                    srand($gen_seed);
-                }
-                if($gen_num != null) {
-                    // 只输入了1~2个数字，则生成$gen_num个空队伍
-                    $pad_num = strlen(strval($gen_num + 20));
-                    $teamToShow = [];
-                    $teamToInsert = [];
-                    for($i = 0; $i < $gen_num; $i ++) {
-                        $nowTeam = [
-                            'team_id'   => $teamPrefix . str_pad($i + 1, $pad_num, '0', STR_PAD_LEFT),
-                            'password'  => RandPass(),
-                            'contest_id'=> $this->contest['contest_id']
-                        ];
-                        $teamToShow[] = $nowTeam;
-                        $nowTeam['password'] = MkPasswd($nowTeam['password'], true);
-                        $teamToInsert[] = $nowTeam;
-                    }
-                    $success_num = $CpcTeam->insertAll($teamToInsert, true);
-                    if(!$success_num) {
-                        $this->error('Team generation failed. Please check the data input.');
-                    }
-                    $this->success('Team successfully generated. <br/>See the table below', null, ['rows' => $teamToShow, 'type' => 'teamgen', 'success_num'=> $success_num]);
-                }
-            }
-        }
-        $teamListLen = count($teamList);    //teamDescription的行数
-        if($teamListLen == 0)
-            $this->error('At least fill in one form of Team description or Team number');
-        if($teamListLen > 5000)
+        if(count($teams) > 5000) {
             $this->error('Too many teams');
+        }
+        
         $teamToInsert = [];
         $teamToShow = [];
-        // email是member，emailSuf是coach
-        $fieldList = ['team_id', 'name', 'school', 'tmember', 'coach', 'room', 'tkind', 'password', 'contest_id', 'privilege'];
-        $fieldNum = count($fieldList);
         $validate = new Validate(config('CpcSysConfig.teaminfo_rule'), config('CpcSysConfig.teaminfo_msg'));
         $validateNotList = '';
+        
+        // 检查team_id重复
+        $teamIds = [];
+        foreach($teams as $teamData) {
+            $teamId = $teamData['team_id'] ?? '';
+            if($teamId != '') {
+                if(in_array($teamId, $teamIds)) {
+                    $this->error("Duplicate team_id found: " . $teamId);
+                }
+                $teamIds[] = $teamId;
+            }
+        }
 
         $i = $CpcTeam->where(['team_id' => ['like', 'team%'], 'contest_id' => $this->contest['contest_id']])->count() + 1;
         
-        foreach($teamList as $teamStr) {
-            $teamInput = preg_split("/[#\\t]/", $teamStr);
+        foreach($teams as $teamData) {
             $nowTeam = [];
-            for($j = 0; $j < $fieldNum; $j ++) {
-                if(!array_key_exists($j, $teamInput)) {
-                    $teamInput[$j] = '';
-                }
-                // $field = trim($teamInput[$j]);
-                $field = mb_convert_encoding(trim($teamInput[$j]), 'UTF-8', 'UTF-8');
-                switch($fieldList[$j])
-                {
-                    case 'team_id':
-                        $tmpTeamPrefix = $teamPrefix;
-                        if($field == '') {
-                            $field = str_pad($i, 4, '0', STR_PAD_LEFT);
-                        } else if(!$flagAddStaff) {
-                            if(strlen($field) > 16) {
-                                $validateNotList .= "<br/>[$teamStr] team_id too long.";
-                            } else if(!is_numeric($field)) {
-                                $tmpTeamPrefix = '';
-                            }
-                        }
-                        $field = $flagAddStaff ? $field : ($tmpTeamPrefix . $field);
-                        $nowTeam['team_id'] = $field;
-                        break;
-                    case 'name':
-                        if(strlen($field) > 90) {
-                            $validateNotList .= "<br/>[$teamStr] team_name too long.";
-                        }
-                        $nowTeam['name'] = $field;
-                        break;
-                    case 'password':
-                        if($field == '')
-                            $field = RandPass();
-                        $nowTeam['password'] = $field;
-                        break;
-                    case 'tkind':
-                        $nowTeam['tkind'] = intval($field);
-                        if($nowTeam['tkind'] > 2 || $nowTeam['tkind'] < 0) {
-                            $nowTeam['tkind'] = 0;
-                        }
-                        break;
-                    case 'contest_id':
-                        $nowTeam['contest_id'] = $this->contest['contest_id'];
-                        break;
-                    case 'privilege':
-                        $nowTeam['privilege'] = in_array($field, ['admin', 'printer', 'balloon_manager', 'balloon_sender', 'watcher']) ? $field : null;
-                        if($nowTeam['privilege'] != null && strpos($nowTeam['team_id'], 'team') === 0) {
-                            $validateNotList .= "<br/>[$teamStr] special account should not start with \"team\".";
-                        }
-                        break;
-                    default:
-                        $nowTeam[$fieldList[$j]] = $field;
-                }
+            
+            // 处理team_id（必须提供，不允许为空）
+            $teamId = $teamData['team_id'] ?? '';
+            if($teamId == '') {
+                $this->error('Team ID is required for all teams');
             }
+            $nowTeam['team_id'] = $teamId;
+            
+            // 处理其他字段
+            $nowTeam['name'] = $teamData['name'] ?? '';
+            $nowTeam['name_en'] = $teamData['name_en'] ?? '';
+            $nowTeam['school'] = $teamData['school'] ?? '';
+            $nowTeam['region'] = $teamData['region'] ?? '';
+            $nowTeam['tmember'] = $teamData['tmember'] ?? '';
+            $nowTeam['coach'] = $teamData['coach'] ?? '';
+            $nowTeam['room'] = $teamData['room'] ?? '';
+            $nowTeam['tkind'] = intval($teamData['tkind'] ?? 0);
+            if($nowTeam['tkind'] > 2 || $nowTeam['tkind'] < 0) {
+                $nowTeam['tkind'] = 0;
+            }
+            
+            // 处理密码
+            $password = $teamData['password'] ?? '';
+            if($password == '') {
+                $password = $this->generateSeededPassword($teamId, $password_seed);
+            }
+            $nowTeam['password'] = $password;
+            
+            $nowTeam['contest_id'] = $this->contest['contest_id'];
+            $nowTeam['privilege'] = null;
+            
+            // 验证数据
             if(!$validate->check($nowTeam)) {
                 $validateNotList .= "<br/>" . $nowTeam['team_id'] . ': ' . $validate->getError();
             }
+            
             if(strlen($validateNotList) == 0) {
                 $teamToShow[] = $nowTeam;
-                $nowTeam['password'] = MkPasswd($nowTeam['password'], True);
+                $nowTeam['password'] = MkPasswd($nowTeam['password'], true);
                 $teamToInsert[] = $nowTeam;
             }
-            $i ++;
+            $i++;
         }
+        
         if(strlen($validateNotList) > 0) {
             $addInfo = '<br/>Some team information is not valid. Please check.' . $validateNotList;
             $this->error('Team generation failed.' . $addInfo);
         }
+        
         $success_num = $CpcTeam->insertAll($teamToInsert, true);
         if(!$success_num) {
             $this->error('Team generation failed. Please check the data input.');
         }
         $this->success('Team successfully generated. <br/>See the table below', null, ['rows' => $teamToShow, 'type' => 'teamgen', 'success_num'=> $success_num]);
+    }
+    
+    // 基于种子的确定性密码生成
+    private function generateSeededPassword($teamId, $seed) {
+        $chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+        $password = '';
+        
+        // 如果没有种子，使用随机种子
+        if ($seed == 0) {
+            $seed = mt_rand(1, 999999);
+        }
+        
+        // 使用种子和team_id生成确定性随机数
+        $combinedSeed = $seed + strlen($teamId) + ord($teamId[0] ?? 'A');
+        for ($i = 0; $i < strlen($teamId); $i++) {
+            $combinedSeed = ($combinedSeed * 31 + ord($teamId[$i])) % 2147483647;
+        }
+        
+        // 简单的线性同余生成器
+        for ($i = 0; $i < 8; $i++) {
+            $combinedSeed = ($combinedSeed * 16807) % 2147483647;
+            $random = $combinedSeed / 2147483647;
+            $password .= $chars[floor($random * strlen($chars))];
+        }
+        
+        return $password;
     }
     public function ClearTeam($helperAccounts=false) {
         $CpcTeam = db('cpc_team');
@@ -363,9 +393,74 @@ class Admin extends Contestbase
         }
         $team_id = input('team_id/s');
         db('cpc_team')->where([
-            'team_id'       => $team_id,
-            'contest_id'    => $this->contest['contest_id']
-        ])->delete();
+                'team_id'       => $team_id,
+                'contest_id'    => $this->contest['contest_id']
+            ])->delete();
         $this->success("deleted");
+    }
+    // **************************************************
+    // 比赛滚榜用队伍照片管理
+    
+    public function rank_team_image() {
+        $this->assign('contest', $this->contest);
+        return $this->fetch();
+    }
+    public function team_image_list_ajax() {
+        $ojPath = config('ojPath');
+        $team_photo_path = $ojPath['PUBLIC'] . $ojPath['contest_ATTACH'] . '/' . $this->contest['attach'] . '/team_photo';
+        if(!MakeDirs($team_photo_path)) {
+			$this->error('队伍图片列表读取失败.');
+        }
+        return $this->success('ok', null, GetDir($team_photo_path));
+    }
+    public function team_image_upload_ajax() { 
+        if(!IsAdmin('contest', $this->contest['contest_id']) && !$this->IsContestAdmin('admin')) {
+            $this->error("仅管理员有权上传", '/ojtool', null, 1);
+        }
+        $team_id = input('team_id');
+        $team = null;
+        if(in_array($this->contest['private'], [2, 12])) {
+            $team = db('cpc_team')->where(['contest_id' => $this->contest['contest_id'], 'team_id' => $team_id])->find();
+        } else {
+            $team = db('users')->join('solution', 'users.user_id=solution.user_id')->where(['solution.contest_id' => $this->contest['contest_id'], 'users.user_id' => $team_id])->field('users.user_id team_id')->find();
+        }
+        if($team == null) {
+            $this->error("没有这个队伍");
+        }
+        
+        $dataURL = input("team_photo/s");
+        if($dataURL) {
+            $ojPath = config('ojPath');
+            $filename = $team['team_id'] . '.jpg';
+            $file_url = $ojPath['contest_ATTACH']. '/' . $this->contest['attach'] . '/team_photo/' . $filename;
+            $file_folder = $ojPath['PUBLIC'] . $ojPath['contest_ATTACH'] . '/' . $this->contest['attach'] . '/team_photo/';
+            MakeDirs($file_folder);
+            
+            list($type, $data) = explode(';', $dataURL);
+            list(, $type) = explode(':', $type);
+            list(, $data) = explode(',', $data);
+            $data = base64_decode($data);
+            if(strlen($data) > 524288) {
+                $this->error("图片过大");
+            }
+            file_put_contents($file_folder . '/' . $filename, $data);
+            $this->success('OK', null, [
+                'file_url' => $file_url
+            ]);
+        }
+        $this->error('未获取到文件');;
+    }
+    public function team_image_del_ajax() {
+        if(!IsAdmin('contest', $this->contest['contest_id']) && !$this->IsContestAdmin('admin')) {
+            $this->error("仅管理员有权删除", '/ojtool', null, 1);
+        }
+        $ojPath = config('ojPath');
+        $team_id = input('team_id/s');
+        if($team_id === null || trim($team_id) === '' || ($team_id = preg_replace('/[^A-Za-z0-9_]/', '', $team_id)) === '') {
+            $this->error("team_id not valid");
+        }
+        $file_path = $ojPath['PUBLIC'] . $ojPath['contest_ATTACH'] . '/' . $this->contest['attach'] . '/team_photo/' . $team_id . '.jpg';
+        DelWhatever($file_path);
+        $this->success('ok');
     }
 }

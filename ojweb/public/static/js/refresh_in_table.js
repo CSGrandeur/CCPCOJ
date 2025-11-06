@@ -31,8 +31,7 @@ $(window).resize(function () {
 });
 function ResetBootstrapTableWidth(table, table_div)
 {
-    if(table[0].scrollWidth > table_div.width())
-    {
+    if(table?.[0]?.scrollWidth && table[0].scrollWidth > table_div.width()) {
         table_div.width(table[0].scrollWidth + 20);
         widthAlreadyReset = true;
     }

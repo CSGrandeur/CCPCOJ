@@ -76,11 +76,14 @@ if(!function_exists('parse_args')){
 }
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
 	<meta charset="UTF-8">
-	<title>系统发生错误</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>系统发生错误<span class="en-text">System Error</span></title>
 	<meta name="robots" content="noindex,nofollow" />
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
 	<style>
 		/* Base */
 		body {
@@ -282,61 +285,106 @@ if(!function_exists('parse_args')){
 		pre.prettyprint .fun { color: red }  /* a function name */
 	</style>
 </head>
-<body>
-<div class="echo">
-	<?php echo $echo;?>
+<body class="bg-light">
+<div class="container mt-5">
+	<div class="row justify-content-center">
+		<div class="col-lg-10">
+			<div class="card shadow">
+				<div class="card-header bg-danger text-white">
+					<h1 class="h3 mb-0">
+						<span class="cn-text"><i class="bi bi-exclamation-triangle me-2"></i>系统发生错误</span><span class="en-text">System Error</span>
+					</h1>
+				</div>
+				<div class="card-body">
+					<div class="echo">
+						<?php echo $echo;?>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 <?php if(\think\App::$debug) { ?>
-	<div class="exception">
-		<div class="message">
-
-			<div class="info">
-				<div>
-					<h2>[<?php echo $code; ?>] <?php echo sprintf('%s in %s', parse_class($name), parse_file($file, $line)); ?></h2>
+<div class="container mt-4">
+	<div class="row justify-content-center">
+		<div class="col-lg-10">
+			<div class="card">
+				<div class="card-header bg-warning text-dark">
+					<h2 class="h5 mb-0">
+						<span class="cn-text"><i class="bi bi-bug me-2"></i>调试信息</span><span class="en-text">Debug Information</span>
+					</h2>
 				</div>
-				<div><h1><?php echo nl2br(htmlentities($message)); ?></h1></div>
-			</div>
-
-		</div>
+				<div class="card-body">
+					<div class="exception">
+						<div class="message">
+							<div class="info">
+								<div class="mb-3">
+									<h3 class="h6 text-danger">[<?php echo $code; ?>] <?php echo sprintf('%s in %s', parse_class($name), parse_file($file, $line)); ?></h3>
+								</div>
+								<div class="alert alert-danger">
+									<h4 class="alert-heading">错误信息<span class="en-text">Error Message</span></h4>
+									<p class="mb-0"><?php echo nl2br(htmlentities($message)); ?></p>
+								</div>
+							</div>
+						</div>
 		<?php if(!empty($source)){?>
 			<div class="source-code">
 				<pre class="prettyprint lang-php"><ol start="<?php echo $source['first']; ?>"><?php foreach ((array) $source['source'] as $key => $value) { ?><li class="line-<?php echo $key + $source['first']; ?>"><code><?php echo htmlentities($value); ?></code></li><?php } ?></ol></pre>
 			</div>
 		<?php }?>
-		<div class="trace">
-			<h2>Call Stack</h2>
-			<ol>
-				<li><?php echo sprintf('in %s', parse_file($file, $line)); ?></li>
-				<?php foreach ((array) $trace as $value) { ?>
-					<li>
-						<?php
-						// Show Function
-						if($value['function']){
-							echo sprintf(
-								'at %s%s%s(%s)',
-								isset($value['class']) ? parse_class($value['class']) : '',
-								isset($value['type'])  ? $value['type'] : '',
-								$value['function'],
-								isset($value['args'])?parse_args($value['args']):''
-							);
-						}
+						<div class="trace">
+							<h5 class="mb-3">
+								<span class="cn-text"><i class="bi bi-list-ol me-2"></i>调用堆栈</span><span class="en-text">Call Stack</span>
+							</h5>
+							<ol class="list-group list-group-numbered">
+								<li class="list-group-item">
+									<code><?php echo sprintf('in %s', parse_file($file, $line)); ?></code>
+								</li>
+								<?php foreach ((array) $trace as $value) { ?>
+									<li class="list-group-item">
+										<code>
+										<?php
+										// Show Function
+										if($value['function']){
+											echo sprintf(
+												'at %s%s%s(%s)',
+												isset($value['class']) ? parse_class($value['class']) : '',
+												isset($value['type'])  ? $value['type'] : '',
+												$value['function'],
+												isset($value['args'])?parse_args($value['args']):''
+											);
+										}
 
-						// Show line
-						if (isset($value['file']) && isset($value['line'])) {
-							echo sprintf(' in %s', parse_file($value['file'], $value['line']));
-						}
-						?>
-					</li>
-				<?php } ?>
-			</ol>
+										// Show line
+										if (isset($value['file']) && isset($value['line'])) {
+											echo sprintf(' in %s', parse_file($value['file'], $value['line']));
+										}
+										?>
+										</code>
+									</li>
+								<?php } ?>
+							</ol>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
+</div>
 <?php } else { ?>
-	<div class="exception">
-
-		<div class="info"><h1><?php echo htmlentities($message); ?></h1></div>
-
+<div class="container mt-4">
+	<div class="row justify-content-center">
+		<div class="col-lg-8">
+			<div class="card">
+				<div class="card-body text-center">
+					<div class="info">
+						<h1 class="text-danger"><?php echo htmlentities($message); ?></h1>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
+</div>
 <?php } ?>
 
 <?php if(!empty($datas)){ ?>
@@ -409,10 +457,21 @@ if(!function_exists('parse_args')){
 	</div>
 <?php } ?>
 
-<div class="copyright">
-	<a title="官方网站" href="/">返回官网</a>
-
-	<span>CSG-CPC TEAM</span>
+<div class="container mt-4">
+	<div class="row justify-content-center">
+		<div class="col-lg-8">
+			<div class="card">
+				<div class="card-body text-center">
+					<div class="copyright">
+						<a href="/" class="btn btn-outline-primary me-3" title="官方网站">
+							<span class="cn-text"><i class="bi bi-house me-1"></i>返回官网</span><span class="en-text">Back to Home</span>
+						</a>
+						<span class="text-muted">CSG-CPC TEAM</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
 <?php if(\think\App::$debug) { ?>
@@ -504,5 +563,7 @@ if(!function_exists('parse_args')){
 		})();
 	</script>
 <?php } ?>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -26,10 +26,13 @@
     justify-content: space-between;
     align-items: center;
 }
+/* 样例复制按钮 - 统一风格 */
 .sample_copy {
-    --bs-btn-padding-y: .25rem; 
-    --bs-btn-padding-x: .5rem; 
-    --bs-btn-font-size: .75rem;
+    transition: all 0.2s ease;
+}
+
+.sample_copy:hover {
+    transform: scale(1.05);
 }
 
 #real_sample_textarea {
@@ -45,4 +48,454 @@
 }
 .sample_operator_btn .btn {
     flex-grow: 1;
+}
+
+/* 旧版样例样式 - 兼容 problem.php 中的使用 */
+.sample_div {
+    margin-bottom: 1rem;
+}
+
+.sample_row {
+    display: flex;
+    gap: 1rem;
+}
+
+.sample_col {
+    flex: 1;
+    min-width: 0;
+}
+
+.sample_input,
+.sample_output {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+}
+
+.sampledata {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+/* ========================================
+   样例 (Sample) 界面样式 - 题目专用
+   ======================================== */
+
+/* 样例容器 */
+.sample-container {
+    min-height: 100px;
+}
+
+/* 样例项目 */
+.sample-item {
+    transition: all 0.2s ease;
+}
+
+.sample-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.sample-item .card {
+    border-radius: 6px;
+}
+
+/* 样例项目头部 */
+.sample-item .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.sample-item .badge {
+    font-size: 0.8rem;
+}
+
+/* 样例控制按钮 */
+.sample-controls .btn {
+    border-radius: 0;
+}
+
+.sample-controls .btn:first-child {
+    border-top-left-radius: 0.375rem;
+    border-bottom-left-radius: 0.375rem;
+}
+
+.sample-controls .btn:last-child {
+    border-top-right-radius: 0.375rem;
+    border-bottom-right-radius: 0.375rem;
+}
+
+/* 样例区域头部 */
+.sample-section-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.sample-section-header h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* 样例标题和索引组合 */
+.sample-section-header .d-flex.align-items-center {
+    gap: 0.5rem;
+}
+
+/* 样例索引 - 轻量样式，不使用 badge */
+.sample-index {
+    font-size: 1.2rem;
+    color: #6c757d;
+    font-weight: 600;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+/* 样例内容区域 */
+.sample-content {
+    background-color: #fafbfc;
+    min-height: 100px;
+}
+
+.sample-content textarea {
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    resize: vertical;
+}
+
+.sample-content textarea:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.sample-content pre {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin: 0;
+    padding: 0.75rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* 输入输出区域分隔线 */
+.sample-item .col-6.border-end {
+    border-right: 1px solid #dee2e6 !important;
+}
+
+/* 样例添加按钮 - 全宽度扁平设计 */
+#sample_add_btn {
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-weight: 500;
+    padding: 0.75rem 1rem;
+    border: 2px dashed #0d6efd;
+    background-color: transparent;
+    color: #0d6efd;
+    position: relative;
+    overflow: hidden;
+}
+
+#sample_add_btn:hover {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+}
+
+#sample_add_btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(13, 110, 253, 0.3);
+}
+
+#sample_add_btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+#sample_add_btn:disabled:hover {
+    background-color: transparent;
+    color: #0d6efd;
+    border-color: #0d6efd;
+    transform: none;
+    box-shadow: none;
+}
+
+/* 样例响应式设计 */
+@media (max-width: 768px) {
+    .sample-item .row {
+        flex-direction: column;
+    }
+    
+    .sample-item .col-6 {
+        width: 100% !important;
+        border-right: none !important;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .sample-item .col-6:last-child {
+        border-bottom: none;
+    }
+    
+    .sample-controls .btn-group {
+        flex-direction: column;
+    }
+    
+    .sample-controls .btn {
+        border-radius: 0.375rem !important;
+        margin-bottom: 2px;
+    }
+    
+    .sample-controls .btn:last-child {
+        margin-bottom: 0;
+    }
+}
+
+/* 题目标题容器 - 题目专用样式 */
+.problem-title-container {
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.4;
+}
+
+.problem-title-container .problem-id {
+    font-weight: 700;
+    color: #495057;
+    margin-right: 0.25rem;
+}
+
+.problem-title-container .problem-real-id {
+    font-size: 0.85em;
+    color: #6c757d;
+    margin-right: 0.25rem;
+}
+
+.problem-title-container .problem-separator {
+    margin-right: 0.5rem;
+    color: #6c757d;
+}
+
+.problem-title-container .problem-title {
+    font-weight: 600;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Contest模式题目导航美化 - 紧凑版本 */
+.contest-problem-nav {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.contest-problem-nav-header {
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.contest-problem-nav-header .nav-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.contest-problem-pills {
+    justify-content: flex-start;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.contest-problem-pills .nav-item {
+    margin: 0;
+}
+
+.contest-problem-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 24px;
+    border-radius: 4px;
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    color: #6c757d;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.contest-problem-link:hover {
+    background: #e3f2fd;
+    border-color: #2196f3;
+    color: #1976d2;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+}
+
+.contest-problem-link.active {
+    background: #2196f3;
+    border-color: #1976d2;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
+}
+
+.contest-problem-link .problem-letter {
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+/* 题目头部行布局 - 题目详情页专用 */
+.problem-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0.75rem 0;
+    padding: 0.5rem 0;
+    flex-wrap: wrap;
+}
+
+/* 题目信息横向布局 - 题目详情页专用 */
+.problem-info-inline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.5rem;
+    flex: 1;
+}
+
+/* 按钮区域 - 题目详情页专用 */
+.problem-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+/* 评测类型项 - 题目详情页专用 */
+.problem-info-inline .judge-type-item {
+    font-weight: 500;
+}
+
+/* 题目信息项 - 题目详情页专用 */
+.problem-info-inline .info-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    white-space: nowrap;
+}
+
+.problem-info-inline .info-label {
+    font-size: 0.85rem;
+    color: #6c757d;
+    line-height: 1.2;
+}
+
+.problem-info-inline .info-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #495057;
+    margin: 0 0.25rem;
+}
+
+.problem-info-inline .info-unit {
+    font-size: 0.8rem;
+    color: #6c757d;
+    line-height: 1.2;
+}
+
+/* 题目内容区域标题样式 - 题目专用 */
+.md_display_div h2 {
+    font-weight: 700;
+    border-bottom: 3px solid #dee2e6;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+    margin-top: 1.5rem;
+    position: relative;
+    font-size: 1.5rem;
+}
+
+.md_display_div h2.text-info {
+    color: #495057 !important;
+    text-shadow: 0 1px 2px rgba(73, 80, 87, 0.1);
+}
+
+.md_display_div h2.text-info .en-text {
+    color: #6c757d !important;
+    font-weight: 500;
+    font-size: 0.85em;
+}
+
+/* 题目详情页响应式设计 */
+@media (max-width: 768px) {
+    .problem-header-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .problem-info-inline {
+        gap: 1rem;
+        flex-wrap: wrap;
+        width: 100%;
+    }
+    
+    .problem-buttons {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .problem-info-inline .info-item {
+        gap: 0.2rem;
+    }
+    
+    .problem-info-inline .info-label {
+        font-size: 0.8rem;
+    }
+    
+    .problem-info-inline .info-value {
+        font-size: 0.9rem;
+    }
+    
+    .problem-info-inline .info-unit {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .problem-info-inline {
+        gap: 0.75rem;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .problem-info-inline .info-item {
+        width: 100%;
+        justify-content: space-between;
+    }
 }

@@ -42,7 +42,7 @@ FLAG_CACHE=""
 FLAG_PUSH=false
 FLAG_WEB=false
 FLAG_JUDGE=false
-FLAG_ZIP_SCRIPTS=false
+FLAG_BUILD_SCRIPT=false
 FLAG_TAG_PUSH=false
 PATH_DIR=`pwd`
 for arg in "$@"
@@ -58,7 +58,7 @@ do
     elif [ "$arg" = "judge" ]; then
         FLAG_JUDGE=true
     elif [ "$arg" = "sh" ]; then
-        FLAG_ZIP_SCRIPTS=true
+        FLAG_BUILD_SCRIPT=true
     elif [ "$arg" = "tag" ]; then
         FLAG_TAG_PUSH=true
     fi
@@ -67,7 +67,7 @@ done
 
 if [ "$FLAG_BUILD" = "true" ]; then
     if [ "$FLAG_JUDGE" = "true" ]; then
-        cd $PATH_DIR/build_judge && bash dockerbuild.sh $FLAG_CACHE
+        cd $PATH_DIR/judge2 && bash dockerbuild.sh $FLAG_CACHE
     fi
     if [ "$FLAG_WEB" = "true" ]; then
         cd $PATH_DIR/../ && bash build_web.sh $FLAG_CACHE
@@ -76,26 +76,38 @@ fi
 
 
 if [ "$FLAG_WEB" = "true" ]; then
-    docker tag csgrandeur/ccpcoj-web:latest csgrandeur/ccpcoj-web:$TAG_VERSION
+    docker tag csgrandeur/ccpcoj-web2:latest csgrandeur/ccpcoj-web2:$TAG_VERSION
 fi
 if [ "$FLAG_JUDGE" = "true" ]; then
-    docker tag csgrandeur/ccpcoj-judge:latest csgrandeur/ccpcoj-judge:$TAG_VERSION
+    docker tag csgrandeur/ccpcoj-judge2:latest csgrandeur/ccpcoj-judge2:$TAG_VERSION
 fi
 
 if [ "$FLAG_PUSH" = "true" ]; then
     if [ "$FLAG_WEB" = "true" ]; then
-        docker push csgrandeur/ccpcoj-web:latest
-        docker push csgrandeur/ccpcoj-web:$TAG_VERSION
+        docker push csgrandeur/ccpcoj-web2:latest
+        docker push csgrandeur/ccpcoj-web2:$TAG_VERSION
     fi
     if [ "$FLAG_JUDGE" = "true" ]; then
-        docker push csgrandeur/ccpcoj-judge:latest
-        docker push csgrandeur/ccpcoj-judge:$TAG_VERSION
+        docker push csgrandeur/ccpcoj-judge2:latest
+        docker push csgrandeur/ccpcoj-judge2:$TAG_VERSION
     fi
 fi
 
-if [ "$FLAG_ZIP_SCRIPTS" = "true" ]; then
+if [ "$FLAG_BUILD_SCRIPT" = "true" ]; then
     cd $PATH_DIR
-    zip csgoj_scripts_$TAG_VERSION.zip start_scripts/*.sh -j
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "  生成合并部署脚本"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    
+    # 生成合并脚本
+    cd start_scripts
+    bash build_deploy.sh
+    
+    # 复制合并脚本到项目根目录（供用户直接使用）
+    if [ -f "$PATH_DIR/start_scripts/csgoj_deploy.sh" ]; then
+        cp -f "$PATH_DIR/start_scripts/csgoj_deploy.sh" "$PATH_DIR/../csgoj_deploy.sh"
+        echo "✅ 合并脚本已复制到项目根目录: csgoj_deploy.sh"
+    fi
 fi
 
 cd $PATH_DIR/../ && echo $TAG_VERSION > version

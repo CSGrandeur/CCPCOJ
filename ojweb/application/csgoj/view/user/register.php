@@ -4,38 +4,38 @@
 </div>
 <div>
     <form id="register_form" class="form-register" method="post" action="__OJ__/user/register_ajax">
-        <div class="form-inline">
-            <label class="description_label">*User ID ：</label>
+        <div class="mb-3">
+            <label class="form-label">*User ID ：</label>
             <input type="text" class="form-control" placeholder="5~20 characters" name="user_id" required autofocus>
             <label for="user_id" class="notification_label"></label>
         </div>
-        <div class="form-inline">
-            <label class="description_label">Nick ：</label>
+        <div class="mb-3">
+            <label class="form-label">Nick ：</label>
             <input type="text" class="form-control" placeholder="no more than 30 characters" name="nick" >
             <label for="nick" class="notification_label"></label>
         </div>
-        <div class="form-inline">
-            <label class="description_label">School ：</label>
+        <div class="mb-3">
+            <label class="form-label">School ：</label>
             <input type="text" class="form-control" placeholder="School" name="school" >
             <label for="school" class="notification_label"></label>
         </div>
-        <div class="form-inline">
-            <label class="description_label">*E-Mail ：</label>
+        <div class="mb-3">
+            <label class="form-label">*E-Mail ：</label>
             <input type="text" class="form-control" placeholder="E-Mail" name="email" required>
             <label for="email" class="notification_label"></label>
         </div>
-        <div class="form-inline">
-            <label class="description_label">*Password ：</label>
+        <div class="mb-3">
+            <label class="form-label">*Password ：</label>
             <input type="password" id="register_password" class="form-control" placeholder="At least 6 characters" name="password" required>
             <label for="password" class="notification_label"></label>
         </div>
-        <div class="form-inline">
-            <label class="description_label">*Confirm ：</label>
+        <div class="mb-3">
+            <label class="form-label">*Confirm ：</label>
             <input type="password" class="form-control" placeholder="Confirm Password" name="confirm_password" required>
             <label for="confirm_password" class="notification_label"></label>
         </div>
-        <div class="form-inline">
-            <label class="description_label">*V-Code ：</label>
+        <div class="mb-3">
+            <label class="form-label">*V-Code ：</label>
             <input type="text" class="form-control" placeholder="Verification Code" name="vcode" required>
             <label for="vcode" class="notification_label"></label>
         </div>

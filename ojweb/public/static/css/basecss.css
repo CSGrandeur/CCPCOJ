@@ -1,37 +1,114 @@
-﻿/*全局字体相关*/
+﻿/*全局字体相关 - Bootstrap 5 优化*/
 body{
-	font-family: Helvetica Neue,Helvetica,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Noto Sans CJK SC,WenQuanYi Micro Hei,Arial,sans-serif;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei";
 	background-color: #fff !important;
+	line-height: 1.6;
+	color: #212529;
 }
-h1,h2,h3,h4,h5{
-	font-family: Helvetica Neue,Helvetica,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Noto Sans CJK SC,WenQuanYi Micro Hei,Arial,sans-serif;
+h1,h2,h3,h4,h5,h6{
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei";
+	font-weight: 600;
+	line-height: 1.2;
+	margin-bottom: 0.5rem;
 }
-h1,h2{
-	font-weight: bold;
+h1{ font-size: 2rem; }
+h2{ font-size: 1.75rem; }
+h3{ font-size: 1.5rem; }
+h4{ font-size: 1.25rem; }
+h5{ font-size: 1.0rem; }
+h6{ font-size: 0.75rem; }
+
+/* 页面标题专用样式 - 简洁左对齐设计 */
+.page-title {
+	font-size: 2rem;
+	font-weight: 600;
+	color: #212529;
+	margin: 0.5rem 0 0.25rem 0;
+	padding: 0;
+	text-align: left;
+	border-bottom: 2px solid #dee2e6;
+	padding-bottom: 0.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+/* 页面标题的左右模式 */
+.page-title.bilingual-inline {
+	flex-direction: row;
+	align-items: baseline;
+	gap: 0;
+}
+
+.page-title .en-text {
+	font-size: 0.7em;
+	font-weight: 400;
+	color: #6c757d;
+	opacity: 0.8;
+	letter-spacing: 0.3px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+	.page-title {
+		font-size: 1.75rem;
+		margin: 0.75rem 0 0.5rem 0;
+	}
+	
+	.page-title .en-text {
+		font-size: 0.65em;
+	}
+}
+
+@media (max-width: 576px) {
+	.page-title {
+		font-size: 1.5rem;
+		margin: 0.5rem 0 0.5rem 0;
+	}
+	
+	.page-title .en-text {
+		font-size: 0.6em;
+	}
 }
 textarea{
 	/*为了编辑器中英文混编等宽*/
-	font-family: 'Simsun', 'Microsoft Yahei Mono', 'Lato', "PingFang SC", "Microsoft YaHei", sans-serif;
-	/*font-family: Consolas, Courier, sans-serif;*/
+	font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace, "PingFang SC", "Microsoft YaHei", "WenQuanYi Micro Hei";
+	font-size: 0.875em;
+	line-height: 1.5;
 }
 .text-red
 {
 	color: red;
 }
 .font-equal-width {
-	font-family: "PingFang SC", 'Microsoft Yahei Mono', "Microsoft YaHei", 'Simsun', 'Lato', sans-serif;
+	font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace, "PingFang SC", "Microsoft YaHei", "WenQuanYi Micro Hei";
 }
-/*红色链接，目前主要用于列表中标注special judge题目*/
-.red-link,
-.red-link:visited
-{
-	color: #d9534f;
+/* 题目标题链接的悬停效果 - 基于spj配色方案 */
+a.text-primary:hover,
+a.text-primary:focus,
+a.text-primary:active {
+	color: #0a58ca !important;
+	text-decoration: underline !important;
 }
-.red-link:hover,
-.red-link:focus,
-.red-link:active
-{
-	color: red;
+
+/* 特判评测题目 - 使用更深的橙色提高可读性 */
+a.text-warning,
+.text-warning {
+	color: #E67E22 !important; /* 更深的橙色，提高对比度 */
+}
+
+a.text-warning:hover,
+a.text-warning:focus,
+a.text-warning:active {
+	color: #F39C12 !important; /* 悬停时更深的橙色 */
+	text-decoration: underline !important;
+}
+
+a.text-success:hover,
+a.text-success:focus,
+a.text-success:active {
+	color: #0f5132 !important;
+	text-decoration: underline !important;
 }
 
 /*表格中的文章标题，限制宽度和隐藏*/
@@ -79,10 +156,13 @@ textarea{
 	margin-right: 10px;
 	overflow-x: hidden;
 }
-/*没有下划线的 <a href... */
-.a_noline:hover
+/*没有下划线的 <a href... - Bootstrap 5 更新*/
+.a_noline,
+.a_noline:hover,
+.a_noline:focus,
+.a_noline:active
 {
-	text-decoration:none;
+	text-decoration: none !important;
 }
 /*不换行的span*/
 .inline_span
@@ -113,12 +193,378 @@ textarea{
 	max-height:500px;
 	white-space:normal;
 }
-.login_div .logout_div
-{
-	margin-left: 20px;
-	margin-right: 20px;
+/* 登录登出框样式 - 简洁统一的设计 */
+.login_div, .logout_div {
+	margin: 0.5rem;
+	padding: 0.75rem;
+	background-color: rgba(255, 255, 255, 0.95);
+	border-radius: 0.5rem;
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+	transition: all 0.3s ease;
+}
+
+/* 悬停效果 - 统一处理 */
+.login_div:hover,
+.logout_div:hover {
+	box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+	transform: translateY(-1px);
+}
+
+/* 按钮尺寸优化 - 仅针对 btn-sm，让按钮更饱满 */
+.login_div .btn.btn-sm,
+.logout_div .btn.btn-sm {
+	padding: 0.5rem 0.875rem;
+}
+
+/* 齿轮图标悬停效果 */
+.logout_div .gear-icon {
+	position: relative;
+	transition: all 0.15s ease-in-out;
+	z-index: 1050;
+}
+
+.logout_div .gear-icon:hover {
+	opacity: 1 !important;
+	transform: rotate(15deg);
+}
+
+.logout_div .gear-icon:hover i {
+	color: #6c757d !important;
+}
+
+
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+	.login_div, .logout_div {
+		margin: 0.25rem;
+		padding: 0.5rem;
+	}
 }
 
 .tooltip_templates {
 	display: none;
+}
+
+/* 按钮中的中文部分不换行 */
+.btn {
+	white-space: nowrap;
+}
+
+/* 按钮中的英文部分不换行 */
+.btn .en-text {
+	white-space: nowrap;
+	display: inline;
+}
+
+/* 管理后台通用页面头部样式 */
+.admin-page-header {
+	background: white;
+	border: 1px solid rgba(13, 110, 253, 0.25);
+	border-radius: 0.5rem;
+	padding: 1rem 1.25rem;
+	margin-bottom: 1.5rem;
+	box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.admin-page-header-left {
+	display: flex;
+	align-items: center;
+	flex-direction: row;
+	gap: 0.75rem;
+	flex: 1;
+}
+.admin-page-header-right {
+	display: flex;
+	align-items: center;
+	flex-direction: row;
+	gap: 0.75rem;
+	flex-shrink: 0;
+}
+.admin-page-header-icon {
+	background: #f8f9fa;
+	border: 1px solid #dee2e6;
+	border-radius: 0.375rem;
+	padding: 0.5rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.admin-page-header-icon i {
+	color: #6c757d;
+	font-size: 1rem;
+}
+
+.admin-page-header-title {
+	font-size: 1.75rem;
+	font-weight: 600;
+	color: #212529;
+	margin: 0;
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	flex: 1;
+}
+
+.admin-page-header-title-main {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.admin-page-header-title-right {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.25rem;
+}
+
+.admin-page-header-id {
+	background: #0d6efd;
+	color: white;
+	font-size: 0.75rem;
+	font-weight: 600;
+	padding: 0.25rem 0.5rem;
+	border-radius: 0.25rem;
+	text-decoration: none;
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	transition: all 0.15s ease-in-out;
+	white-space: nowrap;
+}
+
+.admin-page-header-id:hover {
+	color: white;
+	text-decoration: none;
+	background: #0b5ed7;
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(13, 110, 253, 0.3);
+}
+
+.admin-page-header-title .en-text {
+	font-size: 0.7em;
+	font-weight: 400;
+	color: #6c757d;
+	opacity: 0.8;
+	white-space: nowrap;
+}
+
+.admin-page-header-actions {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.admin-page-header-actions .btn {
+	font-size: 0.875rem;
+	padding: 0.375rem 0.75rem;
+	border-radius: 0.375rem;
+	font-weight: 500;
+	transition: all 0.15s ease-in-out;
+}
+
+.admin-page-header-actions .btn:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+	.admin-page-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 1rem;
+	}
+	
+	.admin-page-header-left {
+		width: 100%;
+		flex-wrap: wrap;
+	}
+	
+	.admin-page-header-title {
+		font-size: 1.5rem;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.5rem;
+	}
+	
+	.admin-page-header-title-right {
+		align-items: flex-start;
+	}
+	
+	.admin-page-header-actions {
+		width: 100%;
+		justify-content: flex-end;
+		flex-wrap: wrap;
+	}
+}
+
+@media (max-width: 576px) {
+	.admin-page-header {
+		padding: 0.75rem 1rem;
+	}
+	
+	.admin-page-header-title {
+		font-size: 1.25rem;
+	}
+	
+	.admin-page-header-actions .btn {
+		font-size: 0.8rem;
+		padding: 0.25rem 0.5rem;
+	}
+	
+	.admin-page-header-icon {
+		padding: 0.375rem;
+	}
+	
+	.admin-page-header-icon i {
+		font-size: 0.875rem;
+	}
+}
+
+/* ==================== 全站通用工具栏样式 ==================== */
+
+/* 通用工具栏容器样式 */
+.table-toolbar {
+	padding: 0.5rem 0;
+}
+
+.table-toolbar .d-flex {
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.table-toolbar .mb-2 {
+	margin-bottom: 0 !important;
+}
+
+/* 通用工具栏按钮样式 - 与 bilingual.css 配合 */
+.toolbar-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	transition: all 0.15s ease-in-out;
+}
+
+.toolbar-btn:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+
+/* 通用工具栏输入框样式 */
+.toolbar-input {
+	border: 1px solid #ced4da;
+	border-radius: 0.375rem;
+	font-size: 0.875rem;
+	transition: all 0.15s ease-in-out;
+	height: 38px; /* 与按钮高度一致 */
+}
+
+.toolbar-input:focus {
+	border-color: #86b7fe;
+	box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+	outline: none;
+}
+
+/* 通用工具栏选择框样式 */
+.toolbar-select,.toolbar-select:sibling(multiple-select) {
+	border: 1px solid #ced4da;
+	border-radius: 0.375rem;
+	font-size: 0.875rem;
+	transition: all 0.15s ease-in-out;
+	height: 38px; /* 与按钮高度一致 */
+}
+
+.toolbar-select:focus {
+	border-color: #86b7fe;
+	box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+	outline: none;
+}
+
+/* 通用双语标签样式 - 与 bilingual.css 配合 */
+.toolbar-label-inline {
+	display: flex; 
+	flex-direction: column;
+	white-space: nowrap; /* 防止整体换行 */
+}
+
+.toolbar-label-inline > span:first-child {
+	white-space: nowrap; /* 中文部分不换行 */
+}
+
+.toolbar-label-inline .en-text {
+	white-space: nowrap; /* 英文部分不换行 */
+}
+
+/* 通用工具栏分组样式 */
+.toolbar-group {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+/* 通用工具栏输入组样式 */
+.toolbar-input-group {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+
+.toolbar-input-group .input-group-text {
+	font-size: 0.875rem;
+	background-color: #f8f9fa;
+	border-color: #ced4da;
+	color: #495057;
+}
+
+/* 通用工具栏按钮组样式 */
+.toolbar-btn-group {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+	.table-toolbar .d-flex {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 0.75rem;
+	}
+	
+	.toolbar-group {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 0.5rem;
+	}
+	
+	.toolbar-input,
+	.toolbar-select {
+		width: 100% !important;
+		max-width: none !important;
+	}
+}
+
+@media (max-width: 576px) {
+	.table-toolbar {
+		padding: 0.25rem 0;
+	}
+	
+	.toolbar-btn {
+		font-size: 0.8rem;
+		padding: 0.375rem 0.5rem;
+	}
+	
+	.toolbar-input,
+	.toolbar-select {
+		font-size: 0.8rem;
+		height: 34px;
+	}
 }

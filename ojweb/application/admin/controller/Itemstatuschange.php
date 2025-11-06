@@ -18,7 +18,7 @@ class Itemstatuschange extends Adminbase
 		$this->allowField = [
 			'defunct'	=> [
 				[
-					'status_str'	=> 'Available',
+					'status_str'	=> 'Public',
 					'status_class'	=> 'success',
 				],
 				[

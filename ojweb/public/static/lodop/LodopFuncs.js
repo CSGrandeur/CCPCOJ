@@ -1,5 +1,147 @@
 ﻿var CreatedOKLodopObject, CLodopIsLocal, CLodopJsState;
 
+// ========================================
+// Lodop 通知系统 - 固定顶部显示
+// ========================================
+var LodopNotification = {
+    container: null,
+    currentAlert: null,
+    testTimeout: null,
+
+    // 初始化通知容器
+    init: function() {
+        if (this.container) return;
+        
+        // 创建固定顶部通知容器（不占用DOM空间）
+        this.container = document.createElement('div');
+        this.container.id = 'lodop-notification-container';
+        this.container.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; z-index: 9999; pointer-events: none; display: flex; justify-content: center; padding-top: 1rem;';
+        document.body.appendChild(this.container);
+    },
+
+    // 显示通知
+    show: function(type, message, messageEn, options) {
+        this.init();
+        
+        // 清除之前的通知
+        this.hide();
+        
+        // 清除测试超时
+        if (this.testTimeout) {
+            clearTimeout(this.testTimeout);
+            this.testTimeout = null;
+        }
+        
+        options = options || {};
+        var alertClass = 'alert-' + (type || 'warning');
+        var icon = this.getIcon(type);
+        
+        // 创建通知元素
+        var alert = document.createElement('div');
+        alert.className = 'alert ' + alertClass + ' alert-dismissible mb-0 border-0';
+        // 设置样式，确保从一开始就在正确位置
+        alert.style.cssText = 'pointer-events: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.15); width: 100%; max-width: 800px; opacity: 0; transform: translateY(-20px); transition: opacity 0.3s ease, transform 0.3s ease;';
+        
+        var content = message;
+        if (messageEn) {
+            content += ' <span class="en-text">' + messageEn + '</span>';
+        }
+        
+        alert.innerHTML = '<div class="d-flex align-items-center">' +
+            '<i class="' + icon + ' me-2"></i>' +
+            '<div class="flex-grow-1">' + content + '</div>' +
+            '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
+            '</div>';
+        
+        // 先添加到 DOM，但保持隐藏状态
+        this.container.appendChild(alert);
+        this.currentAlert = alert;
+        
+        // 添加关闭按钮事件监听
+        var self = this;
+        var closeBtn = alert.querySelector('.btn-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                self.hide();
+            });
+        }
+        
+        // 使用 requestAnimationFrame 确保 DOM 已渲染后再显示动画
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                if (self.currentAlert === alert) {
+                    alert.style.opacity = '1';
+                    alert.style.transform = 'translateY(0)';
+                    alert.classList.add('show');
+                }
+            });
+        });
+        
+        // 自动关闭（如果指定了延迟时间）
+        if (options.autoClose !== false && (options.delay || type === 'success')) {
+            var delay = options.delay || (type === 'success' ? 3000 : 5000);
+            this.testTimeout = setTimeout(function() {
+                LodopNotification.hide();
+            }, delay);
+        }
+    },
+
+    // 显示测试状态
+    showTesting: function() {
+        this.show('info', 
+            '正在测试打印控件...', 
+            'Testing print control...',
+            { autoClose: false }
+        );
+    },
+
+    // 显示测试成功
+    showTestSuccess: function() {
+        this.show('success',
+            '打印控件测试成功！', 
+            'Print control test successful!',
+            { delay: 2000 }
+        );
+    },
+
+    // 隐藏通知
+    hide: function() {
+        if (this.currentAlert) {
+            var alert = this.currentAlert;
+            // 使用自定义的平滑淡出动画
+            alert.style.opacity = '0';
+            alert.style.transform = 'translateY(-20px)';
+            alert.classList.remove('show');
+            
+            // 动画完成后移除元素
+            setTimeout(function() {
+                if (alert && alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+                if (LodopNotification.currentAlert === alert) {
+                    LodopNotification.currentAlert = null;
+                }
+            }, 300);
+        }
+        if (this.testTimeout) {
+            clearTimeout(this.testTimeout);
+            this.testTimeout = null;
+        }
+    },
+
+    // 获取图标
+    getIcon: function(type) {
+        var icons = {
+            'warning': 'bi bi-exclamation-triangle-fill',
+            'danger': 'bi bi-x-circle-fill',
+            'info': 'bi bi-info-circle-fill',
+            'success': 'bi bi-check-circle-fill'
+        };
+        return icons[type] || icons['warning'];
+    }
+};
+
 //==判断是否需要CLodop(那些不支持插件的浏览器):==
 function needCLodop() {
     try {
@@ -68,49 +210,86 @@ function loadCLodop() {
 if (needCLodop()){loadCLodop();}//开始加载
 
 var documentMain = document.getElementsByTagName('main')[0];
+
 //====获取LODOP对象的主过程：====
 function getLodop(oOBJECT,oEMBED){
-    var strHtmInstall="<br><span class='alert alert-warning'>打印控件未安装!点击这里<a href='/static/lodop/install_lodop32.exe' target='_self'>执行安装</a>,安装后请刷新页面或重新进入。</span>";
-    var strHtmUpdate="<br><span class='alert alert-warning'>打印控件需要升级!点击这里<a href='/static/lodop/install_lodop32.exe' target='_self'>执行升级</a>,升级后请重新进入。</span>";
-    var strHtm64_Install="<br><span class='alert alert-warning'>打印控件未安装!点击这里<a href='/static/lodop/install_lodop64.exe' target='_self'>执行安装</a>,安装后请刷新页面或重新进入。</span>";
-    var strHtm64_Update="<br><span class='alert alert-warning'>打印控件需要升级!点击这里<a href='/static/lodop/install_lodop64.exe' target='_self'>执行升级</a>,升级后请重新进入。</span>";
-    var strHtmFireFox="<br><br><span class='alert alert-warning'>（注意：如曾安装过Lodop旧版附件npActiveXPLugin,请在【工具】->【附加组件】->【扩展】中先卸它）</span>";
-    var strHtmChrome="<br><br><span class='alert alert-warning'>(如果此前正常，仅因浏览器升级或重安装而出问题，需重新执行以上安装）</span>";
-    var lodop_setup_url = `
-        <a href='/static/lodop/CLodop_Setup_for_Win32NT.exe' target='_self'>32位Windows</a>；
-        <a href='/static/lodop/CLodop_Setup_for_Win64NT.exe' target='_self'>64位Windows</a>；
-        <a href='/static/lodop/Lodop7.064_Linux_X86_64_CN.deb' target='_self'>Linux</a>
-    `;
-    var strCLodopInstall_1 = `<br/><span class='alert alert-warning' style="display:block; margin-top: 10px;">Web打印服务CLodop未安装启动，点击下载安装：${lodop_setup_url}`;
-    var strCLodopInstall_2 = "（若此前已安装过，可<a href='CLodop.protocol:setup' target='_self'>点这里直接再次启动</a>）";
-    var strCLodopInstall_3 = "，成功后请刷新或重启浏览器。</span>";
-    var strCLodopUpdate = `<br><span class='alert alert-warning'>Web打印服务CLodop需升级!点击下载升级：${lodop_setup_url},升级后请刷新或重启浏览器。</span>`;
     var LODOP;
+    var ua = navigator.userAgent;
+    var isIE = !!(ua.match(/MSIE/i)) || !!(ua.match(/Trident/i));
+    var is64IE = isIE && !!(ua.match(/x64/i));
+    
+    // 显示测试中状态
+    LodopNotification.showTesting();
+    
     try {
-        var ua = navigator.userAgent;
-        var isIE = !!(ua.match(/MSIE/i)) || !!(ua.match(/Trident/i));
         if (needCLodop()) {
+            // CLodop 模式
             try {
                 LODOP = getCLodop();
             } catch (err) {}
+            
             if (!LODOP && CLodopJsState !== "complete") {
-                if (CLodopJsState == "loading") alert("网页还没下载完毕，请稍等一下再操作."); else alert("没有加载CLodop的主js，请先调用loadCLodop过程.");
+                LodopNotification.hide();
+                if (CLodopJsState == "loading") {
+                    LodopNotification.show('warning', 
+                        '网页还没下载完毕，请稍等一下再操作。', 
+                        'The page is still loading, please wait a moment before operating.');
+                } else {
+                    LodopNotification.show('warning',
+                        '没有加载CLodop的主js，请先调用loadCLodop过程。',
+                        'CLodop main JS not loaded, please call loadCLodop first.');
+                }
                 return;
             }
+            
             if (!LODOP) {
-                documentMain.innerHTML = strCLodopInstall_1 + (CLodopIsLocal ? strCLodopInstall_2 : "") + strCLodopInstall_3 + documentMain.innerHTML;
+                // CLodop 未安装
+                var lodop_setup_url = '<a href="/static/lodop/CLodop_Setup_for_Win32NT.exe" target="_self" class="alert-link">32位Windows</a>；' +
+                    '<a href="/static/lodop/CLodop_Setup_for_Win64NT.exe" target="_self" class="alert-link">64位Windows</a>；' +
+                    '<a href="/static/lodop/Lodop7.064_Linux_X86_64_CN.deb" target="_self" class="alert-link">Linux</a>';
+                
+                var installMsg = 'Web打印服务CLodop未安装启动，点击下载安装：' + lodop_setup_url;
+                var installMsgEn = 'Web print service CLodop is not installed or started. Click to download and install: ' + 
+                    '<a href="/static/lodop/CLodop_Setup_for_Win32NT.exe" target="_self" class="alert-link">32-bit Windows</a>; ' +
+                    '<a href="/static/lodop/CLodop_Setup_for_Win64NT.exe" target="_self" class="alert-link">64-bit Windows</a>; ' +
+                    '<a href="/static/lodop/Lodop7.064_Linux_X86_64_CN.deb" target="_self" class="alert-link">Linux</a>';
+                
+                if (CLodopIsLocal) {
+                    installMsg += '（若此前已安装过，可<a href="CLodop.protocol:setup" target="_self" class="alert-link">点这里直接再次启动</a>）';
+                    installMsgEn += ' (If previously installed, you can <a href="CLodop.protocol:setup" target="_self" class="alert-link">click here to restart directly</a>)';
+                }
+                installMsg += '，成功后请刷新或重启浏览器。';
+                installMsgEn += '. After success, please refresh or restart the browser.';
+                
+                LodopNotification.show('warning', installMsg, installMsgEn, { autoClose: false });
                 return;
             } else {
+                // CLodop 已安装，检查版本
                 if (CLODOP.CVERSION < "4.1.4.5") {
-                    documentMain.innerHTML = strCLodopUpdate + documentMain.innerHTML;
+                    var updateMsg = 'Web打印服务CLodop需升级！点击下载升级：' +
+                        '<a href="/static/lodop/CLodop_Setup_for_Win32NT.exe" target="_self" class="alert-link">32位Windows</a>；' +
+                        '<a href="/static/lodop/CLodop_Setup_for_Win64NT.exe" target="_self" class="alert-link">64位Windows</a>；' +
+                        '<a href="/static/lodop/Lodop7.064_Linux_X86_64_CN.deb" target="_self" class="alert-link">Linux</a>' +
+                        '，升级后请刷新或重启浏览器。';
+                    var updateMsgEn = 'Web print service CLodop needs to be upgraded! Click to download and upgrade: ' +
+                        '<a href="/static/lodop/CLodop_Setup_for_Win32NT.exe" target="_self" class="alert-link">32-bit Windows</a>; ' +
+                        '<a href="/static/lodop/CLodop_Setup_for_Win64NT.exe" target="_self" class="alert-link">64-bit Windows</a>; ' +
+                        '<a href="/static/lodop/Lodop7.064_Linux_X86_64_CN.deb" target="_self" class="alert-link">Linux</a>' +
+                        '. After upgrade, please refresh or restart the browser.';
+                    LodopNotification.show('warning', updateMsg, updateMsgEn, { autoClose: false });
+                } else {
+                    // 测试成功
+                    LodopNotification.showTestSuccess();
                 }
+                
+                // 清理旧版无效元素
                 if (oEMBED && oEMBED.parentNode)
-                    oEMBED.parentNode.removeChild(oEMBED); //清理旧版无效元素
+                    oEMBED.parentNode.removeChild(oEMBED);
                 if (oOBJECT && oOBJECT.parentNode)
                     oOBJECT.parentNode.removeChild(oOBJECT);
             }
         } else {
-            var is64IE = isIE && !!(ua.match(/x64/i));
+            // 传统插件模式
             //==如果页面有Lodop就直接使用,否则新建:==
             if (oOBJECT || oEMBED) {
                 if (isIE)
@@ -130,26 +309,69 @@ function getLodop(oOBJECT,oEMBED){
                 CreatedOKLodopObject = LODOP;
             } else
                 LODOP = CreatedOKLodopObject;
+            
             //==Lodop插件未安装时提示下载地址:==
             if ((!LODOP) || (!LODOP.VERSION)) {
-                if (ua.indexOf('Chrome') >= 0)
-                    documentMain.innerHTML = strHtmChrome + documentMain.innerHTML;
-                if (ua.indexOf('Firefox') >= 0)
-                    documentMain.innerHTML = strHtmFireFox + documentMain.innerHTML;
-                documentMain.innerHTML = (is64IE ? strHtm64_Install : strHtmInstall) + documentMain.innerHTML;
+                var installMsg, installMsgEn;
+                var browserNote = '';
+                var browserNoteEn = '';
+                
+                // 浏览器特定提示（合并到安装提示中）
+                if (ua.indexOf('Chrome') >= 0) {
+                    browserNote = '（注意：如果此前正常，仅因浏览器升级或重安装而出问题，需重新执行以上安装）';
+                    browserNoteEn = ' (Note: If it was working before and only failed due to browser upgrade or reinstallation, you need to reinstall as above)';
+                }
+                if (ua.indexOf('Firefox') >= 0) {
+                    browserNote = '（注意：如曾安装过Lodop旧版附件npActiveXPLugin,请在【工具】->【附加组件】->【扩展】中先卸它）';
+                    browserNoteEn = ' (Note: If you have installed the old Lodop addon npActiveXPLugin, please uninstall it first in [Tools] -> [Add-ons] -> [Extensions])';
+                }
+                
+                // 安装提示
+                if (is64IE) {
+                    installMsg = '打印控件未安装！点击这里<a href="/static/lodop/install_lodop64.exe" target="_self" class="alert-link">执行安装</a>，安装后请刷新页面或重新进入。';
+                    installMsgEn = 'Print control is not installed! Click here to <a href="/static/lodop/install_lodop64.exe" target="_self" class="alert-link">install</a>. After installation, please refresh the page or re-enter.';
+                } else {
+                    installMsg = '打印控件未安装！点击这里<a href="/static/lodop/install_lodop32.exe" target="_self" class="alert-link">执行安装</a>，安装后请刷新页面或重新进入。';
+                    installMsgEn = 'Print control is not installed! Click here to <a href="/static/lodop/install_lodop32.exe" target="_self" class="alert-link">install</a>. After installation, please refresh the page or re-enter.';
+                }
+                
+                // 合并浏览器提示
+                if (browserNote) {
+                    installMsg = installMsg + '<br>' + browserNote;
+                    installMsgEn = installMsgEn + '<br>' + browserNoteEn;
+                }
+                
+                LodopNotification.show('warning', installMsg, installMsgEn, { autoClose: false });
                 return LODOP;
             }
+            
+            // 检查版本
+            if (LODOP.VERSION < "6.2.2.6") {
+                var updateMsg, updateMsgEn;
+                if (is64IE) {
+                    updateMsg = '打印控件需要升级！点击这里<a href="/static/lodop/install_lodop64.exe" target="_self" class="alert-link">执行升级</a>，升级后请重新进入。';
+                    updateMsgEn = 'Print control needs to be upgraded! Click here to <a href="/static/lodop/install_lodop64.exe" target="_self" class="alert-link">upgrade</a>. After upgrade, please re-enter.';
+                } else {
+                    updateMsg = '打印控件需要升级！点击这里<a href="/static/lodop/install_lodop32.exe" target="_self" class="alert-link">执行升级</a>，升级后请重新进入。';
+                    updateMsgEn = 'Print control needs to be upgraded! Click here to <a href="/static/lodop/install_lodop32.exe" target="_self" class="alert-link">upgrade</a>. After upgrade, please re-enter.';
+                }
+                LodopNotification.show('warning', updateMsg, updateMsgEn, { autoClose: false });
+            } else {
+                // 测试成功
+                LodopNotification.showTestSuccess();
+            }
         }
-        if (LODOP.VERSION < "6.2.2.6") {
-            if (!needCLodop())
-                documentMain.innerHTML = (is64IE ? strHtm64_Update : strHtmUpdate) + documentMain.innerHTML;
-        }
+        
         //===如下空白位置适合调用统一功能(如注册语句、语言选择等):==
-
 
         //=======================================================
         return LODOP;
     } catch (err) {
-        alert("getLodop出错:" + err);
+        LodopNotification.hide();
+        LodopNotification.show('danger',
+            'getLodop出错: ' + err,
+            'getLodop error: ' + err,
+            { delay: 5000 }
+        );
     }
 }

@@ -1,0 +1,981 @@
+/* **************************************************
+   评测机列表页面样式
+   ************************************************** */
+
+/* 表格样式优化 */
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.075);
+}
+
+/* 删除按钮样式 */
+.btn-outline-danger.btn-sm {
+    border-radius: 0.375rem;
+    transition: all 0.15s ease-in-out;
+}
+
+.btn-outline-danger.btn-sm:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+}
+
+/* 徽章样式 */
+.badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.4rem;
+    border-radius: 0.25rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* 题目限制列徽章样式优化 */
+.table td .badge {
+    margin: 0.1rem;
+    display: inline-block;
+    transition: all 0.2s ease-in-out;
+}
+
+.table td .badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 省略号徽章特殊样式 */
+.table td .badge.bg-info {
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.table td .badge.bg-info:hover {
+    background-color: #0dcaf0 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(13, 202, 240, 0.3);
+}
+
+/* 工具栏样式 */
+.table-toolbar {
+    margin-bottom: 0.75rem;
+    padding: 0.5rem;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+}
+
+.toolbar-btn {
+    border-radius: 0.375rem;
+    transition: all 0.15s ease-in-out;
+}
+
+.toolbar-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.toolbar-label-inline {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    white-space: nowrap;
+}
+
+.toolbar-label {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.toolbar-select,
+.toolbar-input {
+    border-radius: 0.375rem;
+    border: 1px solid #ced4da;
+    transition: all 0.15s ease-in-out;
+}
+
+.toolbar-select:focus,
+.toolbar-input:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* 表格在左栏中的样式优化 */
+.table {
+    font-size: 0.875rem;
+    margin-bottom: 0;
+}
+
+.table th,
+.table td {
+    padding: 0.5rem 0.25rem;
+    vertical-align: middle;
+}
+
+.table th {
+    font-size: 0.8rem;
+    font-weight: 600;
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+/* 工具栏按钮和输入框在左栏中的尺寸调整 */
+.toolbar-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+}
+
+.toolbar-select,
+.toolbar-input {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.toolbar-label {
+    font-size: 0.7rem;
+}
+
+/* 前缀输入框样式 */
+#judger_prefix_input {
+    text-transform: lowercase;
+    font-family: monospace;
+    width: 50px !important;
+    min-width: 50px;
+    max-width: 50px;
+}
+
+/* 密码和前缀输入框样式 */
+#judger_password_input,
+#judger_prefix_input {
+    font-family: monospace;
+}
+
+/* 密码输入框组样式 */
+.card-header .input-group {
+    width: 140px !important;
+}
+
+.card-header .input-group .form-control {
+    border-right: none;
+}
+
+.card-header .input-group .btn {
+    border-left: none;
+    padding: 0.25rem 0.5rem;
+    border-color: #ced4da;
+}
+
+.card-header .input-group .btn:hover {
+    background-color: #e9ecef;
+    border-color: #ced4da;
+}
+
+.card-header .input-group .btn:focus {
+    box-shadow: none;
+    border-color: #ced4da;
+}
+
+/* 密码输入框获得焦点时的样式 */
+.card-header .input-group:focus-within .form-control {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.card-header .input-group:focus-within .btn {
+    border-color: #86b7fe;
+}
+
+#judger_prefix_input:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+/* 添加按钮样式 */
+#add_judger_btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+}
+
+#add_judger_btn:hover {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+#add_judger_btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#add_judger_btn:disabled:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+/* 数量显示样式 */
+#judger_count_display {
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    background-color: #f8f9fa;
+    border-radius: 0.25rem;
+    border: 1px solid #dee2e6;
+}
+
+/* 前缀输入框提示气泡样式 */
+.prefix-tooltip {
+    position: absolute;
+    background: #dc3545;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 9999;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    animation: tooltipFadeIn 0.2s ease-in-out;
+}
+
+@keyframes tooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 题目列表弹窗样式 */
+.problem-list-detail {
+    max-width: 600px;
+    /* 移除高度限制，让内容自然展开 */
+}
+
+.problem-list-detail .badge {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.6rem;
+    margin: 0.1rem;
+    transition: all 0.2s ease-in-out;
+}
+
+/* 题目列表弹窗样式已优化，移除高度限制 */
+
+/* 题目链接样式 */
+.problem-list-detail a.badge {
+    text-decoration: none !important;
+    display: inline-block;
+}
+
+.problem-list-detail a.badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    opacity: 0.9;
+}
+
+.problem-list-detail a.badge:active {
+    transform: translateY(0);
+}
+
+/* 题目列表网格布局 - 更紧凑的间距 */
+.problem-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 4px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    /* 允许内容换行而不是撑出滚动条 */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* 题目项目样式 - 更大字体，更小外框 */
+.problem-item-valid,
+.problem-item-invalid {
+    position: relative;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    padding: 2px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.problem-item-valid {
+    color: #495057;
+}
+
+.problem-item-invalid {
+    color: #6c757d;
+}
+
+/* 题目项目悬停效果 */
+.problem-item-valid:hover {
+    color: #212529 !important;
+    transform: translateY(-1px);
+}
+
+.problem-item-invalid:hover {
+    color: #495057 !important;
+}
+
+/* 题目删除按钮样式 - 使用 Bootstrap 5 原生样式 */
+.problem-delete-btn {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    font-size: 11px;
+    line-height: 1;
+    background: #dc3545;
+    border: 2px solid white;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    /* 默认隐藏 */
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.problem-delete-btn:hover {
+    background: #c82333 !important;
+    transform: scale(1);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* 使用 Bootstrap 5 的悬停显示效果 */
+.problem-item-valid:hover .problem-delete-btn,
+.problem-item-invalid:hover .problem-delete-btn {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* 状态图标容器样式 */
+.status-icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.375rem;
+    transition: all 0.15s ease-in-out;
+    min-width: 2.5rem;
+    height: 2rem;
+}
+
+.status-icon-container:hover {
+    background-color: rgba(13, 110, 253, 0.1);
+    transform: translateY(-1px);
+}
+
+.status-icon {
+    font-size: 1.1rem;
+    transition: all 0.15s ease-in-out;
+}
+
+.status-icon-container:hover .status-icon {
+    transform: scale(1.1);
+}
+
+/* 删除图标容器样式 */
+.delete-icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.375rem;
+    transition: all 0.15s ease-in-out;
+    width: 1.8rem;
+    height: 1.8rem;
+    color: #dc3545;
+}
+
+.delete-icon-container:hover {
+    background-color: rgba(220, 53, 69, 0.1);
+    transform: translateY(-1px);
+}
+
+.delete-icon {
+    font-size: 1rem;
+    transition: all 0.15s ease-in-out;
+}
+
+.delete-icon-container:hover .delete-icon {
+    transform: scale(1.1);
+    color: #dc3545;
+}
+
+/* 确保状态和操作列居中 */
+.table td[data-field="defunct"],
+.table td[data-field="delete"] {
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* 评测机ID列样式美化 */
+.judger-id-container {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    text-decoration: none;
+    color: #495057;
+    font-weight: 500;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.85rem;
+    padding: 0.25rem 0.5rem;
+    transition: all 0.15s ease-in-out;
+    cursor: pointer;
+}
+
+.judger-id-container:hover {
+    color: #0d6efd;
+    transform: translateY(-1px);
+    text-decoration: none;
+}
+
+.judger-id-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    width: 100%;
+}
+
+.judger-id-link:hover {
+    text-decoration: none;
+}
+
+.judger-id-link i {
+    font-size: 0.75rem;
+    color: #6c757d;
+    transition: color 0.15s ease-in-out;
+    margin-right: 0.25rem;
+}
+
+.judger-id-container:hover .judger-id-link i {
+    color: #0d6efd;
+}
+
+.judger-id-text {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* 密码显示样式 */
+.judger-password-display {
+    font-size: 0.6rem;
+    color: #6c757d;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+
+
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    user-select: text;
+    cursor: text;
+
+
+}
+
+/* 当密码输入框为明文状态时显示密码 */
+#judger_password_input[type="text"] ~ * .judger-password-display,
+#judger_password_input[type="text"] + * .judger-password-display {
+    opacity: 1;
+}
+
+/* 通过父级容器检测密码输入框状态 */
+.card-header:has(#judger_password_input[type="text"]) .judger-password-display {
+    opacity: 1;
+}
+
+/* 兼容性：当密码输入框为明文时，显示所有密码 */
+body:has(#judger_password_input[type="text"]) .judger-password-display {
+    opacity: 1;
+}
+
+/* 确保ID列左对齐 */
+.table td[data-field="user_id"] {
+    text-align: left;
+    vertical-align: middle;
+}
+
+/* 序号列样式 - 数字叠在图标上 */
+.judger-index-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.375rem;
+    transition: all 0.15s ease-in-out;
+    position: relative;
+    width: 2.5rem;
+    height: 2rem;
+}
+
+.judger-index-container:hover {
+    background-color: #e7f1ff;
+    transform: translateY(-1px);
+}
+
+.judger-copy-icon {
+    font-size: 1.2rem;
+    color: #6c757d;
+    opacity: 0.6;
+    transition: all 0.15s ease-in-out;
+    position: absolute;
+    z-index: 1;
+}
+
+.judger-index-container:hover .judger-copy-icon {
+    color: #0d6efd;
+    opacity: 0.8;
+    transform: scale(1.1);
+}
+
+.judger-index-number {
+    font-weight: 700;
+    font-size: 0.875rem;
+    color: #495057;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+    transform: translateY(-1px);
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+
+/* 确保序号列居中 */
+.table td[data-field="serial"] {
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* 连接列样式 - 单个状态图标 */
+.connection-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.375rem;
+    transition: all 0.15s ease-in-out;
+    min-width: 2.5rem;
+    height: 2rem;
+}
+
+.connection-container:hover {
+    background-color: rgba(13, 110, 253, 0.1);
+    transform: translateY(-1px);
+}
+
+.connection-status-icon {
+    font-size: 1.2rem;
+    transition: all 0.15s ease-in-out;
+}
+
+.connection-container:hover .connection-status-icon {
+    transform: scale(1.1);
+}
+
+/* 确保连接列居中 */
+.table td[data-field="accesstime"] {
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* 题目限制列紧凑样式 */
+.pro-list-compact {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+    min-width: 3rem;
+}
+
+.pro-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.1rem;
+    justify-content: center;
+}
+
+.pro-count {
+    display: flex;
+    justify-content: center;
+}
+
+.pro-count-badge {
+    font-size: 0.6rem;
+    padding: 0.15rem 0.3rem;
+    cursor: pointer;
+}
+
+.pro-list-compact .badge {
+    font-size: 0.6rem;
+    padding: 0.15rem 0.3rem;
+    margin: 0;
+}
+
+/* 语言限制列紧凑样式 */
+.language-row {
+    display: flex;
+    justify-content: center;
+    gap: 0.1rem;
+    margin-bottom: 0.1rem;
+}
+
+.language-row:last-child {
+    margin-bottom: 0;
+}
+
+.language-badge-compact {
+    font-size: 0.6rem;
+    padding: 0.15rem 0.25rem;
+    border-radius: 0.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    white-space: nowrap;
+    display: inline-block;
+    margin: 0;
+}
+
+.language-badge-compact:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    opacity: 0.9;
+}
+
+/* 保持原有语言徽章样式（用于弹窗等） */
+.language-badge {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    white-space: nowrap;
+    display: inline-block;
+}
+
+.language-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    opacity: 0.9;
+}
+
+/* 语言列表弹窗样式 */
+.language-list-detail {
+    max-width: 500px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.language-list-detail .badge {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.6rem;
+    margin: 0.1rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.language-list-detail .d-flex {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* 登录日志模态框样式 */
+.login-log-detail {
+    max-width: 600px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.login-log-detail .table {
+    font-size: 0.85rem;
+    margin-bottom: 0;
+}
+
+.login-log-detail .table th {
+    font-size: 0.8rem;
+    font-weight: 600;
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    padding: 0.5rem 0.25rem;
+}
+
+.login-log-detail .table td {
+    padding: 0.4rem 0.25rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.login-log-detail .table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.login-log-detail .text-success {
+    color: #198754 !important;
+}
+
+.login-log-detail .text-danger {
+    color: #dc3545 !important;
+}
+
+.login-log-detail .bi-check-circle,
+.login-log-detail .bi-x-circle {
+    font-size: 1rem;
+    margin-right: 0.25rem;
+}
+
+/* 登录日志模态框按钮样式 */
+.login-log-detail .btn-sm {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    transition: all 0.15s ease-in-out;
+}
+
+.login-log-detail .btn-sm:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.login-log-detail .btn-outline-primary:hover {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+
+.login-log-detail .btn-outline-info:hover {
+    background-color: #0dcaf0;
+    border-color: #0dcaf0;
+    color: white;
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+    .table-toolbar .d-flex {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .toolbar-group {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .toolbar-select,
+    .toolbar-input {
+        width: 100% !important;
+    }
+}
+
+/* 评测参数设置页面样式
+   ************************************************** */
+
+/* 修改状态样式 - 淡蓝色阴影 + 小黄星 */
+.form-control.modified {
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    border-color: #86b7fe;
+}
+
+.form-control.modified:focus {
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25), 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* CSG Switch 修改状态样式 */
+.csg-switch-setting.modified .csg-switch-input {
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    border-color: #86b7fe;
+}
+
+.csg-switch-setting.modified .csg-switch-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25), 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* CSG Select 修改状态样式 */
+.csg-select-input.modified {
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    border-color: #86b7fe;
+}
+
+.csg-select-input.modified:focus {
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25), 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* 小黄星样式 */
+.modified-indicator {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    color: #ffc107;
+    font-size: 12px;
+    z-index: 10;
+    background: white;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* 表单项容器需要相对定位 */
+.form-field-container {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+/* 数字输入框容器 */
+.form-control-container {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+/* CSG Switch 容器 */
+.csg-switch-container {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+/* CSG Select 容器 */
+.csg-select-container {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+/* 数字输入框验证样式 */
+.number-validation-tooltip {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 2px;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    border-radius: 0.25rem;
+    z-index: 10;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.number-validation-tooltip.text-success {
+    background-color: #d1edff;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.number-validation-tooltip.text-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* 数字输入框验证状态 */
+.number-input.is-valid {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.number-input.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.number-input.is-valid:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.number-input.is-invalid:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* 评测机列表header样式 - 前缀输入框容器样式已在上方定义 */
+
+.card-header .input-group .form-control {
+    font-size: 0.8rem;
+    text-transform: lowercase;
+    font-family: monospace;
+}
+
+.card-header .input-group .form-control:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.card-header .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+}
+
+.card-header .btn-outline-success:hover {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+.card-header .btn-outline-success:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.card-header .btn-outline-success:disabled:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+.card-header small {
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    background-color: #f8f9fa;
+    border-radius: 0.25rem;
+    border: 1px solid #dee2e6;
+}
+
+/* 前缀输入框提示气泡样式 */
+.prefix-tooltip {
+    position: absolute;
+    background: #dc3545;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 9999;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    animation: tooltipFadeIn 0.2s ease-in-out;
+}
+
+@keyframes tooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -1,0 +1,232 @@
+/* 运行信息查看器样式 */
+.runinfo-viewer-container {
+    background: #f8f9fa;
+    border-radius: 0.375rem;
+    overflow: hidden;
+}
+
+.runinfo-viewer-content {
+    max-height: 80vh;
+    overflow: auto;
+    background: #ffffff;
+    padding: 0.5rem 1rem; /* 增加左右内边距，避免表格贴边 */
+}
+
+/* 文本代码块样式（与代码查看器风格保持一致） */
+.runinfo-viewer-content pre {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.runinfo-viewer-content code {
+    display: block;
+    padding: 1rem;
+    background: transparent;
+    border: none;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* 未通过用例摘要 */
+.failed-cases-summary {
+    display: flex;
+    justify-content: flex-start; /* 靠左排列，让数字靠近文字 */
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.75rem 0.5rem; /* 更紧凑的上下与左右间距 */
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.failed-cases-summary .title {
+    flex: none; /* 不再占满一行，避免把数字推远 */
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.failed-cases-summary .en-text {
+    display: block;
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin: 0;
+}
+
+.failed-cases-summary .count {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #dc3545;
+    margin-left: 0.25rem; /* 与标题保持紧密间距 */
+}
+
+/* 表格样式优化 */
+.runinfo-viewer-content .table {
+    margin-bottom: 0;
+}
+
+.runinfo-viewer-content .table th {
+    background-color: #f8f9fa;
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+
+.runinfo-viewer-content .table td {
+    vertical-align: middle;
+    color: #212529;
+}
+
+/* 增加表格单元格内边距，避免内容贴边 */
+.runinfo-viewer-content .table th,
+.runinfo-viewer-content .table td {
+    padding: 0.6rem 0.75rem;
+}
+
+/* 测试点样式 */
+.runinfo-viewer-content .font-monospace {
+    font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.875rem;
+}
+
+/* 结果标签样式 */
+.runinfo-viewer-content .badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    font-weight: 500;
+}
+
+/* 与代码查看器统一的滚动代码换行规则 */
+.runinfo-viewer-content pre,
+.runinfo-viewer-content code {
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    word-break: break-all;
+    tab-size: 4;
+    -moz-tab-size: 4;
+    -o-tab-size: 4;
+}
+
+/* 提交ID标签样式 */
+.solution-info {
+    background: rgba(13, 110, 253, 0.05);
+    border-radius: 0.375rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid rgba(13, 110, 253, 0.1);
+    transition: all 0.2s ease;
+}
+
+.solution-info:hover {
+    background: rgba(13, 110, 253, 0.08);
+    border-color: rgba(13, 110, 253, 0.2);
+    transform: translateY(-1px);
+}
+
+.solution-info .badge {
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: 'Fira Code', monospace;
+    letter-spacing: 0.025em;
+}
+
+/* 错误信息样式 */
+.runinfo-viewer-content .alert {
+    margin: 1rem;
+    border-radius: 0.375rem;
+}
+
+/* 滚动条样式 */
+.runinfo-viewer-content::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.runinfo-viewer-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.runinfo-viewer-content::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.runinfo-viewer-content::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+    .runinfo-viewer-content {
+        max-height: 70vh;
+    }
+    
+    .runinfo-viewer-content .card {
+        margin: 0.5rem;
+    }
+    
+    .runinfo-viewer-content .table td,
+    .runinfo-viewer-content .table th {
+        padding: 0.5rem;
+    }
+    
+    .solution-info {
+        padding: 0.25rem;
+    }
+    
+    .runinfo-viewer-content pre,
+    .runinfo-viewer-content code {
+        font-size: 12px;
+    }
+}
+
+/* 标题栏样式优化 */
+.modal-header {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modal-header .modal-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* 错误详情单元格可点击样式 */
+.error-detail-cell-clickable {
+    cursor: pointer;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+    position: relative;
+}
+
+.error-detail-cell-clickable:hover {
+    background-color: #f8f9fa;
+    opacity: 0.9;
+}
+
+.error-detail-cell-clickable:active {
+    background-color: #e9ecef;
+    opacity: 0.85;
+}
+
+.error-detail-cell-clickable i {
+    vertical-align: middle;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.error-detail-cell-clickable:hover i {
+    opacity: 1;
+}

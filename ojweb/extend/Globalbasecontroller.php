@@ -31,14 +31,30 @@ class Globalbasecontroller extends Controller
         $this->OJMode();
         $this->InitController();
     }
+    
+    /**
+     * 检查用户初始化状态
+     * 如果用户表为空，且当前访问的不是初始化页面，则跳转到初始化页面
+     */
+    protected function checkUserInitialization() {        
+        // 如果是初始化页面本身（包括 AJAX 请求），则跳过检查，避免循环重定向
+        if($this->module != 'ojtool' || $this->controller != 'userinit') {
+            $userCount = db('users')->count();
+            if($userCount == 0) {
+                // 用户表为空，跳转到初始化页面
+                $this->redirect('/ojtool/userinit');
+            }
+            return;
+        }
+    }
     public function InitController() {}
     public function OJMode()
     {
-        $this->OJ_MODE = config('OJ_ENV.OJ_MODE');
+        $this->OJ_MODE = GetOjMode();
         $this->OJ_STATUS = config('OJ_ENV.OJ_STATUS');
         $this->OJ_OPEN_OI = config('OJ_ENV.OJ_OPEN_OI');
         $this->OJ_OPEN_ARCHIVE = config('OJ_ENV.OJ_OPEN_ARCHIVE');
-        $this->OJ_ADMIN = config('OjAdmin.' . $this->OJ_MODE);
+        $this->OJ_ADMIN = GetOjAdminConfig();
         $this->OJ_NAME = config('OJ_ENV.OJ_NAME');
         $this->OJ_SSO = config('OJ_ENV.OJ_SSO');
         if($this->OJ_SSO === 0 || strtolower($this->OJ_SSO) === 'false') {
@@ -81,6 +97,9 @@ class Globalbasecontroller extends Controller
         $this->assign('OJ_SESSION_PREFIX', $this->OJ_SESSION_PREFIX);
         $this->assign('OJ_ADDITION_LINK', config('OJ_ENV.OJ_ADDITION_LINK'));
         $this->OJ_MODE_ALLOW_MODULE = config('OjMode.OJ_MODE_ALLOW_MODULE');
+
+        
+        $this->checkUserInitialization();   // 首用户逻辑
         if(!in_array($this->module, $this->OJ_MODE_ALLOW_MODULE[$this->OJ_MODE][$this->OJ_STATUS]) && !IsAdmin('administrator')) {
             $this->redirect('/' . $this->OJ_MODE_ALLOW_MODULE[$this->OJ_MODE][$this->OJ_STATUS][0]);
         }

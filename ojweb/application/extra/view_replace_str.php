@@ -18,4 +18,5 @@ return [
     '__CPC__'       => '/cpcsys',
     '__OJTOOL__'    => '/ojtool',
     '__CONTEST__'   => '/contest',
+    '__OUTRANK__'   => '/outrank',
 ];

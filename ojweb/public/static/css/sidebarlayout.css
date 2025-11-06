@@ -1,14 +1,16 @@
 body {
     height: 100%;
     background-image: url(/static/image/global/badge_background.png);
-    background-attachment:fixed;
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 main {
     position: relative;
-    max-width:1280px;
-    padding-right: 30px;
-    padding-left: 30px;
-    padding-top: 10px;
+    max-width: 1280px;
+    padding: 1rem 2rem;
+    margin: 0 auto;
 }
 header{
     position: fixed;
@@ -22,119 +24,398 @@ header{
     margin-top: 0;
     margin-left: 0;
     margin-right: 0;
-    padding-top: 25px;
+    padding: 0;
     width: 100%;
     height: 100px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+/* Logo 水印背景 */
+.brand-watermark {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.watermark-logo {
+    width: 200px;
+    object-fit: contain;
+    object-position: center bottom;
+    opacity: 0.08;
+    filter: grayscale(100%) brightness(1.2);
+    transition: opacity 0.3s ease;
+    transform: translateY(40%);
+}
+
+.cpc-navbar:hover .watermark-logo {
+    opacity: 0.12;
+}
+
+/* 品牌内容容器 */
+.brand-content {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 20px;
+    width: 100%;
+}
+
+.brand-main {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+}
+
+.brand-link {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.brand-link:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* 品牌文本容器 */
+.brand-text-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    text-align: left;
+    width: 100%;
+}
+
+/* 品牌标题 - 自适应字号 */
 .cpc-brand,
 .cpc-brand:hover,
 .cpc-brand:focus,
 .cpc-brand:active,
 .cpc-brand:visited{
     text-decoration:none;
-    color: #EEEEEE;
+    color: #FFFFFF;
     background: none;
     opacity: 1;
+    margin: 0;
+    font-size: 2.5rem; /* 默认大字号 */
+    font-weight: 700;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+    line-height: 1.1;
+    text-align: left;
+    width: auto;
 }
-.cpc-brand
-{
-    margin-left: 20px;
-    font-size: 28px;
-    color: #EEEEEE;
+
+/* 根据文本长度自适应字号 */
+.cpc-brand[data-text*="CCPCOJ"] { font-size: 2.2rem; }
+.cpc-brand[data-text*="Online Judge"] { font-size: 1.8rem; }
+.cpc-brand[data-text*="Contest System"] { font-size: 1.6rem; }
+.cpc-brand[data-text*="Experiment System"] { font-size: 1.4rem; }
+.cpc-brand[data-text*="Admin Panel"] { font-size: 1.8rem; }
+.cpc-brand[data-text*="Training Team"] { font-size: 1.6rem; }
+.cpc-brand[data-text*="Tools"] { font-size: 2.5rem; }
+
+/* 通用长文本适配 */
+.cpc-brand[data-text]:not([data-text*="CCPCOJ"]):not([data-text*="Online Judge"]):not([data-text*="Contest System"]):not([data-text*="Experiment System"]):not([data-text*="Admin Panel"]):not([data-text*="Training Team"]):not([data-text*="Tools"]) {
+    font-size: clamp(1.2rem, 4vw, 2.5rem);
 }
-.cpc-brand-subtitle
-{
-    float:right;
-    margin-right: 30px;
+
+.brand-link:hover .cpc-brand {
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    transform: translateY(-1px);
+}
+
+/* 副标题容器 */
+.brand-subtitle-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    margin-top: 8px;
+    padding-bottom: 8px;
+    text-align: left;
+    gap: 8px;
+}
+
+.cpc-brand-subtitle {
+    position: relative;
     font-size: 14px;
     color: #EEEEEE;
+    font-weight: 500;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    line-height: 1.4;
+    transition: all 0.3s ease;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
+
+.brand-link:hover .cpc-brand-subtitle {
+    color: #FFFFFF;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* 副标题主要内容 */
+.subtitle-main {
+    display: inline;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    text-align: left;
+}
+
+/* 品牌区域中的英文副标题样式 - 横向排列 */
+.cpc-brand-subtitle .en-text {
+    display: inline !important;
+    font-size: 0.7em;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 400;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    line-height: 1.3em;
+    margin-left: 0;
+    margin-top: 0;
+    font-style: italic;
+    opacity: 0.9;
+    letter-spacing: 0.2px;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.brand-link:hover .cpc-brand-subtitle .en-text {
+    color: rgba(255, 255, 255, 0.95);
+    opacity: 1;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
 
 .sidebar {
     display: block;
-    padding-top: 10px;
-    padding-left: 0;
-    padding-right: 0;
-    width:100%;
+    padding: 1rem 0;
+    width: 100%;
     height: 100% !important;
     z-index: 1000;
     overflow-x: hidden;
-    overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
-    background-color: #fafafa;
-    border-right: 1px solid #eee;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+    border-right: 1px solid #dee2e6;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
-#user_panel
-{
-    padding-left: 15px;
-    padding-right: 20px;
+#user_panel {
+    padding: 0;
+    margin-bottom: 0.5rem;
+    background-color: transparent;
+    border-radius: 0;
+    margin-left: 0;
+    margin-right: 0;
 }
+/* Bootstrap 5 颜色系统更新 */
 .cpc-navbar.cpc-navbar-csgoj {
-    background-color: #428BCA;
+    background-color: #0d6efd;
 }
+.cpc-navbar.cpc-navbar-csgoj .cpc-brand-subtitle .en-text {
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+}
+
 .cpc-navbar.cpc-navbar-expsys {
-    background-color: #5F338A;
+    background-color: #6f42c1;
 }
+.cpc-navbar.cpc-navbar-expsys .cpc-brand-subtitle .en-text {
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+}
+
 .cpc-navbar.cpc-navbar-cr {
-    background-color: #5cb85c;
+    background-color: #198754;
 }
+.cpc-navbar.cpc-navbar-cr .cpc-brand-subtitle .en-text {
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+}
+
 .cpc-navbar.cpc-navbar-index {
-    background-color: #222222;
+    background-color: #212529;
 }
+.cpc-navbar.cpc-navbar-index .cpc-brand-subtitle .en-text {
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+}
+
 .cpc-navbar.cpc-navbar-cpcsys {
-    background-color: #f0ad4e;
+    background-color: #fd7e14;
 }
+.cpc-navbar.cpc-navbar-cpcsys .cpc-brand-subtitle .en-text {
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+}
+
 .cpc-navbar.cpc-navbar-admin {
-    background-color: #d9534f;
+    background-color: #dc3545;
 }
+.cpc-navbar.cpc-navbar-admin .cpc-brand-subtitle .en-text {
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+}
+
 .cpc-navbar.cpc-navbar-tt {
-    background-color: #023692;
+    background-color: #0d6efd;
 }
+.cpc-navbar.cpc-navbar-tt .cpc-brand-subtitle .en-text {
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+}
+
 .cpc-navbar.cpc-navbar-ojtool {
     background-color: #20c997;
 }
+.cpc-navbar.cpc-navbar-ojtool .cpc-brand-subtitle .en-text {
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+}
 @media (max-width: 768px)
 {
-    /*窄页面菜单toggle按钮样式*/
-    .icon-bar {
-        display: block;
-        width: 22px;
-        height: 2px;
-        background-color: #cccccc;
-        border-radius: 1px;
-    }
+    /*窄页面菜单toggle按钮样式 - Bootstrap 5 更新*/
     .cpc-nav-toggle
     {
-        /* background-color: #eee; */
         position: absolute;
-        top: 5px;
-        right: 10px;
-        height: 30px;
-        border: 1px solid #eee;
+        top: 0.5rem;
+        right: 1rem;
+        height: 2.5rem;
+        width: 2.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 0.375rem;
+        background-color: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
     }
-    /*窄页面navbar置顶横向占满*/
+    
+    .cpc-nav-toggle:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: scale(1.05);
+    }
+    
+    .hamburger {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+    }
+    
+    .icon-bar {
+        display: block;
+        width: 18px;
+        height: 2px;
+        background-color: #EEEEEE;
+        border-radius: 1px;
+        margin: 2px 0;
+        transition: all 0.3s ease;
+        transform-origin: center;
+    }
+    
+    .cpc-nav-toggle:hover .icon-bar {
+        background-color: #FFFFFF;
+    }
+    
+    .cpc-nav-toggle[aria-expanded="true"] .icon-bar:nth-child(1) {
+        transform: rotate(45deg) translate(5px, 5px);
+    }
+    
+    .cpc-nav-toggle[aria-expanded="true"] .icon-bar:nth-child(2) {
+        opacity: 0;
+    }
+    
+    .cpc-nav-toggle[aria-expanded="true"] .icon-bar:nth-child(3) {
+        transform: rotate(-45deg) translate(7px, -6px);
+    }
+    /*窄页面navbar置顶横向占满 - Bootstrap 5 优化*/
     .cpc-navbar
     {
-        display: block;
-        padding-top: 5px;
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
         width: 100%;
-        height: 45px;
+        height: 3.5rem;
     }
-    .cpc-brand
-    {
-        float: left;
-        width:150px;
-        display: inline-block;
-        margin-left: auto;
-        text-align: center;
-        font-size: 24px;
+    
+    .brand-content {
+        padding: 0 10px;
     }
-    .cpc-brand-subtitle
-    {
-        float: left;
-        display: inline-block;
-        margin-left: 5px;
-        text-align: center;
-        font-size: 24px;
+    
+    .brand-main {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .brand-link {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .brand-text-container {
+        width: 100%;
+        align-items: flex-start;
+    }
+    
+    .cpc-brand {
+        font-size: 1.8rem !important; /* 移动端固定字号 */
+        text-align: left;
+    }
+    
+    .brand-subtitle-container {
+        align-items: flex-start;
+        margin-top: 6px;
+        padding-bottom: 6px;
+        gap: 6px;
+    }
+    
+    .cpc-brand-subtitle {
+        font-size: 12px;
+        text-align: left;
+        line-height: 1.4;
+        gap: 6px;
+    }
+    
+    .cpc-brand-subtitle .en-text {
+        font-size: 0.65em;
+        text-align: left;
+        margin-top: 0;
+        color: rgba(255, 255, 255, 0.85) !important;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+    }
+    
+    /* 移动端水印Logo调整 */
+    .watermark-logo {
+        width: 200px;
+        opacity: 0.06;
+        transform: translateY(40%);
     }
 
     .sidebar
@@ -145,7 +426,8 @@ header{
         display: block !important;
     }
     main {
-        margin-top: 40px;
+        margin-top: 3.5rem;
+        padding: 1rem;
     }
     .cpc-brand-img{
         display: none;
@@ -160,6 +442,7 @@ header{
     {
         overflow: hidden;
         position: relative;
+        padding: 0;
     }
     .sidebar {
         display: block !important;
@@ -174,12 +457,59 @@ header{
     {
         margin-left: 200px;
     }
-    .cpc-brand-img
-    {
-        position: absolute;
-        left: 0;
-        top: 0;
-        opacity: 0.15;
+    
+    /* 桌面端品牌区域优化 */
+    .brand-content {
+        padding: 20px 15px 20px 25px;
+    }
+    
+    .brand-main {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .brand-link {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .brand-text-container {
+        width: 100%;
+        align-items: flex-start;
+    }
+    
+    .cpc-brand {
+        text-align: left;
+    }
+    
+    .brand-subtitle-container {
+        align-items: flex-start;
+        margin-top: 8px;
+        padding-bottom: 8px;
+        gap: 8px;
+    }
+    
+    .cpc-brand-subtitle {
+        font-size: 14px;
+        text-align: left;
+        line-height: 1.4;
+        gap: 8px;
+    }
+    
+    .cpc-brand-subtitle .en-text {
+        display: inline !important;
+        font-size: 0.7em;
+        text-align: left;
+        margin-top: 0;
+        color: rgba(255, 255, 255, 0.85) !important;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+    }
+    
+    /* 桌面端水印Logo */
+    .watermark-logo {
+        width: 200px;
+        opacity: 0.08;
+        transform: translateY(40%);
     }
 }
 @media (min-width: 1730px)
@@ -195,8 +525,9 @@ header{
     .sidebar
     {
         background-color: #ffffff;
-        border-right: 1px solid #eee;
-        border-left: 1px solid #eee;
+        border-right: 1px solid #dee2e6;
+        border-left: 1px solid #dee2e6;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     }
 }
 
@@ -235,6 +566,42 @@ header{
         margin-left: calc(50% - 540px);
     }
 }
+/* Bootstrap 5 导航样式优化 */
 .nav-flush .nav-link {
     border-radius: 0;
+}
+
+/* 导航链接悬停效果 */
+.sidebar .nav-link {
+    color: #495057;
+    padding: 0.75rem 1rem;
+    border-radius: 0.375rem;
+    margin: 0.125rem 0.5rem;
+    transition: all 0.15s ease-in-out;
+}
+
+.sidebar .nav-link:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+    color: #0d6efd;
+}
+
+.sidebar .nav-link.active {
+    background-color: #0d6efd;
+    color: #ffffff;
+    font-weight: 500;
+}
+
+/* 激活状态下的英文文本颜色 */
+.sidebar .nav-link.active .en-text {
+    color: rgba(255, 255, 255, 0.8) !important;
+    opacity: 0.9 !important;
+}
+
+/* 响应式导航优化 */
+@media (max-width: 767.98px) {
+    .sidebar .nav-link {
+        padding: 1rem;
+        margin: 0.25rem 0;
+        border-radius: 0;
+    }
 }

@@ -1,190 +1,318 @@
-<div class="page-header">
-    <h1>
-        Edit Contest
-    </h1>
-</div>
-{include file="../../csgoj/view/public/bootstrap_select" /}
-
-    <form id="contest_edit_form" method='post' action="/{$module}/admin/{$action}_ajax?cid={$contest['contest_id']}">
-        <div class="row">
-            <div class="col-md-12 col-sm-12">
-                <div class="form-inline">
-                    <label for="start_time" style="width:150px;">Start Time:</label>
-                    <label for="year">Year</label>     <input type="text" class="form-control" name="start_year"  style="width:80px;" value="{$start_year}">
-                    <label for="Month">Month</label>   <input type="text" class="form-control" name="start_month" style="width:50px;" value="{$start_month}">
-                    <label for="Day">Day</label>       <input type="text" class="form-control" name="start_day"   style="width:50px;" value="{$start_day}">
-                    <label for="Hour">Hour</label>     <input type="text" class="form-control" name="start_hour"  style="width:50px;" value="{$start_hour}">
-                    <label for="Minute">Minute</label> <input type="text" class="form-control" name="start_minute"style="width:50px;" value="{$start_minute}">
-                </div>
-                <div class="form-inline">
-                    <label for="end_time" style="width:150px;">End Time:</label>
-                    <label for="year">Year</label>     <input type="text" class="form-control" name="end_year"  style="width:80px;" value="{$end_year}">
-                    <label for="Month">Month</label>   <input type="text" class="form-control" name="end_month" style="width:50px;" value="{$end_month}">
-                    <label for="Day">Day</label>       <input type="text" class="form-control" name="end_day"   style="width:50px;" value="{$end_day}">
-                    <label for="Hour">Hour</label>     <input type="text" class="form-control" name="end_hour"  style="width:50px;" value="{$end_hour}">
-                    <label for="Minute">Minute</label> <input type="text" class="form-control" name="end_minute"style="width:50px;" value="{$end_minute}">
-                </div>
-                <div class="form-inline">
-                    <label for="start_time" style="width:150px;">Award Ratio:</label>
-                    <label for="ratio_gold">Gold</label>     <input type="text" class="form-control" name="ratio_gold"  style="width:80px;" value="{$ratio_gold}">
-                    <label for="ratio_silver">Silver</label>   <input type="text" class="form-control" name="ratio_silver" style="width:80px;" value="{$ratio_silver}">
-                    <label for="ratio_bronze">Bronze</label>       <input type="text" class="form-control" name="ratio_bronze"   style="width:80px;" value="{$ratio_bronze}">
-                </div>
-                {if $OJ_STATUS == 'cpc'}
-                <div class="form-inline">
-                    <label for="start_time" style="width:150px;">Frozen Minutes:</label>
-                    <label for="ratio_gold">Before End</label>     <input type="text" class="form-control" name="frozen_minute"  style="width:80px;" value="{$frozen_minute}">
-                    <label for="ratio_silver">After End</label>   <input type="text" class="form-control" name="frozen_after" style="width:80px;" value="{$frozen_after}">
-                </div>
-                <div class="form-inline">
-                    <label for="start_time" style="width:150px;">Top Team Number for School Rank:</label>
-                    <input type="text" class="form-control" name="topteam"  style="width:80px;" value="{$topteam}">
-                </div>
-                {else /}
-                <div class="form-inline">
-                    <input type="hidden" class="form-control" name="frozen_minute"  style="width:80px;" value="0">
-                    <input type="hidden" class="form-control" name="frozen_after" style="width:80px;" value="0">
-                </div>
-                <div class="form-inline">
-                    <input type="hidden" class="form-control" name="topteam"  style="width:80px;" value="1">
-                </div>
-                {/if}
-
-                <div class="form-inline">
-                    <span style="display: inline-block;">
-                        <label for="language" style="width:150px;">Language:</label>
-                        <?php $ojLang = config('CsgojConfig.OJ_LANGUAGE'); ?>
-                        <select name="language[]" class="selectpicker" multiple="multiple">
-                            {foreach($ojLang as $k=>$val) }
-                            <option value="{$k}" {if (($contest['langmask'] >> $k) & 1)}selected="selected"{/if}>
-                                {$val}
-                            </option>
-                            {/foreach}
-                        </select>
-                        &nbsp;&nbsp;
-                    </span>
-                </div>
-                <label for="description">Description/Announcement (markdown)：</label>
-                <textarea id="contest_description" class="form-control" placeholder="Content..." rows="5" cols="50" name="description" >{$contest['description']|htmlspecialchars}</textarea>
-            </div>
+<?php 
+$edit_mode = $module == 'admin' ? $edit_mode : true;
+$copy_mode = isset($copy_mode) ? $copy_mode : false;
+?>
+<div class="admin-page-header">
+    <div class="admin-page-header-left">
+        <div class="admin-page-header-icon">
+            <i class="bi bi-trophy"></i>
         </div>
-        <input type="hidden" id='id_input' value="{$contest['contest_id']}" name="cid">
-        <button type="submit" id="submit_button" class="btn btn-primary">Modify Contest</button>
-    </form>
-<input type="hidden" id='page_info' edit_mode="1">
-<style type="text/css">
-.form-inline {
-    padding-bottom: 10px;
-}
-</style>
-<script type="text/javascript">
-    var page_info = $('#page_info');
-    var edit_mode = page_info.attr('edit_mode');
-    var submit_button = $('#submit_button');
-    var submit_button_text = submit_button.text();
-    $(document).ready(function()
-    {
-        $('input[type="text"],textarea').tooltipster({
-            trigger: 'custom',
-            position: 'bottom',
-            animation: 'grow',
-            theme: 'tooltipster-noir',
-            distance: -15
-        });
-        $('#contest_edit_form').validate({
-            rules:{
-                title:{
-                    required: true,
-                    maxlength: 200
-                },
-                description: {
-                    maxlength: 16384
-                },
-                password:{
-                    minlength: 6,
-                    maxlength: 15
-                },
-                ratio_gold: {
-                    number: true,
-                    max: 999,
-                    min: 0
-                },
-                ratio_silver: {
-                    number: true,
-                    max: 999,
-                    min: 0
-                },
-                ratio_bronze: {
-                    number: true,
-                    max: 999,
-                    min: 0
-                },
-                frozen_minute: {
-                    number: true,
-                    max: 2592000,
-                    min: -1
-                },
-                frozen_after: {
-                    number: true,
-                    max: 2592000,
-                    min: -1
-                },
-                topteam: {
-                    number: true,
-                    max: 20,
-                    min: 1
-                }
-            },
-            errorPlacement: function (error, element) {
-                var ele = $(element),
-                    err = $(error),
-                    msg = err.text();
-                if (msg != null && msg !== '') {
-                    ele.tooltipster('content', msg);
-                    ele.tooltipster('open');
-                }
-            },
-            unhighlight: function(element, errorClass, validClass) {
-                $(element).removeClass(errorClass).addClass(validClass).tooltipster('close');
-            },
-            submitHandler: function(form)
-            {
-                submit_button.attr('disabled', true);
-                submit_button.text('Waiting...');
-                $(form).ajaxSubmit({
-                    success: function(ret)
-                    {
-                        if(ret['code'] == 1)
-                        {
-                            if(typeof(ret['data']['alert']) != 'undefined' && ret['data']['alert'] == true){
-                                alertify.alert(ret['msg']);
-                            }else{
-                                alertify.success(ret['msg']);
-                            }
-                            button_delay(submit_button, 3, submit_button_text);
-                            if(edit_mode != '1') {
-                                setTimeout(function(){location.href='contest_edit?id='+ret['data']['id']}, 500);
-                            }
-                        }
-                        else
-                        {
-                            alertify.alert(ret['msg']);
-                            button_delay(submit_button, 3, submit_button_text);
-                        }
-                        return false;
-                    }
-                });
-                return false;
+        <h1 class="admin-page-header-title">
+            <div class="admin-page-header-title-main">
+                {if $edit_mode && !$copy_mode }
+                    编辑比赛
+                {else /}
+                    添加比赛
+                {/if}
+            </div>
+            <div class="admin-page-header-title-right">
+                {if $edit_mode && !$copy_mode }
+                <a href="__OJ__/contest/problemset?cid={$contest['contest_id']}" target="_blank" class="admin-page-header-id">
+                    <i class="bi bi-hash"></i> {$contest['contest_id']}
+                </a>
+                {/if}
+                {if $edit_mode && !$copy_mode }
+                <span class="en-text">Edit Contest</span>
+                {else /}
+                <span class="en-text">Add Contest</span>
+                {/if}
+            </div>
+        </h1>
+    </div>
+    {if $module == 'admin'}
+        {if $edit_mode && !$copy_mode }
+        <div class="admin-page-header-actions">
+            <button type="button" class="btn btn-success btn-sm" 
+                    data-modal-url="__ADMIN__/filemanager/filemanager?item={$controller}&id={$contest['contest_id']}" 
+                    data-modal-title="附件管理 - 比赛 #{$contest['contest_id']} - {$contest['title']|mb_substr=0,150,'utf-8'}..."
+                    title="附件管理 (File Manager)">
+                <span><i class="bi bi-paperclip"></i> 附件</span><span class="en-text">Attach</span>
+            </button>
+            <?php $defunct = $contest['defunct']; $item_id = $contest['contest_id']; ?>
+            {include file="../../admin/view/admin/changestatus_button" /}
+        </div>
+        {/if}
+    {/if}
+</div>
+
+{if $module == 'admin'}
+    {include file="../../admin/view/contest/problem_selection" /}
+
+    <script>
+    // 初始化比赛编辑页面的题号输入组件
+    document.addEventListener('DOMContentLoaded', function() {
+        // 创建题号输入组件
+        const problemInput = createProblemInput('contest_problem_input', {
+            max: 26,
+            allowDuplicates: false,
+            allowInvalid: false,
+            showCount: true,
+            showActions: true,
+            onChange: function(csv, component) {
+                // 可以在这里添加额外的变化处理逻辑
             }
         });
-    });
-    $(window).keydown(function(e) {
-        if (e.keyCode == 83 && e.ctrlKey) {
-            e.preventDefault();
-            var a=document.createEvent("MouseEvents");
-            a.initEvent("click", true, true);
-            $('#submit_button')[0].dispatchEvent(a);
+        
+        // 设置题目选择器确认回调
+        window.onProblemSelectionConfirm = function(problemIds) {
+            problemInput.addProblems(problemIds);
+        };
+        
+        // 如果有初始值（编辑模式），设置到组件中
+        const initialValue = '{if $edit_mode}{$problems}{/if}';
+        if (initialValue && initialValue !== '') {
+            problemInput.setValue(initialValue);
         }
+        
+        // 确保初始化后触发气球颜色更新
+        setTimeout(() => {
+            if (typeof window.InitBalloonColorPreview === 'function') {
+                window.InitBalloonColorPreview();
+            }
+        }, 100);
     });
+    </script>
+{/if}
 
+<?php 
+$action_url = $module == 'admin' ? '/admin/contest/' : '/' . $module . '/admin/';
+$cid_suffix = $module == 'admin' ? '' : '?cid=' . $contest['contest_id'];
+$action_url .= ($edit_mode && !$copy_mode ? 'contest_edit_ajax' : 'contest_add_ajax') . $cid_suffix;
+?>
+
+<form id="contest_edit_form" method='post' action="{$action_url}">
+    <div class="container">
+        {if $module == 'admin'}
+            <!-- Contest Type Selection - Top Priority -->
+            <div class="form-group mb-4">
+                <label for="private" class="bilingual-label">比赛类型：<span class="en-text">Contest Type</span></label>
+                <div class="d-grid gap-2">
+                    <div class="row g-2">
+                        <div class="col-3">
+                            <button type="button" class="btn btn-success contest-type-btn active bilingual-button w-100" data-private="0" aria-pressed="true">
+                                <span><i class="bi bi-unlock"></i> 公开</span><span class="en-text">Public</span>
+                            </button>
+                        </div>
+                        <div class="col-3">
+                            <button type="button" class="btn btn-warning contest-type-btn bilingual-button w-100" data-private="0" data-encrypted="true" aria-pressed="false">
+                                <span><i class="bi bi-shield-lock"></i> 加密</span><span class="en-text">Encrypted</span>
+                            </button>
+                        </div>
+                        <div class="col-3">
+                            <button type="button" class="btn btn-danger contest-type-btn bilingual-button w-100" data-private="1" aria-pressed="false">
+                                <span><i class="bi bi-lock"></i> 私有</span><span class="en-text">Private</span>
+                            </button>
+                        </div>
+                        <div class="col-3">
+                            <button type="button" class="btn btn-primary contest-type-btn bilingual-button w-100" data-private="2" aria-pressed="false">
+                                <span><i class="bi bi-award"></i> 标准</span><span class="en-text">Standard</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" name="private" id="private_value" value="{if $edit_mode}{$private}{else/}0{/if}">
+            </div>
+        {/if}
+        <div class="form-group mb-4" id="password_group" style="display: none;">
+            <label for="password" class="bilingual-label">密码：<span class="en-text">Password</span></label>
+            <input type="text" class="form-control" id="password" name="password" placeholder="输入比赛密码..." {if $edit_mode}value="{$contest['password']}"{/if}>
+        </div>
+
+        <div class="row">
+            <div class="col-md-9" id="main_content_column">
+                {if $module == 'admin'}
+                    <div class="form-group mb-3">
+                        <label for="title" class="bilingual-label">比赛标题：<span class="en-text">Contest Title</span></label>
+                        <input type="text" class="form-control" id="title" placeholder="输入比赛标题..." name="title" {if $edit_mode && !$copy_mode}value="{$contest['title']}"{/if}>
+                    </div>
+                {/if}
+                <!-- 时间设置 -->
+                <div class="form-group mb-3">
+                    <label class="bilingual-label">开始时间：<span class="en-text">Start Time</span></label>
+                    <div class="row g-2">
+                        <div class="col-2">
+                            <input type="text" class="form-control form-control-sm" id="start_year" name="start_year" 
+                                    title="年 (Year)" placeholder="年" value="{$start_year}">
+                        </div>
+                        <div class="col-2">
+                            <input type="text" class="form-control form-control-sm" id="start_month" name="start_month" 
+                                    title="月 (Month)" placeholder="月" value="{$start_month}">
+                        </div>
+                        <div class="col-2">
+                            <input type="text" class="form-control form-control-sm" id="start_day" name="start_day" 
+                                    title="日 (Day)" placeholder="日" value="{$start_day}">
+                        </div>
+                        <div class="col-2">
+                            <input type="text" class="form-control form-control-sm" id="start_hour" name="start_hour" 
+                                    title="时 (Hour)" placeholder="时" value="{$start_hour}">
+                        </div>
+                        <div class="col-2">
+                            <input type="text" class="form-control form-control-sm" id="start_minute" name="start_minute" 
+                                    title="分 (Minute)" placeholder="分" value="{$start_minute}">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label class="bilingual-label">结束时间：<span class="en-text">End Time</span></label>
+                    <div class="row g-2">
+                        <div class="col-2">
+                            <input type="text" class="form-control form-control-sm" id="end_year" name="end_year" 
+                                    title="年 (Year)" placeholder="年" value="{$end_year}">
+                        </div>
+                        <div class="col-2">
+                            <input type="text" class="form-control form-control-sm" id="end_month" name="end_month" 
+                                    title="月 (Month)" placeholder="月" value="{$end_month}">
+                        </div>
+                        <div class="col-2">
+                            <input type="text" class="form-control form-control-sm" id="end_day" name="end_day" 
+                                    title="日 (Day)" placeholder="日" value="{$end_day}">
+                        </div>
+                        <div class="col-2">
+                            <input type="text" class="form-control form-control-sm" id="end_hour" name="end_hour" 
+                                    title="时 (Hour)" placeholder="时" value="{$end_hour}">
+                        </div>
+                        <div class="col-2">
+                            <input type="text" class="form-control form-control-sm" id="end_minute" name="end_minute" 
+                                    title="分 (Minute)" placeholder="分" value="{$end_minute}">
+                        </div>
+                    </div>
+                </div>
+                <!-- 奖项比例设置 -->
+                <div class="form-group mb-3">
+                    <label class="bilingual-label">奖项比例 (%)：<span class="en-text">Award Ratio (%)</span></label>
+                    <div class="row g-2">
+                        <div class="col-3">
+                            <input type="text" class="form-control form-control-sm" id="ratio_gold" name="ratio_gold" 
+                                    placeholder="金牌" title="金奖比例 (Ratio of Gold)" value="{$ratio_gold}">
+                        </div>
+                        <div class="col-3">
+                            <input type="text" class="form-control form-control-sm" id="ratio_silver" name="ratio_silver" 
+                                    placeholder="银牌" title="银奖比例 (Ratio of Silver)" value="{$ratio_silver}">
+                        </div>
+                        <div class="col-3">
+                            <input type="text" class="form-control form-control-sm" id="ratio_bronze" name="ratio_bronze" 
+                                    placeholder="铜牌" title="铜奖比例 (Ratio of Bronze)" value="{$ratio_bronze}">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 封榜时间设置 -->
+                <div class="form-group mb-3">
+                    <label class="bilingual-label">封榜时间 (分钟)：<span class="en-text">Frozen Minutes</span></label>
+                    <div class="row g-2">
+                        <div class="col-3">
+                            <input type="text" class="form-control form-control-sm" id="frozen_minute" name="frozen_minute" 
+                                    placeholder="结束前" title="结束前 (Before End)" value="{$frozen_minute}">
+                        </div>
+                        <div class="col-3">
+                            <input type="text" class="form-control form-control-sm" id="frozen_after" name="frozen_after" 
+                                    placeholder="结束后" title="结束后 (After End)" value="{$frozen_after}">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="topteam" class="bilingual-label">前 N 队合计学校排名：<span class="en-text">Top N Teams for School Rank</span></label>
+                    <input type="text" class="form-control" id="topteam" name="topteam" placeholder="输入数字..." title="前 N 队题目罚时之和作为学校排名依据" value="{$topteam}">
+                </div>
+                <!-- 编程语言选择 -->
+                <div class="form-group mb-3">
+                    <label for="language" class="bilingual-label">允许的编程语言：<span class="en-text">Allowed Programming Languages</span></label>
+                    <?php 
+                    $ojLang = config('CsgojConfig.OJ_LANGUAGE');
+                    $selectedLanguages = [];
+                    if ($edit_mode) {
+                        foreach($ojLang as $k => $val) {
+                            if (($contest['langmask'] >> $k) & 1) {
+                                $selectedLanguages[] = $k;
+                            }
+                        }
+                    }
+                    ?>
+                    <select name="language[]" class="form-select" multiple size="6">
+                        {foreach($ojLang as $k=>$val) }
+                        <option value="{$k}" {if $edit_mode && (($contest['langmask'] >> $k) & 1)}selected="selected"{/if}>
+                            {$val}
+                        </option>
+                        {/foreach}
+                    </select>
+                    <div class="form-text">
+                        <span class="bilingual-inline">
+                            <span>按住 Ctrl 键选择多个语言</span>
+                            <span class="en-text">Hold Ctrl to select multiple languages</span>
+                        </span>
+                    </div>
+                </div>
+                
+            {if $module == 'admin'}
+                <!-- 题目设置 -->
+                <div class="form-group mb-3">
+                    <div id="contest_problem_input"></div>
+                </div>
+                
+                {include file="../../admin/view/contest/balloon_color_selection" /}
+            {/if}
+                <!-- 描述和公告 -->
+                <div class="form-group mb-3">
+                    <label for="contest_description" class="bilingual-label">描述或公告 (支持 Markdown)：<span class="en-text">Description & Announcement (Markdown supported)</span></label>
+                    <textarea id="contest_description" class="form-control" placeholder="输入比赛描述或公告..." rows="6" name="description">{if $edit_mode}{$contest['description']|htmlspecialchars}{/if}</textarea>
+                </div>
+            </div>
+            
+            {if $module == 'admin'}
+                <!-- 参赛用户列 -->
+                <div class="col-md-3" id="users_column" style="display: none;">
+                    <div class="form-group mb-3">
+                        <label for="users" class="bilingual-label">参赛用户 (每行一个用户ID)：<span class="en-text">Contest Users (one user ID per line)</span></label>
+                        <textarea class="form-control" id="users" placeholder="team001&#10;team002&#10;..." rows="20" name="users">{if $edit_mode && !$copy_mode}{$users}{/if}</textarea>
+                        <div class="form-text">
+                            <span class="bilingual-inline">
+                                <span>每行输入一个用户ID</span>
+                                <span class="en-text">One user ID per line</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            {/if}
+        </div>
+        
+        <!-- 提交按钮 -->
+        <div class="form-group mb-3">
+            {if $edit_mode && !$copy_mode }
+            <input type="hidden" id="id_input" value="{$contest['contest_id']}" name="contest_id">
+            {/if}
+            <button type="submit" id="submit_button" class="btn btn-primary bilingual-button">
+                <span><i class="bi bi-check-circle"></i>
+                {if $edit_mode && !$copy_mode}
+                修改比赛</span><span class="en-text">Modify Contest</span>
+                {else}
+                添加比赛</span><span class="en-text">Add Contest</span>
+                {/if}
+            </button>
+        </div>
+    </div>
+</form>
+
+<script>
+    window.CONTEST_EDIT_CONFIG = {
+        edit_mode: <?php echo $module != 'admin' || $edit_mode && !$copy_mode ? 1 : 0; ?>,
+    }
 </script>
+
+    
+{js file="__STATIC__/csgoj/contest/admin_contest_edit.js" /}
+{if $module == 'admin'}
+    {css file="__STATIC__/csgoj/admin/contest.css" /}
+    {js file="__STATIC__/csgoj/admin/contest.js" /}
+{/if}

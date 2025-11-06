@@ -1,25 +1,24 @@
-<div><h4 style="display: inline; ">Problem Tried (<strong class="text-warning"><?php echo count($triedlist); ?></strong>): </h4>(Contests not included)</div>
-<div class="md_display_div">
-    <table>
-        <thead><tr><?php for($i = 0; $i < $problem_oneline; $i ++): ?><th></th><?php endfor; ?></tr></thead>
-        <tbody>
-        <tr>
-            <?php
-            $i = 0;
-            foreach($triedlist as $solved)
+<div class="problem-section">
+    <div class="section-header">
+        <h4 class="section-title">
+            已尝试题目<span class="en-text">Problem Tried</span>
+        </h4>
+        <span class="badge bg-warning"><?php echo count($triedlist); ?></span>
+    </div>
+    <p class="text-muted small">(竞赛题目不计入)<span class="en-text">(Contests not included)</span></p>
+    <div class="problem-grid">
+        <?php
+        $i = 0;
+        foreach($triedlist as $solved)
+        {
+            echo "<a href='/csgoj/problemset/problem?pid=".$solved['problem_id']."' class='problem-link tried'>".$solved['problem_id']."</a>";
+            $i++;
+            if($i == $problem_oneline)
             {
-                echo "<td><a href='/".request()->module()."/problemset/problem?pid=".$solved['problem_id']."'>".$solved['problem_id']."</a></td>";
-                $i ++;
-                if($i == $problem_oneline)
-                {
-                    $i = 0;
-                    echo "</tr><tr>";
-                }
+                $i = 0;
+                echo "<br>";
             }
-            echo "</pre>";
-            ?>
-        </tr>
-        <tr><tr><?php for($i = 0; $i < $problem_oneline; $i ++): ?><th></th><?php endfor; ?></tr>
-        </tbody>
-    </table>
+        }
+        ?>
+    </div>
 </div>

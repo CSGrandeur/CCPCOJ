@@ -37,14 +37,6 @@ function FormatterAuthor(value, row, index, field) {
         .map(item => item.replace(/<p>|<\/p>/g, '').trim())
         .filter(Boolean))].join(', ') : value;
 }
-function FormatterSource(value, row, index) {
-    let tmpv = value.replace(/(<([^>]+)>)/ig, "");
-    if("<p>" + tmpv + "</p>" == value) {
-        let search_url = "/csgoj/problemset#search=" + tmpv;
-        return "<a href='" + search_url + "'>" + tmpv + "</a>";
-    }
-    return value;
-}
 let toobar_ok = $('#toobar_ok');
 let page_jump_input = $('#page_jump_input');
 let problemarchive_table = $('#problemarchive_table');

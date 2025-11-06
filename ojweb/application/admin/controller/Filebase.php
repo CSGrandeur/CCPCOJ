@@ -30,7 +30,7 @@ class Filebase extends Adminbase
     public function FilebaseInit()
     {
         $this->filenameRe = "/^[0-9a-zA-Z-_\\.\\(\\)]+\\.(jpg|png|gif|bmp|svg|ico)$/";
-        $this->filenameReMsg = "<br/>Only jpg|png|gif|bmp|svg|ico with <strong>alphanumeric file name</strong> allowed";
+        $this->filenameReMsg = "<br/>只允许包含字母数字的文件名<br/>Only jpg|png|gif|bmp|svg|ico with <strong>alphanumeric file name</strong> allowed";
         $this->maxFileSize = config('CsgojConfig.OJ_UPLOAD_ATTACH_MAXSIZE');
         $this->assign('maxfilesize', $this->maxFileSize);
         $this->maxFileNum = config('CsgojConfig.OJ_UPLOAD_MAXNUM');
@@ -68,6 +68,7 @@ class Filebase extends Adminbase
         }
         $this->itemInfo = db($this->inputInfo['item'])
             ->where($this->inputInfo['item'] . '_id', $this->inputInfo['id'])
+            ->field('attach,title')
             ->find();
         if (!$this->itemInfo) {
             //无此条目
@@ -93,7 +94,7 @@ class Filebase extends Adminbase
         $totalChunks = request()->post('totalChunks');
         $fileName = request()->post('fileName');
 
-        if (!preg_match($this->filenameRe, strtolower($fileName))) {
+        if (!preg_match($this->filenameRe, $fileName)) {
             $this->error($fileName . ": 文件名不合法(Name not valid)");
         }
         $finalDir = $this->inputInfo['path'];
@@ -165,7 +166,7 @@ class Filebase extends Adminbase
         $atLeastOneFile = 0;
         foreach ($files as $file) {
             $filename = $file->getinfo('name');
-            if (!preg_match($this->filenameRe, strtolower($filename))) {
+            if (!preg_match($this->filenameRe, $filename)) {
                 $infolist .= "<br/>" . $filename . ": 文件名不合法(Name not valid)";
                 continue;
             }

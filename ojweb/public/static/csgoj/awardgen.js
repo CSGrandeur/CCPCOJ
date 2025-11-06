@@ -664,7 +664,6 @@ document.getElementById('help_icon_span').addEventListener('click', function() {
     if (copyButton.length) {
         copyButton.unbind('click').on('click', async ()=>{
             const codeElement = document.getElementById('template_code').innerText;
-            console.log(121, codeElement)
             if(await ClipboardWrite(codeElement)) {
                 alertify.success('Template Copied');
             } else {

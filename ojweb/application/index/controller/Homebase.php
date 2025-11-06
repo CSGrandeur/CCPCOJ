@@ -11,7 +11,6 @@ use \Globalbasecontroller;
 class Homebase extends Globalbasecontroller
 {
     var $staticPage;
-    var $homeCategory;
     var $maxTag;
     var $tagLength;
     var $category;
@@ -29,13 +28,11 @@ class Homebase extends Globalbasecontroller
     public function BaseInit()
     {
         $this->staticPage         = config('CsgcpcConst.STATIC_PAGE');
-        $this->homeCategory     = config('CsgcpcConst.HOME_CATEGORY');
         $this->maxTag             = config('CsgcpcConst.MAX_TAG');
         $this->tagLength         = config('CsgcpcConst.TAG_LENGTH');
         $this->category            = strtolower($this->request->controller());
         $this->assign([
             'staticPage'     => $this->staticPage,
-            'homeCategory'     => $this->homeCategory,
             'maxTag'        => $this->maxTag,
             'tagLengh'        => $this->tagLength,
             'category'        => $this->category,

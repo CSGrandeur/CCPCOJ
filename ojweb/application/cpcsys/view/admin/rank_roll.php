@@ -1,0 +1,1 @@
+{include file="../../csgoj/view/admin/rank_roll" /}

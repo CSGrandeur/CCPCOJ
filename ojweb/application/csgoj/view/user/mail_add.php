@@ -1,20 +1,23 @@
 {include file="../../csgoj/view/user/mail_header" /}
 <form role="form" id="topic_add_form" action="mail_add_ajax" method="POST">
-    <div class="form-group">
-        <label for="user_id" >*To User:</label>
+    <div class="mb-3">
+        <label for="user_id" class="form-label">*To User:</label>
         <input type="text" name="user_id" class="form-control" style="width:200px;" >
-        <label for="title">*Mail Title：</label>
+    </div>
+    <div class="mb-3">
+        <label for="title" class="form-label">*Mail Title：</label>
         <input type="text" name="title" placeholder="1~64 characters" class="form-control" style="max-width:900px;" >
-        <label for="content">Mail Content：</label>
+    </div>
+    <div class="mb-3">
+        <label for="content" class="form-label">Mail Content：</label>
         <textarea class="form-control" rows="20" name="content" spellcheck="false" placeholder="^_^" style="max-width:900px;" ></textarea>
     </div>
-    <div class="form-inline">
-        <label>*V-Code ：</label>
+    <div class="mb-3">
+        <label class="form-label">*V-Code ：</label>
         <input type="text" class="form-control" placeholder="Verification Code" name="vcode" required>
         <label for="vcode" class="notification_label"></label>
     </div>
-    <br/>
-    <button type="submit" id='submit_button' class="btn btn-primary" style="margin-right: ;">Send Mail</button>
+    <button type="submit" id='submit_button' class="btn btn-primary">Send Mail</button>
     <label id="vcode">{:captcha_img()}</label>
 </form>
 

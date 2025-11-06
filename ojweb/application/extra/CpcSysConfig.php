@@ -15,7 +15,9 @@ return [
     // userinfo_rule、userinfo_msg用于验证用户注册信息的预定义规则
     'teaminfo_rule'    => [
         'team_id'    => ['require', 'min:3', 'max:30', '/^[a-zA-Z0-9_]+$/'],
-        'name'         => 'max:64',
+        'name'         => 'max:100',
+        'name_en'     => 'max:120',
+        'region'      => 'max:100',
         'tmember'     => 'max:100',
         'school'     => 'max:64',
         'coach'     => 'max:32',
@@ -26,12 +28,14 @@ return [
         'team_id.min'                 => 'User ID should have more than 5 characters.',
         'team_id.max'                 => 'User ID should not exceed 30 characters.',
         'team_id./^[a-zA-Z0-9_]+$/' => 'Only number, letters and underlines are allowed for User ID.',
-        'name.max'                    => 'Team name should not exceed 64 characters.',
+        'name.max'                    => 'Team name should not exceed 100 characters.',
+        'name_en.max'                 => 'English team name should not exceed 120 characters.',
+        'region.max'                  => 'Region should not exceed 100 characters.',
         'tmember.max'                    => 'Members should not exceed 100 characters.',
         'school.max'                => 'School name should not exceed 64 characters.',
         'coach.max'                => 'Coach name should not exceed 32 characters.',
         'password.min'                => 'Password should have more than 6 characters.',
-        'password.max'                => 'Password should have less than 64 characters.'
+        'password.max'                => 'Password should have less than 250 characters.'
     ],
     'userinfo_rule'	=> [
 		'user_id'	=> ['require', 'min:5', 'max:20', '/^[a-zA-Z0-9_]+$/'],

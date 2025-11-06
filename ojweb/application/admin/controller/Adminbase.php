@@ -4,12 +4,13 @@ use think\Controller;
 use \Globalbasecontroller;
 class Adminbase extends Globalbasecontroller
 {
-    var $privilegeName;            // 该controller对应的权限名称字符串，problem_editor
-    var $privilegePrefix;        // 该controller对应的权限前缀，pro_
-    var $privilegeStr;            // controller名字和对应权限名字一致
-    var $ojAdminList;            // problem_editor 映射为网页显示的 Problem Editor 的映射表
+    var $privilegeName;         // 该controller对应的权限名称字符串，problem_editor
+    var $privilegePrefix;       // 该controller对应的权限前缀，pro_
+    var $privilegeStr;          // controller名字和对应权限名字一致
+    var $ojAdminList;           // problem_editor 映射为网页显示的 Problem Editor 的映射表
     var $ojPreAdmin;            // 前缀 pro_ 映射为 problem_editor 的映射表
-    var $ojItemPri;                // problem 映射为前缀 pro_  的映射表
+    var $ojItemPri;             // problem 映射为前缀 pro_  的映射表
+    var $inputInfo;             // 子类会用到的输入信息
     public function _initialize()
     {
         $this->OJMode();
@@ -80,10 +81,34 @@ class Adminbase extends Globalbasecontroller
     public function AttachFolderCalculation($randStr = '')
     {
         //为了题目导入导出不影响附件路径，用固定文件夹名存数据库
-        $day = date('Y-m-d');
-        $suffix = time() . $randStr . rand();
-        $suffixStr = strtoupper(substr(md5($suffix), 0, 16));
-        return $day . '_' . $suffixStr;
+        $day = date('y-m-d');
+        $uuid = $this->generateUuid4();
+        return $day . '-' . $uuid;
+    }
+    
+    /**
+     * 生成 UUID v4
+     * @return string UUID v4 格式字符串
+     */
+    private function generateUuid4()
+    {
+        // 生成 16 字节随机数据
+        $data = random_bytes(16);
+        
+        // 设置 UUID 版本为 4
+        $data[6] = chr(ord($data[6]) & 0x0f | 0x40); // version 4
+        // 设置变体
+        $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // variant
+        
+        // 格式化为 UUID 字符串
+        return sprintf(
+            '%08s-%04s-%04s-%04s-%012s',
+            bin2hex(substr($data, 0, 4)),
+            bin2hex(substr($data, 4, 2)),
+            bin2hex(substr($data, 6, 2)),
+            bin2hex(substr($data, 8, 2)),
+            bin2hex(substr($data, 10, 6))
+        );
     }
     public function GetCooperator($item_id)
     {

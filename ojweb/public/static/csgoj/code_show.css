@@ -1,0 +1,333 @@
+/* 代码查看器样式 */
+.code-viewer-container {
+    background: #f8f9fa;
+    border-radius: 0.375rem;
+    overflow: hidden;
+}
+
+.code-viewer-content {
+    max-height: 80vh;
+    overflow: auto;
+    background: #ffffff;
+}
+
+.code-viewer-content pre {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.code-viewer-content code {
+    display: block;
+    padding: 1rem;
+    background: transparent;
+    border: none;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* 行号样式 */
+.code-with-lines {
+    display: flex;
+    background: #ffffff;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.code-line-numbers {
+    background: #f8f9fa;
+    border-right: 1px solid #dee2e6;
+    padding: 1rem 0.5rem;
+    text-align: right;
+    user-select: none;
+    color: #6c757d;
+    min-width: 3rem;
+    flex-shrink: 0;
+    white-space: pre;
+    overflow: hidden;
+}
+
+.code-content {
+    flex: 1;
+    overflow-x: auto;
+    background: #ffffff;
+}
+
+.code-content pre {
+    margin: 0;
+    padding: 1rem;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.code-content code {
+    display: block;
+    background: transparent;
+    border: none;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* 高亮主题 - GitHub风格 */
+.code-content .hljs {
+    background: #ffffff !important;
+    color: #24292e !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    margin: 0 !important;
+    border: none !important;
+}
+
+/* 语言标识样式 */
+.language-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Modal标题栏样式 */
+#code_show_modal_title .text-primary {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    letter-spacing: 0.025em;
+}
+
+#code_show_modal_title .en-text .text-primary {
+    font-size: 0.8em;
+}
+
+/* 代码信息区域美化 */
+.language-info {
+    background: rgba(13, 110, 253, 0.05);
+    border-radius: 0.375rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid rgba(13, 110, 253, 0.1);
+    transition: all 0.2s ease;
+}
+
+.language-info:hover {
+    background: rgba(13, 110, 253, 0.08);
+    border-color: rgba(13, 110, 253, 0.2);
+    transform: translateY(-1px);
+}
+
+.language-info .badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+    border-radius: 0.25rem;
+}
+
+.solution-info {
+    background: rgba(108, 117, 125, 0.05);
+    border-radius: 0.375rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid rgba(108, 117, 125, 0.1);
+    transition: all 0.2s ease;
+}
+
+.solution-info:hover {
+    background: rgba(108, 117, 125, 0.08);
+    border-color: rgba(108, 117, 125, 0.2);
+    transform: translateY(-1px);
+}
+
+.solution-info span {
+    font-size: 0.8rem;
+    letter-spacing: 0.025em;
+}
+
+/* 代码换行样式优化 */
+.code-content pre,
+.code-content code,
+.code-content .hljs {
+    /* 保持代码格式的同时支持换行 */
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    
+    /* 长单词强制换行 */
+    word-break: break-all;
+    
+    /* 换行时保持缩进 */
+    tab-size: 4;
+    -moz-tab-size: 4;
+    -o-tab-size: 4;
+}
+
+/* 换行指示符 - 在行尾显示换行标记 */
+.code-content pre::after,
+.code-content code::after {
+    content: '';
+}
+
+/* 确保行号与代码行对齐 */
+.code-with-lines {
+    align-items: flex-start;
+}
+
+/* 紧凑元信息样式 */
+.code-meta-compact {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.code-meta-compact span {
+    white-space: nowrap;
+}
+
+.code-meta-compact i {
+    font-size: 0.75rem;
+    opacity: 0.7;
+}
+
+/* 下拉菜单样式 */
+#meta_dropdown_menu {
+    min-width: 200px;
+}
+
+#meta_dropdown_menu .dropdown-item-text {
+    padding: 0.25rem 1rem;
+    font-size: 0.875rem;
+    color: #495057;
+}
+
+#meta_dropdown_menu .dropdown-header {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6c757d;
+    padding: 0.5rem 1rem 0.25rem;
+}
+
+/* 复制按钮状态 */
+.btn-copied {
+    background-color: #198754 !important;
+    border-color: #198754 !important;
+    color: white !important;
+}
+
+/* 标题栏样式优化 */
+.modal-header {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modal-header .modal-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* 紧凑按钮样式 */
+.code-actions .btn {
+    padding: 0.25rem 0.5rem;
+    min-width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+    .code-meta-compact {
+        display: none !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .code-viewer-content {
+        max-height: 70vh;
+    }
+    
+    .code-viewer-content pre,
+    .code-viewer-content code,
+    .hljs {
+        font-size: 12px !important;
+    }
+    
+    .code-line-numbers {
+        min-width: 2.5rem;
+        font-size: 12px;
+    }
+    
+    
+    .code-info {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 0.5rem;
+    }
+    
+    .language-info,
+    .solution-info {
+        margin-right: 0 !important;
+        margin-bottom: 0.25rem;
+    }
+    
+    .language-info .badge {
+        font-size: 0.65rem;
+    }
+    
+    .solution-info span {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .code-actions .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .code-actions .btn i {
+        margin-right: 0 !important;
+    }
+}
+
+/* 滚动条样式 */
+.code-viewer-content::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.code-viewer-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.code-viewer-content::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.code-viewer-content::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}

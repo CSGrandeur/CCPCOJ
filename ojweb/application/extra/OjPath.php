@@ -13,7 +13,9 @@ return [
     'contest_ATTACH'        => '/upload/contest_attach',        // 比赛描述/注意事项的附件
     'regcontest_ATTACH'     => '/upload/regcontest_attach',     // 报名系统的注意事项附件
     'ex_question_ATTACH'    => '/upload/question_attach',       // 考试题的附件
+    'outrank_ATTACH'        => '/upload/outrank_attach',        // 外榜
     'testdata'              => '/home/judge/data',              //**判题数据管理路径，此项与以上处理方式不同。
+    'judger_config'         => '/upload/judger_config.json',    // 评测机配置文件
 
     'export_problem_temp'   => ROOT_PATH . 'PROBLEM_EXPORT/FILE_TEMP',
     'export_problem'        => ROOT_PATH . 'PROBLEM_EXPORT/EXPORT',

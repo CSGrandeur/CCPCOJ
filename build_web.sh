@@ -1,1 +1,1 @@
-docker build --no-cache -t csgrandeur/ccpcoj-web .
+docker build --no-cache -t csgrandeur/ccpcoj-web2 .

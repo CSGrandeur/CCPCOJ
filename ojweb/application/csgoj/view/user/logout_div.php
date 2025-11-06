@@ -1,38 +1,50 @@
 <div class="logout_div">
-    <label>
-    Hi! <a href="{if $OJ_MODE == 'cpcsys' }__CPC__{else /}__OJ__{/if}/user/userinfo?user_id={$Think.session.user_id}" class="a_noline">{$Think.session.user_id}</a>
-    </label>
-    <div>
-    {if $OJ_SSO != false}
-        <a href="__OJTOOL__/sso/sso_logout"><button class="btn btn-sm btn-primary" type="button" style="margin-top: 5px;">登出</button></a>
-        {if null != $Think.session.sso_login }
-            <a href="{$OJ_SSO}/sso/changepass/" class="a_noline" target="_blank">修改密码</a>
+    <div class="mb-2">
+        <div class="d-flex align-items-center justify-content-between">
+            <small class="text-muted">欢迎回来<span class="en-text">Welcome Back</span></small>
+            {if $OJ_SSO == false}
+            <a href="__OJ__/user/modify?user_id={$Think.session.user_id}" class="a_noline text-muted gear-icon" title="修改信息">
+                <i class="bi bi-gear-fill" style="font-size: 0.9rem; opacity: 0.7;"></i>
+            </a>
+            {/if}
+        </div>
+        <div class="fw-bold">
+            <a href="{if $OJ_MODE == 'cpcsys' }__CPC__{else /}__OJ__{/if}/user/userinfo?user_id={$Think.session.user_id}" class="a_noline text-decoration-none">
+                <i class="bi bi-person-circle"></i> {$Think.session.user_id}
+            </a>
+        </div>
+    </div>
+    <div class="d-grid gap-1">
+        {if $OJ_SSO != false}
+            <a href="__OJTOOL__/sso/sso_logout" class="a_noline">
+                <button class="btn btn-outline-danger btn-sm bilingual-inline" type="button">
+                    <span class="cn-text"><i class="bi bi-box-arrow-right"></i> 登出</span><span class="en-text">Logout</span>
+                </button>
+            </a>
+            <div class="text-center">
+                {if null != $Think.session.sso_login }
+                    <a href="{$OJ_SSO}/sso/changepass/" class="a_noline text-decoration-none small text-muted" target="_blank">
+                        修改密码<span class="en-text">Change Password</span>
+                    </a>
+                {else /}
+                    <a href="{$OJ_SSO}/sso/changepass/notlogin.html" class="a_noline text-decoration-none small text-muted" target="_blank">
+                        修改密码<span class="en-text">Change Password</span>
+                    </a>
+                {/if}
+            </div>
         {else /}
-            <a href="{$OJ_SSO}/sso/changepass/notlogin.html" class="a_noline" target="_blank">修改密码</a>
+            <button class="btn btn-outline-danger btn-sm bilingual-inline" id="logout_button" type="button">
+                <span class="cn-text"><i class="bi bi-box-arrow-right"></i> 登出</span><span class="en-text">Logout</span>
+            </button>
         {/if}
-    {else /}
-        <a href="__OJ__/user/modify?user_id={$Think.session.user_id}" class="a_noline">修改信息</a>
-        <button class="btn btn-sm btn-primary" id="logout_button" type="button" style="margin-top: 5px;">登出</button>
-    {/if}
     </div>
 </div>
 
 <script type="text/javascript">
-    $(document).ready(function(){
-        var logout_button = $('#logout_button');
-        $("#logout_button").unbind('click').click(function(){
-            $.post("{if $OJ_MODE == 'cpcsys' }__CPC__{else /}__OJ__{/if}/User/logout_ajax", function(ret){
-                logout_button.attr('disabled', true);
-                if(ret['code'] == 1){
-                    alertify.success(ret['msg']);
-                    setTimeout(function(){location.reload()}, 500);
-                }
-                else {
-                    alertify.alert(ret['msg']);
-                    location.href = '__OJ__';
-                }
-            });
-            return false;
-        });
-    });
+    // 传递模板变量给JavaScript
+    window.logoutConfig = {
+        logoutUrl: "{if $OJ_MODE == 'cpcsys' }__CPC__{else /}__OJ__{/if}/user/logout_ajax",
+        redirectUrl: "__OJ__"
+    };
 </script>
+{js href="__STATIC__/csgoj/user/login_out.js" /}

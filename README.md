@@ -1,254 +1,390 @@
 # CCPCOJ - 一站式XCPC比赛系统
 
-> [CSGOJ](https://github.com/CSGrandeur/CSGOJ) 分支版本
+> 基于 [CSGOJ](https://github.com/CSGrandeur/CSGOJ) 的分支版本，集成抽签、气球、打印、滚榜等比赛管理功能
 
-集成抽签、气球、打印、滚榜
+🌐 **线上版本**：[https://cpc.csgrandeur.cn/](https://cpc.csgrandeur.cn/)
 
-线上版本：https://cpc.csgrandeur.cn/
+📖 **用户使用说明**：[用户说明书](doc/user_doc.md)
 
-使用方法见：[用户说明书](doc/user_doc.md)
+💬 **技术交流**：QQ群 703241234
 
-技术交流QQ群：703241234
+---
 
+## 📋 目录
 
-### 1. 依赖环境
+- [系统介绍](#系统介绍)
+- [快速开始](#快速开始)
+- [部署指南](#部署指南)
+- [常见问题](#常见问题)
+- [开发者指南](#开发者指南)
 
-推荐：Ubuntu22.04及以上
+---
 
-也可以 windows11以上 + wsl2 + docker for windows
+## 系统介绍
 
-**部署脚本在 `deploy_files/start_scripts`**
+CCPCOJ 是一个功能完整的在线判题系统（Online Judge），专为 XCPC（ICPC/CCPC）等程序设计竞赛设计，提供：
 
-**部署前请确保目标目录（默认为脚本所在目录）有所有读写权限。**
+- ✅ **题目管理**：支持多种题型（传统、特判、交互式）
+- ✅ **比赛管理**：支持正式赛、训练赛、加密赛等多种模式
+- ✅ **评测系统**：分布式评测，支持多种编程语言，可扩展
+- ✅ **比赛功能**：抽签、气球分发、打印服务、滚榜、集成外榜
+- ✅ **用户系统**：角色权限管理、团队管理、个人主页
 
-### 2. 试用部署
+### 系统要求
 
-```bash
-cd deploy_files/start_scripts
-bash auto_deploy.sh --WITH_JUDGE=1
-```
+- **推荐**：Ubuntu 24.04 及以上
+- **可选**：Windows 11 + WSL2 + Docker Desktop
+- **必需**：Docker（Ubuntu下部署脚本会自动安装）
 
-执行完毕后访问 `127.0.0.1:20080`，管理员账号 `admin: 987654321`
+---
 
-### 3. 基本部署
+## 快速开始
 
-#### 3.1 Web端
+### Web 服务器部署
 
-```bash
-bash auto_deploy.sh \
-    --PASS_SQL_ROOT="<数据库root密码>" \
-    --PASS_SQL_USER="<数据库业务用户csgcpc的密码>" \
-    --PASS_JUDGER="<评测机账号judger的密码>" \
-    --PASS_ADMIN="<OJ超级管理员admin的密码>" \
-    --PASS_MYADMIN_PAGE="<数据库phpmyadmin的页面访问用户admin的密码>" \
-    --PORT_OJ="<自定义OJ Web的端口号>"
-```
-
-例如：
+在项目根目录执行：
 
 ```bash
-bash auto_deploy.sh \
-    --PASS_SQL_ROOT="123456" \
-    --PASS_SQL_USER="123456789" \
-    --PASS_JUDGER="999999" \
-    --PASS_ADMIN="666666" \
-    --PASS_MYADMIN_PAGE="333333" \
-    --PORT_OJ=80
+bash csgoj_deploy.sh web
 ```
 
-该脚本会自动安装 docker，并部署 mysql、nginx的容器。
+首次运行会进入交互式配置，按提示填写参数即可。部署完成后访问 `http://<服务器IP>:<端口号>`，首次访问会引导设置管理员账号。
 
-如果系统已有docker环境，mysql、nginx服务器，可以仅启动 OJ Web 容器提供 php-fpm 服务，自行在mysql和nginx做相应配置。
+### 评测机节点部署
 
 ```bash
-bash start_oj.sh \
-    --SQL_HOST="<MySQL IP>" \
-    --SQL_USER="<数据库用户名>" \
-    --PASS_SQL_USER="<你的数据库密码>" \
-    --PASS_ADMIN="666666" \
-    --PASS_JUDGER="999999" \
-    --PORT_OJ=80
+bash csgoj_deploy.sh judge \
+    --CSGOJ_SERVER_BASE_URL=http://<OJ服务器IP或域名>:<端口号> \
+    --CSGOJ_SERVER_USERNAME=<评测机账号> \
+    --CSGOJ_SERVER_PASSWORD=<评测机密码>
 ```
 
+⚠️ **重要提示**：`CSGOJ_SERVER_BASE_URL` 必须使用评测机容器能访问的 IP 地址或域名，**不要使用 `localhost` 或 `127.0.0.1`**。
 
-#### 3.2 评测机
+---
 
-如果评测机在新环境部署，先安装 docker：
+## 部署指南
+
+### 部署脚本说明
+
+`csgoj_deploy.sh` 是统一的部署脚本，支持部署 **Web 服务器** 和 **评测机节点** 两种模式。
+
+### 三种使用模式
+
+#### 1. 命令模式（推荐）
+
+**Web 部署：**
+```bash
+bash csgoj_deploy.sh web [参数...]
+```
+
+**评测机部署：**
+```bash
+bash csgoj_deploy.sh judge [参数...]
+```
+
+#### 2. 交互模式
+
+无参数运行，脚本会引导选择部署内容并配置参数：
 
 ```bash
-bash install_docker.sh
+bash csgoj_deploy.sh
 ```
 
-也可自行参照docker官网安装。
+#### 3. 非交互模式
 
-##### 3.2.1 单机多pod
-
-内核多、内存大、硬盘快的高性能评测机使用
+使用默认值或报错，不进入交互式配置：
 
 ```bash
-bash batch_sub_judge.sh \
-  --OJ_HTTP_BASEURL=<OJ地址> \
-  --PASS_JUDGER=<judger的密码> \
-  --JUDGER_TOTAL=<启动的pod数>
+bash csgoj_deploy.sh --noninteractive [参数...]
 ```
 
-例如
+### 常用参数
+
+#### Web 模式关键参数
+
+| 参数 | 说明 | 默认值 |
+|------|------|--------|
+| `--PATH_DATA` | 数据目录绝对路径 | `$(pwd)/data/csgoj_data` |
+| `--OJ_NAME` | OJ 名称 | `ccpc` |
+| `--PORT_OJ` | Web 服务端口 | `20080` |
+| `--WITH_MYSQL` | 是否部署 MySQL 容器 | `1` |
+| `--SQL_HOST` | MySQL 主机（本地部署为 `db`） | `db` |
+| `--PASS_SQL_USER` | MySQL 业务用户密码 | `987654321` |
+
+#### 评测机模式必需参数
+
+| 参数 | 说明 |
+|------|------|
+| `--CSGOJ_SERVER_BASE_URL` | OJ Web 服务器地址（必填） |
+| `--CSGOJ_SERVER_USERNAME` | 评测机账号（必填） |
+| `--CSGOJ_SERVER_PASSWORD` | 评测机密码（必填） |
+| `--JUDGE_POD_COUNT` | 启动的评测机 pod 数量（默认：`1`） |
+
+#### 评测机 Pod 数量说明
+
+**什么是 Pod？**
+
+Pod 是评测机的工作单元，每个 pod 是一个独立的 Docker 容器，可以并发处理评测任务。启动多个 pod 可以显著提高评测系统的并发处理能力。
+
+**资源要求**
+
+每个 pod 的固定资源需求：
+- **CPU**：4 逻辑核心（固定值）
+- **内存**：4GB + 1GB 共享内存 = 5GB 总计（固定值）
+
+**Pod 数量估算公式**
+
+使用以下公式计算系统可支持的最大 pod 数量：
+
+```
+最大 pod 数 = min((CPU 逻辑核心 - 2) / 4, 内存 GB / 5)
+```
+
+其中：
+- `CPU 逻辑核心 - 2`：保留 2 个核心给系统使用，可用核心用于评测
+- `内存 GB`：总内存（共享内存已包含在 5GB 中，无需额外减去）
+- `除以 4`：每个 pod 需要 4 个 CPU 核心（固定值）
+- `除以 5`：每个 pod 需要 5GB 内存（4GB + 1GB 共享内存，固定值）
+
+**说明**：每个 pod 的资源需求是固定的，不会根据系统资源动态调整。
+
+**示例计算**：
+
+- **小型评测机**（8 CPU / 16GB 内存）：
+  - 基于 CPU：`(8 - 2) / 4 = 1.5` → **1 个 pod**
+  - 基于内存：`16 / 5 = 3.2` → **3 个 pod**
+  - **实际最大**：`min(1, 3) = 1` 个 pod
+
+- **中型评测机**（16 CPU / 32GB 内存）：
+  - 基于 CPU：`(16 - 2) / 4 = 3.5` → **3 个 pod**
+  - 基于内存：`32 / 5 = 6.4` → **6 个 pod**
+  - **实际最大**：`min(3, 6) = 3` 个 pod
+
+- **大型评测机**（32 CPU / 64GB 内存）：
+  - 基于 CPU：`(32 - 2) / 4 = 7.5` → **7 个 pod**
+  - 基于内存：`64 / 5 = 12.8` → **12 个 pod**
+  - **实际最大**：`min(7, 12) = 7` 个 pod
+
+**推荐配置**：
+- **小型评测机**（8 CPU / 16GB）：建议 1 个 pod
+- **中型评测机**（16 CPU / 32GB）：建议 3 个 pod
+- **大型评测机**（32 CPU / 64GB）：建议 7 个 pod
+
+**资源检查**
+
+脚本会自动检查系统资源，如果资源不足：
+- 如果无法启动任何 pod：直接报错退出
+- 如果可以启动部分 pod：发出警告，并提示可启动的最大数量，询问是否继续
+
+**使用示例**
 
 ```bash
-bash batch_sub_judge.sh \
-  --OJ_HTTP_BASEURL=http://url:20080 \
-  --PASS_JUDGER="999999" \
-  --JUDGER_TOTAL=2
+# 启动单个 pod（默认）
+bash csgoj_deploy.sh judge \
+    --CSGOJ_SERVER_BASE_URL=http://192.168.1.100:20080 \
+    --CSGOJ_SERVER_USERNAME=judger \
+    --CSGOJ_SERVER_PASSWORD=your_password
+
+# 启动多个 pod（推荐用于高性能评测机）
+bash csgoj_deploy.sh judge \
+    --CSGOJ_SERVER_BASE_URL=http://192.168.1.100:20080 \
+    --CSGOJ_SERVER_USERNAME=judger \
+    --CSGOJ_SERVER_PASSWORD=your_password \
+    --JUDGE_POD_COUNT=4
 ```
 
-建议参数（估算pod个数的方法）： 
+### 配置文件
 
-满载情况 每个默认pod应有 4个CPU逻辑处理器、4GB可用内存。
+部署完成后，脚本会在 `./data/csgoj_config.cfg` 保存所有配置参数。
 
-可酌情参照“**3.2.4 一些常用的其它定制参数**”进行深度定制。
+**使用方式**：
+- **不提供参数**：自动使用配置文件中的参数
+- **提供参数**：参数会覆盖配置文件中的对应项
+- **忽略配置文件**：使用 `--ignore-config` 参数
 
+**配置文件位置**：
+```
+./data/
+├── csgoj_config.cfg      # 配置文件（支持同时包含 Web 和 Judge 两套配置）
+├── config_log/           # 配置历史日志
+└── csgoj_data/          # 数据目录
+    ├── var/
+    │   ├── www/         # Web 文件
+    │   ├── mysql/       # MySQL 数据
+    │   ├── data/        # 评测数据
+    │   │   └── judge-<OJ名称>/  # 评测机数据目录
+    │   │       └── data/        # 评测工作目录（映射到容器 /judge/data）
+    │   └── log/         # 日志文件
+    └── nginx/           # Nginx 配置
+```
 
+**备份**：只需备份 `./data` 目录即可保留所有配置和数据。
 
-##### 3.2.2 单机单pod
+### 常用操作
 
-性能较差的多台评测机使用
+#### 查看帮助
 
 ```bash
-bash start_judge.sh \
-  --OJ_HTTP_BASEURL=http://url:20080 \
-  --PASS_JUDGER="999999"
+bash csgoj_deploy.sh --help
 ```
 
-##### 3.2.3 多机判题
-
-直接在多个机器分别启pod即可，空闲pod会自行拉取任务。
-
-
-##### 3.2.4 一些常用的其它定制参数
-
-`JUDGE_USER_NAME`
-
-在web端的后台设置了更多评测账号后，可以给不同评测机使用不同评测账号，便于遇到问题时定位评测机
-
-![](doc/deploy_doc_image/user_gen.png)
-
-
-![](doc/deploy_doc_image/user_gen_judger.png)
-
-`JUDGE_PROCESS_NUM`
-
-每个 pod 内的并行评测进程数，默认为 1，如果评测机硬件CPU核较多性能较好，可增加
-
-`JUDGE_DOCKER_CPUS`
-
-每个 pod 限制使用的逻辑处理器个数，默认为 4，对应 `JUDGE_PROCESS_NUM=1` 时的数量需求，每个判题进程至少需要 3 个逻辑处理器，在此基础上可酌情增加。
-
-`JUDGE_DOCKER_MEMORY`
-
-每个 pod 限制使用的内存大小，默认`4g`，对应 `JUDGE_PROCESS_NUM=2` 两个评测进程的内存，可酌情增加，值为整数加字母“g”，比如 `--JUDGE_DOCKER_MEMORY=8g`。
-
-`JUDGE_DOCKER_CPU_OFFSET`
-
-是否让容器绑定 CPU 逻辑处理器，为 0 则表示不绑定，系统自动动态分配逻辑处理器。
-
-如果CPU逻辑处理器数量不多，题目评测压力较大，在设置不满载的情况下仍然出现抢夺CPU资源导致评测波动时，启用该参数，将作为绑定逻辑处理器编号的起始偏移量。
-
-例如将`JUDGE_DOCKER_CPU_OFFSET`设为 2，`JUDGE_DOCKER_CPUS=6`，则第一个pod绑定编号为 `2,3,4,5,6,7` 的逻辑处理器，后续pod顺延。
-
-`JUDGER_TOTAL`
-
-使用`batch_sub_judge.sh`批量启动评测pod时使用该参数设置pod总数，如上文估算方式所述。
-
-`JUDGE_SHM_RUN`
-
-默认为0
-
-如果评测机硬盘较差，可以提供该参数设为 1，让评测机每次复制数据到内存后再执行评测
-
-使用参考：
+#### 重启所有评测机
 
 ```bash
-# 单机单pod
-bash start_judge.sh \
-  --OJ_HTTP_BASEURL=http://url:20080 \
-  --PASS_JUDGER="999999" \
-  --JUDGE_USER_NAME="judger2" \
-  --JUDGE_SHM_RUN=1
-# 单机多pod
-bash batch_sub_judge.sh \
-  --OJ_HTTP_BASEURL=http://url:20080 \
-  --PASS_JUDGER="999999" \
-  --JUDGER_TOTAL=2 \
-  --JUDGE_USER_NAME="judger2" \
-  --JUDGE_SHM_RUN=1
+bash csgoj_deploy.sh judge --restart-all
 ```
 
-`JUDGE_SHM_SIZE`
-
-配合`JUDGE_SHM_RUN`使用，每个pod为评测数据提供的内存文件区大小，默认 `1g`，基本无需修改。使用时传参也为整数加字母“g”，例如`--JUDGE_SHM_RUN=2g`。
-
-
-上述JUDGE参数更具体的建议：
-
-```
-JUDGE_PROCESS_NUM ∈ {1, 2}
-JUDGE_DOCKER_CPUS >= JUDGE_PROCESS_NUM * 3
-JUDGER_TOTAL=⌊ ({CPU逻辑处理器总数}> - 2) / JUDGE_DOCKER_CPUS ⌋
-JUDGE_SHM_RUN=0时：
-JUDGE_DOCKER_MEMORY * JUDGER_TOTAL < {系统内存}, 
-JUDGE_SHM_RUN=1时：
-(JUDGE_DOCKER_MEMORY + JUDGE_SHM_SIZE) * JUDGER_TOTAL < {系统内存}, 
-```
-
-SSD环境下大数据题目30次测试统计，仅供参考：
-
-| 模式   | 常规                | SHM                                | CPU绑定                                        | CPU绑定+SHM                                                      |
-|------|-------------------|------------------------------------|----------------------------------------------|----------------------------------------------------------------|
-| 参数   | --JUDGER_TOTAL=3<br/> | --JUDGER_TOTAL=3<br/>--JUDGE_SHM_RUN=1 | --JUDGER_TOTAL=3<br/>--JUDGE_DOCKER_CPU_OFFSET=2 | --JUDGER_TOTAL=3<br/>--JUDGE_DOCKER_CPU_OFFSET=2<br/>--JUDGE_SHM_RUN=1 |
-| 耗时均值   | 1451.35           | 1443.55                            | 1435.35                                      | 1436.94                                                        |
-| 标准差  | 28.01             | 27.67                              | 25.92                                        | 24.93                                                          |
-| 浮动比率 | 1.93%             | 1.92%                              | 1.81%                                        | 1.73%                                                          |
-
-建议在使用多核较强大的工作站时使用多pod多进程评测。
-
-在普通PC机作为评测机时，运算压力大的题目并行评测的时间波动几乎无法消除，稳妥的方式减少pod（JUDGER_TOTAL）、减少并行进程（JUDGE_PROCESS_NUM）。
-
-##### 3.2.5 关于虚拟机
-
-建议使用实体机作为评测机，不建议使用虚拟机。
-
-虚拟机可能存在虚拟CPU资源波动、虚拟硬盘读写性能差导致高压力题目评测波动的可能。
-
-如果仍要使用虚拟机，优先考虑VMware vsphere Hypervisor等硬件虚拟化能够真实映射CPU逻辑处理器的虚拟平台。
-
-
-#### 3.3 参数日志
-
-第一次执行脚本后会生成一个配置日志目录 “`config_log`”，如果所有参数都敲定了，可以将满意的配置（形如“`csgoj_config_1698330181.cfg`”的文件）复制到与脚本同一级目录并改名为“`csgoj_config.cfg`”，后续执行脚本可不再输入任何参数，参数的调整也可以直接修改`csgoj_config.cfg`文件。
-
-#### 3.4 注意事项
-
-
-- Web服务器一定要保证较好的硬件配置
-    - 否则出现性能瓶颈时，评测机与Web通讯不佳会导致评测结果出问题。
-- 评测机性能没有特殊要求，但和web服务器之间的网络务必通畅
-    - 按照上述cpu、内存需求量估算启动的pod数即可，当然还是建议用性能好一点的
-    - 任何不符合预期的评测问题，优先考虑评测机数据同步问题，如果不能定位评测机具体数据，可在评测机上直接删评测数据目录（`csgoj_data/var/data/judge-csgoj/data`）并重启judge容器（`docker restart judge-xxxx`）
-    - 评测机建议用网线连入网络，不要用wifi，以减少网络波动
-- 初始启动时的所有密码（几个”PASS_”开头的参数）建议只用数字字母，以免特殊符号的密码在配置传递中跨系统时识别出错
-
-脚本默认为 latest 版本，如果需要特定版本，可设置 `--CSGOJ_VERSION`参数指定docker镜像版本
-
-
-### 4. 自行编译及本地部署
+#### 重开所有评测机（删除重建）
 
 ```bash
-cd deploy_files/build_judge
-bash docker_build_base.sh 
+bash csgoj_deploy.sh judge --rebuild-all \
+    --CSGOJ_SERVER_BASE_URL=... \
+    --CSGOJ_SERVER_USERNAME=... \
+    --CSGOJ_SERVER_PASSWORD=...
+```
+
+### 部署流程
+
+#### Web 服务器部署
+
+1. **运行脚本**：`bash csgoj_deploy.sh web`
+2. **首次部署**：按提示配置参数（MySQL、端口等）
+3. **启动服务**：脚本会自动安装 Docker、启动 MySQL、Nginx、PHP 等容器
+4. **访问系统**：浏览器打开 `http://<服务器IP>:20080`
+5. **初始化账号**：首次访问会引导设置管理员和评测机账号
+
+#### 评测机节点部署
+
+1. **准备账号**：在 Web 管理界面创建评测机账号
+2. **运行脚本**：
+   ```bash
+   # 启动单个 pod（默认）
+   bash csgoj_deploy.sh judge \
+       --CSGOJ_SERVER_BASE_URL=http://<Web服务器IP>:<端口号> \
+       --CSGOJ_SERVER_USERNAME=<评测机账号> \
+       --CSGOJ_SERVER_PASSWORD=<评测机密码>
+   
+   # 启动多个 pod（推荐用于高性能评测机）
+   bash csgoj_deploy.sh judge \
+       --CSGOJ_SERVER_BASE_URL=http://<Web服务器IP>:<端口号> \
+       --CSGOJ_SERVER_USERNAME=<评测机账号> \
+       --CSGOJ_SERVER_PASSWORD=<评测机密码> \
+       --JUDGE_POD_COUNT=4
+   ```
+3. **资源检查**：脚本会自动检查 CPU 和内存资源，并根据 pod 数量计算每个 pod 的资源分配
+4. **资源不足处理**：如果资源不足以启动目标数量的 pod，脚本会：
+   - 显示可启动的最大 pod 数量
+   - 提示是否继续启动可用的 pod 数量
+   - 或直接报错退出（如果无法启动任何 pod）
+5. **启动 pod**：脚本会自动启动指定数量的评测机 pod，每个 pod 独立运行，可以并发处理评测任务
+
+### 查看日志
+
+```bash
+# Web 服务日志
+docker logs php-ccpc
+
+# Nginx 日志
+docker logs nginx-server
+
+# MySQL 日志
+docker logs db
+
+# 评测机日志
+docker logs judge-ccpc
+```
+
+---
+
+## 常见问题
+
+### 容器启动失败
+
+查看容器日志：
+```bash
+docker logs <容器名>
+```
+
+### 端口冲突
+
+检查端口占用：
+```bash
+netstat -tuln | grep <端口号>
+```
+
+修改端口配置：
+```bash
+bash csgoj_deploy.sh web --PORT_OJ=8080
+```
+
+### 配置文件问题
+
+忽略配置文件重新配置：
+```bash
+bash csgoj_deploy.sh --ignore-config [其他参数...]
+```
+
+### 注意事项
+
+1. **网络配置**：评测机的 `CSGOJ_SERVER_BASE_URL` 必须是评测机容器能访问的地址（不要用 localhost）
+2. **资源要求**：
+   - 每个评测机 pod 固定需要 **4 CPU 核心** 和 **5GB 内存**（4GB + 1GB 共享内存）
+   - Pod 数量估算公式：`min((CPU 逻辑核心 - 2) / 4, 内存 GB / 5)`
+   - 脚本会自动检查资源并验证是否足够启动指定数量的 pod
+3. **Pod 数量**：
+   - 单 pod 适合小型评测机或低并发场景
+   - 多 pod 可显著提高并发处理能力，适合大型比赛
+   - 脚本会自动检查资源，资源不足时会提示可启动的最大 pod 数量
+4. **配置文件**：脚本会自动保存配置到 `./data/csgoj_config.cfg`，下次运行可直接使用
+5. **数据备份**：定期备份 `./data` 目录即可保留所有配置和数据
+
+---
+
+## 开发者指南
+
+### 自行编译及本地部署
+
+如需从源码编译并部署，请参考以下步骤：
+
+```bash
+# 编译评测机镜像
+cd deploy_files/judge2
+bash docker_build_base.sh
+bash dockerbuild.sh
+
+# 编译 Web 镜像
 cd ../build_php
 bash dockerbuild_script.sh
+
+# 构建发布包
 cd ..
-bash release.sh build judge web
+bash release.sh build judge web sh
+
+# 开发模式部署（挂载源码目录）
 export CSGOJ_DEV=1
-bash auto_deploy.sh <your parameters>
+bash csgoj_deploy.sh web
 ```
+
+### 发布流程
+
+```bash
+cd deploy_files
+bash release.sh <版本号> build push web judge sh tag
+```
+
+---
+
+## 许可证
+
+本项目基于 CSGOJ，请参考原项目许可证。
+
+---
+
+## 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+---
+
+**最后更新**：请查看 [更新日志](doc/更新日志.log)

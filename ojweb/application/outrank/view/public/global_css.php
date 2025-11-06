@@ -1,0 +1,1 @@
+{include file="../../csgoj/view/public/global_css" /}

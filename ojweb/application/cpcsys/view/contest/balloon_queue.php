@@ -1,482 +1,273 @@
-{__NOLAYOUT__} 
+{css file="__STATIC__/csgoj/contest/balloon_manager.css" /}
+{include file="../../csgoj/view/public/js_rank"}
+{include file="../../csgoj/view/public/base_select" /}
+{include file="../../csgoj/view/public/base_csg_switch" /}
+{js href="__STATIC__/lodop/LodopFuncs.js" /}
+{js href="__STATIC__/csgoj/contest/balloon_manager.js" /}
+{js href="__STATIC__/csgoj/contest/balloon_print.js" /}
 
-<!DOCTYPE html>
-<html>
-<head lang="en">
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-    <meta name="renderer" content="webkit" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <link rel="icon" href="__IMG__/global/favicon.ico" />
-    <title><?php echo (isset($pagetitle) ? $pagetitle : "Online Judge"); ?></title>
-    {css href='__STATIC__/ojtool/bootstrap/css//bootstrap.min.css' /}
-    {css href='__STATIC__/ojtool/bootstrap-icons/font/bootstrap-icons.min.css' /}
-
-    {css href='__STATIC__/bootstrap-table/bootstrap-table.min.css' /}
-    {css href='__STATIC__/bootstrap-table/extensions/filter-control/bootstrap-table-filter-control.min.css' /}
-    {css href='__STATIC__/bootstrap-table/extensions/reorder-rows/bootstrap-table-reorder-rows.min.css' /}
-    {css href='__STATIC__/ojtool/alertifyjs/css/alertify.min.css' /}
-    {css href='__STATIC__/ojtool/alertifyjs/css/themes//default.min.css' /}
-    {include file="../../ojtool/view/public/global_js" /}
-</head>
-<body>
-<main id="balloon_page">
-<h1 id="innerbrowser_warning" style="display:none"></h1>
-<div id="balloon_queue_table_toolbar">
-    <div class="btn-group" role="group">
-        <input id="team_start" placeholder="team001(team start) " class="form-control task_filter" type="text" value="" style="max-width:200px;">
-        <input id="team_end" placeholder="team100(team end)" class="form-control task_filter" type="text" value="" style="max-width:200px;">
-        {if $login_teaminfo['room'] !== null && $login_teaminfo['room'] != '' }
-        <div id="room_limit" title="{$login_teaminfo['room']}">ROOM:{$login_teaminfo['room']}</div>
-        <input id="room_list_str" type="hidden" placeholder="room list by ','" class="form-control task_filter" value="{$login_teaminfo['room']}" style="max-width:200px;">
-        {else /}
-        <input id="room_list_str" placeholder="room list by ','" class="form-control task_filter" type="text" value="" style="max-width:200px;">
-        {/if}
-        <button class="btn btn-secondary balloon_queue_refresh" ><i class="bi bi-repeat"></i></button>
-        <button class="btn btn-warning balloon_queue_fullscreen" ><i class="bi bi-arrows-fullscreen"></i></button>
-        <button class="btn btn-success button_get">获取</button>
+<!-- 气球队列页面 -->
+<div class="container-fluid mt-3">
+    <!-- <div class="balloon-title-compact">
+        <div class="balloon-title-text">气球全览<en-text>Balloon Overview</en-text></div>
+    </div> -->
+    <h2 class="page-title balloon-title-text">气球队列<en-text>Balloon Queue</en-text></h2>
+    
+    <!-- 加载提示 -->
+    <div id="balloon-queue-loading" class="text-center py-5" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">加载中...</span>
+        </div>
+        <div class="mt-2">加载中...<en-text>Loading...</en-text></div>
+    </div>
+    
+    <!-- 配送员标签页 -->
+    {if $balloonSender && !$balloonManager && !$isContestAdmin}
+    <ul class="nav nav-tabs mb-3" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" 
+                    id="tab-queue" 
+                    type="button" 
+                    data-bs-toggle="tab"
+                    data-bs-target="#tab-pane-queue"
+                    aria-controls="tab-pane-queue"
+                    aria-selected="true">
+                气球队列<en-text>Balloon Queue</en-text>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" 
+                    id="tab-my-balloons" 
+                    type="button" 
+                    data-bs-toggle="tab"
+                    data-bs-target="#tab-pane-my-balloons"
+                    aria-controls="tab-pane-my-balloons"
+                    aria-selected="false">
+                我的气球<en-text>My Balloons</en-text>
+            </button>
+        </li>
+    </ul>
+    {/if}
+    
+    <!-- 自动打印小票管理区域 -->
+    {if $balloonManager || $isContestAdmin}
+    <div class="balloon-print-manager card mb-3">
+        <div class="card-header">
+            <h5 class="mb-0 bilingual-inline">自动打印小票<en-text>Auto Print Tickets</en-text></h5>
+        </div>
+        <div class="card-body">
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <!-- 自动打印开关 -->
+                <div class="toolbar-group">
+                    <div class="toolbar-btn-group d-flex align-items-center gap-2">
+                        <div class="csg-switch">
+                            <input type="checkbox" 
+                                   class="csg-switch-input" 
+                                   id="balloon-auto-print-box"
+                                   data-csg-size="md"
+                                   data-csg-theme="primary"
+                                   data-csg-animate="true"
+                                   data-csg-text-on="自动"
+                                   data-csg-text-on-en="Auto"
+                                   data-csg-text-off="手动"
+                                   data-csg-text-off-en="Manual">
+                        </div>
+                        <span class="text-info" id="balloon-print-countdown">(<strong id="balloon-print-countdown-text">10</strong>s)</span>
+                    </div>
+                </div>
+                
+                <div class="toolbar-group">
+                    <span class="toolbar-label-inline"><span>纸张尺寸</span><span class="toolbar-label en-text">Page Size</span></span>
+                    <select class="form-select" id="balloon-print-page-size" name="balloon-print-page-size">
+                        <option value="57x30">57mm x 30mm (小票)</option>
+                        <option value="57x50">57mm x 50mm (小票)</option>
+                        <option value="58x80">58mm x 80mm (小票)</option>
+                        <option value="58x100">58mm x 100mm (小票)</option>
+                        <option value="76x130">76mm x 130mm (小票)</option>
+                        <option value="80x60">80mm x 60mm (小票)</option>
+                        <option value="80x80">80mm x 80mm (小票)</option>
+                        <option value="80x100">80mm x 100mm (小票)</option>
+                        <option value="80x120">80mm x 120mm (小票)</option>
+                        <option value="100x150">100mm x 150mm</option>
+                        <option value="148x210">148mm x 210mm (A5)</option>
+                        <option value="210x297">210mm x 297mm (A4)</option>
+                        <option value="custom">自定义 Custom</option>
+                    </select>
+                </div>
+                
+                <!-- 自定义尺寸输入（默认隐藏） -->
+                <div class="toolbar-group" id="balloon-print-custom-size-group" style="display: none;">
+                    <span class="toolbar-label-inline"><span>宽度</span><span class="toolbar-label en-text">Width</span></span>
+                    <input type="number" class="form-control toolbar-input" id="balloon-print-custom-width" placeholder="mm" min="10" max="500" value="58" style="width: 80px;">
+                </div>
+                <div class="toolbar-group" id="balloon-print-custom-size-group2" style="display: none;">
+                    <span class="toolbar-label-inline"><span>高度</span><span class="toolbar-label en-text">Height</span></span>
+                    <input type="number" class="form-control toolbar-input" id="balloon-print-custom-height" placeholder="mm" min="10" max="500" value="80" style="width: 80px;">
+                </div>
+                
+                <!-- 每页数量 -->
+                <div class="toolbar-group">
+                    <span class="toolbar-label-inline"><span>每页数量</span><span class="toolbar-label en-text">Per Page</span></span>
+                    <input type="number" class="form-control toolbar-input" id="balloon-print-per-page" placeholder="1" min="1" max="1" value="1" style="width: 80px;">
+                    <small class="text-muted" id="balloon-print-max-hint" style="font-size: 0.75rem;">(最大: <span id="balloon-print-max-count">1</span>)</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    {/if}
+    
+    <!-- 统计头部 -->
+    <div class="balloon-queue-stats mb-3">
+        <div class="balloon-global-stats" id="balloon-queue-stats">
+            <div class="balloon-stat-item" data-status="0" title-cn="未发气球" title-en="Not Sent">
+                <span class="balloon-stat-label">未处理<en-text>Not Sent</en-text></span>
+                <span class="balloon-stat-value" id="balloon-stat-value-0">0</span>
+            </div>
+            <div class="balloon-stat-item" data-status="10" title-cn="已通知" title-en="Printed/Issued">
+                <span class="balloon-stat-label">已通知<en-text>Printed</en-text></span>
+                <span class="balloon-stat-value" id="balloon-stat-value-10">0</span>
+            </div>
+            <div class="balloon-stat-item" data-status="20" title-cn="已分配" title-en="Assigned">
+                <span class="balloon-stat-label">已分配<en-text>Assigned</en-text></span>
+                <span class="balloon-stat-value" id="balloon-stat-value-20">0</span>
+            </div>
+            <div class="balloon-stat-item" data-status="30" title-cn="已发放" title-en="Delivered">
+                <span class="balloon-stat-label">已发放<en-text>Delivered</en-text></span>
+                <span class="balloon-stat-value" id="balloon-stat-value-30">0</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 筛选器工具栏（仅管理员显示） -->
+    {if $balloonManager || $isContestAdmin}
+    <div id="balloon-queue-toolbar" class="table-toolbar mb-3">
+        <div class="balloon-filter-container">
+            <div class="balloon-filter-row">
+                <div class="balloon-filter-group">
+                    <span class="balloon-filter-label"><span>配送员</span><span class="en-text">Balloon Sender</span></span>
+                    <select class="multiple-select" id="filter-sender" name="filter-sender">
+                        <option value="">全部 All</option>
+                    </select>
+                </div>
+                <div class="balloon-filter-group">
+                    <span class="balloon-filter-label"><span>房间/区域</span><span class="en-text">Room/Area</span></span>
+                    <select class="multiple-select" id="filter-rooms" name="filter-rooms" multiple>
+                        <!-- room筛选器将在这里动态生成 -->
+                    </select>
+                </div>
+                <div class="balloon-filter-group">
+                    <span class="balloon-filter-label"><span>学校</span><span class="en-text">School</span></span>
+                    <select class="multiple-select" id="filter-schools" name="filter-schools" multiple>
+                        <!-- school筛选器将在这里动态生成 -->
+                    </select>
+                </div>
+                <div class="balloon-filter-group">
+                    <span class="balloon-filter-label"><span>题号</span><span class="en-text">Problem</span></span>
+                    <select class="multiple-select" id="filter-problems" name="filter-problems" multiple>
+                        <!-- problem筛选器将在这里动态生成 -->
+                    </select>
+                </div>
+                <div class="balloon-filter-group">
+                    <span class="balloon-filter-label"><span>搜索</span><span class="en-text">Search</span></span>
+                    <input type="text" 
+                           class="form-control balloon-filter-input" 
+                           id="filter-search" 
+                           name="filter-search"
+                           placeholder="队伍ID/队名"
+                           title="队伍ID/队名 Team ID/Name">
+                </div>
+                <div class="balloon-filter-group">
+                    <button type="button" 
+                            class="btn btn-outline-secondary btn-sm" 
+                            id="balloon-filter-clear"
+                            title="清空所有筛选条件 Clear all filters">
+                        <i class="bi bi-x-circle"></i> 清空<en-text>Clear</en-text>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {/if}
+    
+    <!-- 表格容器 -->
+    <div class="card">
+        <div class="card-body p-0">
+            <table id="balloon-queue-table" 
+                    data-toggle="table"
+                    data-pagination="true"
+                    data-page-list="[10, 25, 50{if $balloonManager || $isContestAdmin}, 100{/if}]"
+                    data-page-size="25"
+                    data-side-pagination="client"
+                    data-search="false"
+                    data-classes="table table-bordered table-striped"
+                    data-pagination-v-align="bottom"
+                    data-pagination-h-align="left"
+                    data-pagination-detail-h-align="right"
+                    data-row-style="RowFormatterBalloonQueue"
+                    {if $balloonManager || $isContestAdmin}data-toolbar="#balloon-queue-toolbar"{/if}>
+                <thead>
+                    <tr>
+                        <th data-field="idx" data-align="center" data-valign="middle" data-sortable="true" data-width="100" data-formatter="FormatterIdx">Idx<span class="en-text">Idx</span></th>
+                        {if $balloonManager || $isContestAdmin}
+                        <th data-field="school" data-align="left" data-valign="middle" data-sortable="true">学校<span class="en-text">School</span></th>
+                        <th data-field="team_name" data-align="left" data-valign="middle" data-sortable="true">队名<span class="en-text">Team Name</span></th>
+                        <th data-field="room" data-align="center" data-valign="middle" data-sortable="true" data-width="120" data-formatter="FormatterBalloonRoom">房间<span class="en-text">Room</span></th>
+                        {/if}
+                        <th data-field="team_id" data-align="center" data-valign="middle" data-sortable="true" data-width="100" data-formatter="FormatterBalloonTeamId">队伍ID<span class="en-text">Team ID</span></th>
+                        <th data-field="problem" data-align="center" data-valign="middle" data-sortable="true" data-width="80" data-formatter="FormatterBalloonProblem">题号<span class="en-text">Problem</span></th>
+                        {if $balloonManager || $isContestAdmin}
+                        <th data-field="first_blood" data-align="center" data-valign="middle" data-sortable="false" data-width="100" data-formatter="FormatterBalloonFirstBlood">首答<span class="en-text">First Blood</span></th>
+                        {/if}
+                        <th data-field="bst" data-align="center" data-valign="middle" data-sortable="true" data-width="80" data-formatter="FormatterBalloonStatus">状态<span class="en-text">Status</span></th>
+                        {if $balloonManager || $isContestAdmin}
+                        <th data-field="sender" data-align="center" data-valign="middle" data-sortable="true" data-width="120" data-formatter="FormatterBalloonSender">配送员<span class="en-text">Sender</span></th>
+                        {/if}
+                        
+                        <th data-field="in_date" data-align="center" data-valign="middle" data-sortable="true" data-width="120" data-formatter="FormatterTime">时间<span class="en-text">Time</span></th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
     </div>
 </div>
-<table
-    id="balloon_queue_table"
-    data-toggle="table"
-    data-unique-id="team_pro"
-    data-sort-stable="true"
-    data-sort-name="bst"
-    data-sort-order="asc"
-    data-pagination="false"
-    data-method="get"
-    data-search="false"
-    data-classes="table-no-bordered table table-hover"
->
-    <thead>
-    <tr>
-        <th data-field="idx"        data-align="center"         data-valign="middle"   data-width="55" data-formatter="FormatterIdx">Idx</th>
-        <th data-field="ac_time"    data-align="left"           data-valign="middle"   data-width="150" data-formatter="FormatterAcTime">ACTime</th>
-        <th data-field="room"       data-align="left"           data-valign="middle"   data-formatter="FormatterInfo">Room</th>
-        <th data-field="team_id"    data-align="left"           data-valign="middle"   data-formatter="FormatterInfo">TeamID</th>
-        <th data-field="problem_id" data-align="center"         data-valign="middle"   data-width="80" data-formatter="FormatterPro">ProID</th>
-        <th data-field="team_pro"   data-align="center"         data-valign="middle"   data-visible="false" >TeamPro</th>
-        <th data-field="bst"        data-align="center"         data-valign="middle"   data-sortable="true" data-width="180" data-sorter="WaitingSorter" data-formatter="FormatterTaskStatus">Status(DblClick)</th>
-    </tr>
-    </thead>
-</table>
-
-<input type="hidden" id="page_info" cid="{$contest['contest_id']}" contest_user="{$contest_user}" >
-
-</main>
 <script>
-let rank_data = null, rank_data_time = null, rank_data_filtered_by_room;
-let balloon_task_list, map_team_balloon;
-let problem_id_map;
-let contest_problem_list;
-let map_team;
-var ua = navigator.userAgent.toLowerCase();
-if (ua.match(/MicroMessenger/i) == "micromessenger" || ua.match(/QQ/i) == "qq") {
-    alertify.alert("请用手机自带浏览器打开");
-    $('#innerbrowser_warning').text("请用手机自带浏览器打开");
-    $('#innerbrowser_warning').show();
-    $('#balloon_queue_table_toolbar').hide();
-}
-document.body.style.zoom = window.innerWidth / 720;
-let page_info = $('#page_info');
-let cid = page_info.attr("cid");
-let contest_user = page_info.attr("contest_user");
-let balloon_queue_table = $("#balloon_queue_table");
-let team_start_input = $('#team_start'), team_start;
-let team_end_input = $('#team_end'), team_end;
-let room_list_str_input = $('#room_list_str'), room_list_str, map_room;
-let task_potential;
-let flg_fullscreen = false;
-let map_balloon_othertask = null;   // 标记分配给其他人的balloon，刷新时清理
-
-function FormatterAcTime(value, row, index, field) {
-    return row.bst == 5 ? Timeint2Str(value) : `<button class="btn btn-danger" >${Timeint2Str(value)}</button>`;
-}
-function FormatterPro(value, row, index, field) {
-    let apid = problem_id_map['id2abc']?.[value];
-    if(apid === null) {
-        apid = "Unkonw";
-    }
-    let cl = parseInt(contest_problem_list?.[problem_id_map?.id2num?.[value]]?.title, 16);
-    if(cl < 0 || cl >= 16777216 || isNaN(cl)) {
-        cl = 3373751;
-    }
-    cl = cl.toString(16).toUpperCase().padStart(6, '0');
-    return `<strong style="color:#${cl};"><i class="bi bi-balloon"></i>${apid}</strong>`;
-}
-function FormatterTaskStatus(value, row, index, field) {
-    let color, txt;
-    let pstatus = row.bst == 5 ? row.bst : row.pst;
-    switch(pstatus) {
-        case 2: color='success'; txt = "普通"; break;
-        case 3: color='primary'; txt = "一血"; break;
-        case 5: color='secondary'; txt = "已发"; break;
-        default: color='warning'; txt = "数据错误";
-    }
-    return `<button class="btn btn-${color}">${txt}</button>`;
-}
-function FormatterInfo(value, row, index, field) {
-    if(field == 'room') {
-        if(value == null) {
-            value = '-';
-        }
-        return `<span class="room_td" title="${value}">${value}</span>`;
-    } else if(field == 'team_id') {
-        let tvalue = value.slice(-12);
-        return `<span class="team_td" title="${value}">${tvalue.length < value.length ? '...' + tvalue : value}</span>`;
-    }
-}
-function WaitingSorter(va, vb, ra, rb) {
-    if(va == vb) {
-        if(ra.ac_time == rb.ac_time) return 0;
-        return ra.ac_time < rb.ac_time ? -1 : 1;
-    } else {
-        return va < vb ? -1 : 1;
-    }
-}
-
-function GetInfoLocal() {
-    team_start = csg.store('team_start_' + cid);
-    if(team_start == null) {
-        team_start = '';
-    }
-    team_start_input.val(team_start);
-    team_end = csg.store('team_end_' + cid);
-    if(team_end == null) {
-        team_end = '';
-    }
-    team_end_input.val(team_end);
-    room_list_str = csg.store('room_list_str_' + cid);
-    if(room_list_str == null) {
-        room_list_str = '';
-    }
-    if(room_list_str_input.val() == '') {
-        room_list_str_input.val(room_list_str);
-    }
-}
-function SetInfoLocal() {
-    team_start = team_start_input.val();
-    csg.store('team_start_' + cid, team_start);
-    team_end = team_end_input.val();
-    csg.store('team_end_' + cid, team_end);
-    room_list_str = room_list_str_input.val();
-    csg.store('room_list_str_' + cid, room_list_str);
-}
-function GetRoomMap() {
-    room_list_str = room_list_str_input.val().trim();
-    if(room_list_str == '') {
-        map_room = null;
-    }
-    let room_list = room_list_str.split(',');
-    map_room = {};
-    for(let i = 0; i < room_list.length; i ++) {
-        room_list[i] = room_list[i].trim()
-        if(room_list[i] != '') {
-            map_room[room_list[i]] = true;
-        }
-    }
-    room_list_str_input.val(Object.keys(map_room).join(','));
-}
-function MapTeamBalloonAdd(team_id, problem_id, task_item) {
-    if(!(team_id in map_team_balloon)) {
-        map_team_balloon[team_id] = {};
-    }
-    if(!(problem_id in map_team_balloon[team_id])) {
-        map_team_balloon[team_id][problem_id] = task_item;
-    }
-}
-function SendTaskQuery(ith, total_get) {
-    if(ith < task_potential.length && total_get < 5) {
-        let row = task_potential[ith].row, apid = task_potential[ith].apid;
-        let task_data = {
-            'team_id':          row.user_id,
-            'apid':             apid,
-            'bst':              4,
-            'pst':              row[apid].pst,
-            'room':             row.room,
-            'ac_time':          row[apid].ac,
-            'balloon_sender':   contest_user,
-            'new_query':        '1' // 标记为新申请任务
-        };
-        task_data.problem_id = problem_id_map['abc2id']?.[task_data.apid];
-        task_data.team_pro = `${task_data.team_id}_${task_data.problem_id}`;
-        if(map_balloon_othertask?.[task_data.team_pro]) {
-            // 如果气球已由他人领取，则不再请求
-            SendTaskQuery(ith + 1, total_get);
-        } else {
-            $.post(`balloon_change_status_ajax?cid=${cid}`, task_data, function (ret) {
-                if (ret.code === 1) {
-                    balloon_queue_table.bootstrapTable('insertRow', {index: 1, row: task_data});
-                    SendTaskQuery(ith + 1, total_get + 1);
-                    MapTeamBalloonAdd(task_data.team_id, task_data.problem_id, task_data);
-                }
-                else if(ret?.data == 'no_privilege') {
-                    // 这个气球已分配给他人，或者大管理员没登录比赛内账号；该信息刷新后会重置
-                    map_balloon_othertask[task_data.team_pro] = true;
-                    SendTaskQuery(ith + 1, total_get);
-                }
-            })
-
-        }
-    } else if(total_get > 0){
-        alertify.success(`获取了${total_get}个新任务`);
-    } else {
-        alertify.message(`本次没有新任务`);
-    }
-}
-function CalcTask(rank_data_task) {
-    task_potential = [];
-    for(let apid in problem_id_map.abc2id) {
-        for(let i = 0; i < rank_data_task.length; i ++) {
-            if((apid in rank_data_task[i]) && (rank_data_task[i][apid].pst == 2 || rank_data_task[i][apid].pst == 3)) {
-                let problem_id = problem_id_map.abc2id[apid];
-                if(!(rank_data_task[i].user_id in map_team_balloon) || !(problem_id in map_team_balloon[rank_data_task[i].user_id])) {
-                    task_potential.push({
-                        'apid': apid,
-                        'row': rank_data_task[i]
-                    })
-                }
-            }
-        }
-    }
-    SendTaskQuery(0, 0);
-}
-function GetTask() {
-    if(contest_user === null || contest_user === '') {
-        alertify.warning("非气球配送员账号<br/>无法获取任务");
-        return;
-    }
-    function NewTask() {
-        if(rank_data_time === null || Math.abs(new Date() - rank_data_time) > 60000) {
-            $.get(`ranklist_ajax?cid=${cid}`, function(ret) {
-                rank_data = ret;
-                rank_data_filtered_by_room = rank_data.filter((a) => map_room === null || Object.keys(map_room).length === 0 || (a.room in map_room));
-                rank_data_time = new Date();
-                CalcTask(rank_data_filtered_by_room);
-            });
-        } else {
-            rank_data_filtered_by_room = rank_data.filter((a) => map_room === null || Object.keys(map_room).length === 0 || (a.room in map_room));
-            CalcTask(rank_data_filtered_by_room);
-        }
-    }
-    RefreshBalloonQueue(false, NewTask); // update tasks to avoid pull occupied tasks
-}
-function BalloonQueueTableSort() {
-    balloon_queue_table.bootstrapTable('sortBy', {
-        'field': 'bst'
-    });
-
-}
-function InitBalloonQueueShow() {
-    balloon_queue_table.bootstrapTable('load', balloon_task_list);
-    BalloonQueueTableSort();
-}
-let flg_init = 0;
-function InitFinishFlag() {
-    flg_init ++;
-    if(flg_init >= 2) {
-        InitBalloonQueueShow();
-    }
-}
-function MakeMapTeamBalloon() {
-    map_team_balloon = {};
-    for(let i = 0; i < balloon_task_list.length; i ++) {
-        balloon_task_list[i].apid = problem_id_map['id2abc']?.[balloon_task_list[i].problem_id];
-        balloon_task_list[i].team_pro = `${balloon_task_list[i].team_id}_${balloon_task_list[i].problem_id}`;
-        if(!(balloon_task_list[i].team_id in map_team_balloon)) {
-            map_team_balloon[balloon_task_list[i].team_id] = {};
-        }
-        if(!(balloon_task_list[i].problem_id in map_team_balloon[balloon_task_list[i].team_id])) {
-            map_team_balloon[balloon_task_list[i].team_id][balloon_task_list[i].problem_id] = balloon_task_list[i];
-        }
-    }
-}
-function RefreshBalloonQueue(flag_refresh_table=true, recall_func=null) {
-    $.get(`balloon_task_ajax`, {'cid': cid, 'room': room_list_str, 'team_start': team_start, 'team_end': team_end}, function(ret) {
-        if(ret.code == 1) {
-            map_balloon_othertask = {};
-            balloon_task_list = ret.data.balloon_task_list;
-            contest_problem_list = ret.data.contest_problem_list;
-            problem_id_map = ret.data.problem_id_map;
-            MakeMapTeamBalloon();
-            // filter tasks for balloon_sender
-            balloon_task_list = balloon_task_list.filter((a) => a.balloon_sender === contest_user || contest_user === null || contest_user === '');
-            if(flag_refresh_table) {
-                InitFinishFlag();
-                alertify.success(`加载到${balloon_task_list.length}个任务`)
-            }
-        } else {
-            alertify.alert("没有访问权限，可能登录超时", function() {
-                location.href = "/";
-            });
-        }
-        if(recall_func) {
-            recall_func();
-        }
-    });
-}
-function RemoveTask(row) {
-    // 退回的task
-    balloon_queue_table.bootstrapTable('removeByUniqueId', row.team_pro);
-    if(typeof(map_team_balloon?.[row.team_id]?.[row.problem_id]) !== 'undefined') {
-        delete map_team_balloon[row.team_id][row.problem_id]
-    }
-}
-$('document').ready(function() {
-    GetInfoLocal();
-    GetRoomMap();
-    SetFrontAlertify('balloon_page');
-    balloon_queue_table.css("margin-top", $('#balloon_queue_table_toolbar').height());
-    map_team = {};
-    $.get('balloon_team_list_ajax?cid=' + cid, function(ret) {
-        for(let i = 0; i < ret.length; i ++) {
-            map_team[ret[i].team_id] = ret[i];
-        }
-        InitFinishFlag();
-    });
-    RefreshBalloonQueue();
-    $('.button_get').click(function() {
-        let total_list = balloon_queue_table.bootstrapTable('getData');
-        if(total_list.filter((a) => a.bst == 4).length >= 20) {
-            alertify.warning("有较多气球还未发<br/>暂不获取新任务");
-        } else {
-            GetTask();
-        }
-    });
-    $('.balloon_queue_fullscreen').click(function() {
-        flg_fullscreen = !flg_fullscreen;
-        ToggleFullScreen('balloon_page', null, flg_fullscreen);
-    });
-    $('.balloon_queue_refresh').click(function() {
-        RefreshBalloonQueue();
-    });
-
-    $('.task_filter').on('input', function() {
-        SetInfoLocal();
-    });
-    let flag_first_st = false;
-    let flag_first_ast = false;
+    // 配置信息（需要包含父类RankSystem所需的所有配置）
+    window.RANK_CONFIG = {
+        key: 'balloon_queue_<?php echo $contest['contest_id']; ?>',
+        cid_list: '<?php echo $contest['contest_id']; ?>',
+        api_url: '/cpcsys/contest/balloon_data_ajax',
+        school_badge_url: '/static/image/school_badge',
+        region_flag_url: '/static/image/region_flag',
+        backend_time_diff: 0,
+        flg_show_page_contest_title: false,
+        flg_show_fullscreen_contest_title: false,
+        flg_rank_cache: false,
+        flg_show_time_progress: false,
+        flg_show_controls_toolbar: false,
+    };
     
-    balloon_queue_table.on('click-cell.bs.table', function(e, field, td, row){
-        if(field == 'bst') {
-            if(!flag_first_st){
-                flag_first_st = true;
-                alertify.message("双击标记与取消标记");
-            }
-        } else if(field == 'ac_time') {
-            if(!flag_first_ast) {
-                flag_first_ast = true;
-                alertify.message("双击退还任务");
-            }
-        }
-    });
-    balloon_queue_table.on('dbl-click-cell.bs.table', function(e, field, td, row){
-        let apid = problem_id_map['id2abc']?.[row.problem_id];
-        if(field == 'bst') {
-            let change_to = row.bst == 5 ? 4 : 5;
-            $.post(`balloon_change_status_ajax?cid=${cid}`, {
-                'team_id': row.team_id,
-                'apid': apid,
-                'bst': change_to
-            }, function(ret) {
-                if(ret.code == 1) {
-                    row.bst = change_to;
-                    balloon_queue_table.bootstrapTable('updateByUniqueId', {
-                        id: row.team_pro,
-                        row: row
-                    });
-                    if(change_to == 4) {
-                        alertify.warning(`${row.team_id}-${apid} <br/>待发`);
-                    } else {
-                        alertify.success(`${row.team_id}-${apid} <br/>已发`);
-                    }
-                } else {
-                    alertify.error(ret.msg);
-                }
-            })
-        } else if(field == 'ac_time') {
-            if(row.bst == 5) {
-                return;
-            }
-            $.post('balloon_change_status_ajax?cid=' + cid, {
-                'team_id': row.team_id,
-                'apid': apid,
-                'bst': 0
-            }, function(ret) {
-                if(ret.code == 1) {
-                    RemoveTask(row);
-                    BalloonQueueTableSort();
-                    alertify.warning(`${row.team_id}-${row.apid} 任务已退还`);
-                } else {
-                    alertify.error(ret.msg);
-                }
-            })
-        } else {
-            alertify.message(`
-                <table>
-                <tr><td class="td_l">队&nbsp;&nbsp;号:</td> <td class="td_r">${row.team_id}</td></tr>
-                <tr><td class="td_l">区&nbsp;&nbsp;域:</td> <td class="td_r">${row.room}</td></tr>
-                <tr><td class="td_l">题&nbsp;&nbsp;号:</td> <td class="td_r">${problem_id_map['id2abc']?.[row.problem_id]}</td></tr>
-                <tr><td class="td_l">AC时间:</td> <td class="td_r">${Timeint2Str(row.ac_time)}</td></tr>
-                </table>
-            `)
-        }
-    });
-    $("#room_limit").click(function() {
-        alertify.alert(this.title.split(',').join('<br/>')).set("title", "管理的房间");
-    })
-    room_list_str_input.change(function() {
-        GetRoomMap();
-    });
-});
+    window.BALLOON_QUEUE_CONFIG = {
+        is_balloon_manager: <?php echo ($balloonManager || $isContestAdmin) ? 'true' : 'false'; ?>,
+        is_balloon_sender: <?php echo $balloonSender ? 'true' : 'false'; ?>,
+        current_user: <?php echo $contest_user ? "'" . addslashes($contest_user) . "'" : 'null'; ?>,
+        team_room: <?php echo isset($teaminfo['room']) && $teaminfo['room'] ? "'" . addslashes($teaminfo['room']) . "'" : 'null'; ?>,
+        change_status_url: '/cpcsys/contest/balloon_change_status_ajax'
+    };
 </script>
+<!-- Lodop 对象初始化（用于小票打印） -->
+<object id="LODOP_OB" classid="clsid:2105C259-1E0C-4534-8141-A753534CB4CA" width=0 height=0>
+    <embed id="LODOP_EM" type="application/x-print-lodop" width=0 height=0></embed>
+</object>
+<script>
+    // 初始化气球队列系统（external mode，不依赖容器）
+    const queueSystem = new BalloonQueueSystem(null, window.BALLOON_QUEUE_CONFIG);
+    window.balloonQueueSystem = queueSystem;
+</script>
+
 <style>
-#balloon_page {
-    background-color: white;
-    overflow-y: auto;
-}
-#balloon_queue_table_toolbar {
-    position: fixed;
-    top: 0;
-    z-index: 10;
-    background-color: white;
-    width: 100%;
-}
-#balloon_queue_table {
-    margin-top: 30px;
-}
-#innerbrowser_warning {
-    z-index: 5000;
-}
-.room_td, .team_td {
-    overflow: hidden;
-    white-space: nowrap;
-    display: block;
-    text-overflow: ellipsis;
-}
-.room_td {
-    width: 100px;
-}
-.team_td {
-    width: 150px;
-}
-.td_l {
-    text-align: right;
-}
-.td_r {
-    text-align: left;
-    padding-left: 10px;
-}
-#room_limit {
-    width: 200px;
-    text-align: center;
-    overflow-x: ellipsis;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 50px; /* 这应该与你的div的高度相同 */
+/* bootstrap5强制设置了 td 的背景色导致 tr 背景色不生效，所以这里覆盖继承 */
+#balloon-queue-table td {
+  background-color: inherit !important;
+  color: inherit !important;
 }
 </style>
-</body>
-</html>

@@ -86,19 +86,9 @@ class Status extends Csgojbase
                 $solution['language'] = $oj_language[$solution['language']];
             else
                 $solution['language'] = "Unknown";
-
-            // if($this->if_can_see_info($solution))
-            //     $solution['language_show'] = "<span showcode=1 class='btn btn-default'>" . $solution['language'] . "</span>";
-            // else
-            //     $solution['language_show'] = "<span showcode=0>" . $solution['language'] . "</span>";
             $solution['code_show'] = $this->if_can_see_info($solution);
 
             $this->GetResultShow($solution);
-
-            //上面代码要用'user_id'判断，所以无条件修改内容放下面。
-            // $solution['solution_id_show'] = "<span class='status_solution_id'>".$solution['solution_id']."</span>";
-            // $solution['user_id_show'] = "<a href='/" . request()->module() . "/user/userinfo?user_id=" . $solution['user_id'] . "'>" . $solution['user_id'] . "</a>";
-            // $solution['problem_id'] = "<a href='/" . request()->module() . "/problemset/problem?pid=" . $solution['problem_id'] . "'>" . $solution['problem_id'] . "</a>";
         }
 
         if(IsAdmin())//对于非管理员，外部status不显示contest里的提交。
@@ -148,11 +138,14 @@ class Status extends Csgojbase
     public function GetResultShow(&$solution) {
         $solution['res_show'] = false;
         $oj_results_html = config('CsgojConfig.OJ_RESULTS_HTML');
+        $oj_results_short = config('CsgojConfig.OJ_RESULTS_SHORT');
         // if_can_see_info 的前提下，【10 RE 或 11 CE】或者【5~9的结果且(为管理员或允许查看错误信息)】
-        $solution['res_show'] = $this->if_can_see_info($solution) && (($solution['result'] == 10 || $solution['result'] == 11) || (in_array($solution['result'], [5, 6, 7, 8, 9]) && (IsAdmin('source_browser') || $this->ALLOW_WA_INFO)));
+        $solution['res_show'] = $this->if_can_see_info($solution) && (($solution['result'] == 10 || $solution['result'] == 11) || 
+            (in_array($solution['result'], [5, 6, 7, 8, 9, 10, 90]) && (IsAdmin('source_browser') || $this->ALLOW_WA_INFO)));
         $result_style = array_key_exists($solution['result'], $oj_results_html) ? $solution['result'] : 100;
         $solution['res_color'] = $oj_results_html[$result_style][0];
         $solution['res_text'] = $oj_results_html[$result_style][1];
+        $solution['res_short'] = array_key_exists($solution['result'], $oj_results_short) ? $oj_results_short[$solution['result']] : 'Unknown';
     }
     private function if_can_see_info($solution)
     {
@@ -169,43 +162,36 @@ class Status extends Csgojbase
         }
         return false;
     }
-    public function resdetail_ajax()
-    {
-        $data = [];
+    public function resdetail_ajax(){
         $solution_id = trim(input('solution_id'));
         $solution = db('solution')->where('solution_id', $solution_id)->find();
         $solution_related_admin = IsAdmin('source_browser') || $solution['contest_id'] != null && $solution['contest_id'] > 0 && IsAdmin('contest', $solution['contest_id']);
-        if($this->if_can_see_info($solution))
-        {
-            if($solution['result'] == 11)
-            {
+        $flg_can_see_special = $solution_related_admin || $this->ALLOW_WA_INFO;
+        if($this->if_can_see_info($solution)) {
+            if($solution['result'] == 11) {
                 // Compile Error
-                $compileinfo = db('compileinfo')->where('solution_id', $solution_id)->find();
-                $this->success($compileinfo['error']);
+                $table_name = 'compileinfo';
             }
-            else if(in_array($solution['result'], [5, 6, 7, 8, 9, 10]) && ($solution_related_admin || $this->ALLOW_WA_INFO))
-            {
+            else if(in_array($solution['result'], [5, 6, 7, 8, 9, 10, 90]) && $flg_can_see_special) {
                 // PE || WA || TLE || MLE || OLE || RE 暂时只允许管理员查看
-                $compileinfo = db('runtimeinfo')->where('solution_id', $solution_id)->find();
-                if(in_array($solution['result'], [5, 6]) && !IsAdmin('source_browser') && !$solution_related_admin) {
-                    // 隐去 test.in 内容
-                    $compileinfo['error'] = preg_replace('/(------.+? in top .+?------)(.*?)------/s', "$1\n[Hidden]\n------", $compileinfo['error']);
-                } else {
-                    $compileinfo['error'] = preg_replace('/(------.+? in top .+?)(------)(.*?)------/s', "$1 [admin only] $2$3------", $compileinfo['error']);
-                }
-                $this->success($compileinfo['error']);
+                $table_name = 'runtimeinfo';
             }
-            else
-            {
+            else {
                 $this->error('No infomation.');
             }
+            
+            $info_item = db($table_name)->where('solution_id', $solution_id)->find();
+            $info = $info_item ? $info_item['error'] : '';
+
+            $data = Json2Array($info);
+            if(!$data) {
+                $data = ['data_type' => 'text', 'data' => $info];
+            }
+            $this->success('', null, $data);
         }
-        else
-        {
+        else {
             $this->error('Permission denied to see this infomation.');
-            return;
         }
-        return $data;
     }
     public function showcode_ajax()
     {
@@ -222,13 +208,21 @@ class Status extends Csgojbase
             else
                 $language = "Unknown";
             $source = db('source_code_user')->where('solution_id', $solution_id)->find();
-            $data['source'] = htmlentities(str_replace("\n\r","\n",$source['source']),ENT_QUOTES,"utf-8");
-            $data['auth'] = "\n/**********************************************************************\n".
-                "\tProblem: ".$solution['problem_id']."\n\tUser: ".$solution['user_id']."\n".
-                "\tLanguage: ".$language ."\n\tResult: ".$oj_results[$solution['result']]."\n";
-            if ($solution['result']==4)
-                $data['auth'] .= "\tTime:".$solution['time']." ms\n"."\tMemory:".$solution['memory']." kb\n";
-            $data['auth'] .= "**********************************************************************/\n\n";
+            
+            // 返回转义后的代码，确保安全性
+            $data['source'] = htmlentities(str_replace("\r\n","\n",$source['source']), ENT_QUOTES, "utf-8");
+            $data['language'] = $language;
+            $data['problem_id'] = $solution['problem_id'];
+            $data['user_id'] = $solution['user_id'];
+            $data['result'] = $oj_results[$solution['result']];
+            $data['submit_time'] = $solution['in_date'];
+            $data['code_length'] = $solution['code_length'];
+            
+            // 如果AC，添加时间和内存信息
+            if ($solution['result']==4) {
+                $data['time'] = $solution['time'];
+                $data['memory'] = $solution['memory'];
+            }
         }
         else
         {

@@ -2,3 +2,4 @@ csgoj_data
 config_log
 *.cfg
 **/*scripts*.zip
+static/

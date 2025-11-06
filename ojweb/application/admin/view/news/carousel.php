@@ -1,17 +1,17 @@
 <div class="page-header">
-	<h1>Edit Carousel
-		<a href="__ADMIN__/filemanager/filemanager?item={$controller}&id={$staticPage['carousel']}" target="_blank"><button class="btn btn-success" id="attachfile">Attach file manager</button></a>
+	<h1>编辑轮播图<span class="en-text">Edit Carousel</span>
+		<a href="__ADMIN__/filemanager/filemanager?item={$controller}&id={$staticPage['carousel']}" target="_blank"><button class="btn btn-success" id="attachfile">文件管理器<span class="en-text">File Manager</span></button></a>
 	</h1>
 </div>
 <div class="container">
 	<form id="news_edit_form" method='post' action="__ADMIN__/news/carousel_ajax">
 		<div class="form-group">
-			<label for="show_carousel_switch">Show Carousel：</label>
+			<label for="show_carousel_switch">显示轮播图<span class="en-text">Show Carousel</span>：</label>
 			<input type="checkbox" id="show_carousel_switch" name="defunct">
 		</div>
 		<?php for($i = 0; $i < 3; $i ++): ?>
 		<div class="form-group">
-			<label for="carousel[]">Carousel {$i} :</label>
+			<label for="carousel[]">轮播图 {$i}<span class="en-text">Carousel {$i}</span> :</label>
 			{foreach $carouselItem as $item}
 			<input type="text" class="form-control" placeholder="{$item}" name="{$item}{$i}" value="{$carousel[$item][$i]}">
 			{/foreach}
@@ -19,9 +19,9 @@
 		<?php endfor ?>
 		<br/>
 		<input type="hidden" id='id_input' value="{$staticPage['carousel']}" name="news_id">
-		<button type="submit" id="submit_button" class="btn btn-primary">Update Carousel</button>
-		<button type="button" id="shift_button" class="btn btn-info" title="让三个Carousel的内容循环移位一下（用于添加新的Carousel到第一个位置）">Cyclic Shift</button>
-		<button type="button" id="clear_button" class="btn btn-warning" onclick="$(':input').val('');">Clear Up</button>
+		<button type="submit" id="submit_button" class="btn btn-primary">更新轮播图<span class="en-text">Update Carousel</span></button>
+		<button type="button" id="shift_button" class="btn btn-info" title="让三个Carousel的内容循环移位一下（用于添加新的Carousel到第一个位置）">循环移位<span class="en-text">Cyclic Shift</span></button>
+		<button type="button" id="clear_button" class="btn btn-warning" onclick="$(':input').val('');">清空<span class="en-text">Clear Up</span></button>
 	</form>
 </div>
 <input type="hidden" id="show_carousel_check" value="{if($news['defunct'] == '0')} true {else/}false{/if}">
@@ -54,13 +54,13 @@
 							var submit_button = $('#submit_button');
 							if(ret["code"] == 1)
 							{
-								alertify.success(ret['msg']);
-								button_delay(submit_button, 3, 'Modify News');
+								alerty.success(ret['msg']);
+								button_delay(submit_button, 3, '更新轮播图');
 							}
 							else
 							{
-								alertify.error(ret['msg']);
-								button_delay(submit_button, 3, 'Modify News');
+								alerty.error(ret['msg']);
+								button_delay(submit_button, 3, '更新轮播图');
 							}
 							return false;
 						}
@@ -101,8 +101,3 @@
 		}
 	});
 </script>
-<style type="text/css">
-	input{
-		margin-top: 5px;
-	}
-</style>

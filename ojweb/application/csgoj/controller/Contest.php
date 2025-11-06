@@ -14,6 +14,7 @@ class Contest extends Csgojbase
     var $rankFrozen;                    // false表示正常，true表示封榜
 
     var $closeRankTime;                 // 封榜时间戳（int）
+    var $frozenEndTime;                 // 封榜结束时间戳（int）
     var $outsideContestAction;          // Contest的比赛列表页和其对应的列表数据ajax页action名称
     var $allowPublicVisitAction;        // private比赛允许公开观看的页面，目前就是ranklist和对应的数据ajax页
     var $ojLang;                        // oj的允许编程语言表
@@ -26,6 +27,7 @@ class Contest extends Csgojbase
     var $canJoin;                       // 参赛权限
     var $needAuth;                      // 比赛加了密码（目前只Public比赛密码生效）
     var $contest_user;                  // 登录这个比赛的用户
+    var $contest_user_dbfull;           // 比赛内用户在 solution/topic 等表中的实际字符串
     var $contest_problem_list;          // 比赛的题目列表
     var $isAdmin;
     var $isContestAdmin;
@@ -45,8 +47,8 @@ class Contest extends Csgojbase
     public function ContestInit()
     {
         $this->assign('pagetitle', 'Contest');
-        $this->outsideContestAction = ['index', 'contest_list_ajax', 'contest_data_joint_ajax'];
-        $this->allowPublicVisitAction = ['ranklist', 'ranklist_ajax', 'scorerank', 'scorerank_ajax', 'schoolrank', 'schoolrank_ajax', 'contest', 'contest_auth_ajax', 'team_auth_type_ajax', 'contest_data_ajax'];
+        $this->outsideContestAction = ['index', 'contest_list_ajax'];
+        $this->allowPublicVisitAction = ['rank', 'ranklist_ajax', 'scorerank', 'scorerank_ajax', 'schoolrank', 'schoolrank_ajax', 'contest', 'contest_auth_ajax', 'team_auth_type_ajax', 'contest_data_ajax'];
         $this->ojLang = config('CsgojConfig.OJ_LANGUAGE');
         $this->ojResults = config('CsgojConfig.OJ_RESULTS');
         $this->ojResultsHtml = config('CsgojConfig.OJ_RESULTS_HTML');
@@ -56,6 +58,7 @@ class Contest extends Csgojbase
         $this->allowResults = [4, 5, 6, 7, 8, 9, 10, 11];
         $this->needAuth = false;
         $this->contest_user = null;
+        $this->contest_user_dbfull = null;
         $this->isAdmin = IsAdmin();
         $this->isContestAdmin = false;
         if (!in_array($this->request->action(), $this->outsideContestAction)) {
@@ -186,10 +189,12 @@ class Contest extends Csgojbase
     {
         if (session('?user_id')) {
             $this->contest_user = session('user_id');
+            $this->contest_user_dbfull = $this->SolutionUser($this->contest_user, true);
             $this->assign('contest_user', $this->contest_user);
             $this->assign('login_teaminfo', session('login_user_info'));
         } else {
             $this->contest_user = null;
+            $this->contest_user_dbfull = null;
             $this->assign('contest_user', $this->contest_user);
             $this->assign('login_teaminfo', null);
         }
@@ -202,9 +207,8 @@ class Contest extends Csgojbase
         $now = time();
         $start_time = strtotime($contest['start_time']);
         $end_time = strtotime($contest['end_time']);
-        // $this->closeRankTime = intval(($end_time - $start_time) * 0.8 + $start_time + 0.00000001);   // 旧版本，4/5 时间封榜
         $this->closeRankTime = $end_time - ($contest['frozen_minute'] > 0 ? $contest['frozen_minute'] : 0) * 60;
-        $frozen_end_time = $end_time + ($contest['frozen_after'] > 0 ? $contest['frozen_after'] : 0) * 60;
+        $this->frozenEndTime = $end_time + ($contest['frozen_after'] > 0 ? $contest['frozen_after'] : 0) * 60;
         $ret = -1;
         $this->rankFrozen = false;
         if ($now < $start_time)
@@ -213,7 +217,7 @@ class Contest extends Csgojbase
             $ret = 1;
         else
             $ret = 2;
-        if ($now > $this->closeRankTime && $now < $frozen_end_time) {  // 封榜时间段
+        if ($now > $this->closeRankTime && $now < $this->frozenEndTime) {  // 封榜时间段
             $this->rankFrozen = true;
         }
         if ($this->IsContestAdmin() || $this->IsContestAdmin('balloon_manager') || 
@@ -385,6 +389,7 @@ class Contest extends Csgojbase
             ->field([
                 'p.problem_id problem_id',
                 'p.title title',
+                'p.spj spj',
                 'cp.num num',
                 'cp.pscore pscore',
                 'cp.title color'    // 不改数据库了，暂时用这个字段
@@ -410,6 +415,7 @@ class Contest extends Csgojbase
                 'p.num num',
                 'p.color color',
                 'p.pscore pscore',
+                'p.spj spj',
                 'a.accepted accepted',
                 's.submit submit'
             ])
@@ -535,7 +541,7 @@ class Contest extends Csgojbase
         $this->assign(['contest' => $this->contest, 'problem' => $problem, 'apid' => $apid]);
         return $this->fetch();
     }
-    public function SolutionUser($user_id, $appearprefix = null)
+    protected function SolutionUser($user_id, $appearprefix = null)
     {
         // 针对 cpcsys 的 solution 用户名前缀处理。常规系统里不处理
         return $user_id;
@@ -660,8 +666,9 @@ class Contest extends Csgojbase
     public function GetProblem($apid)
     {
         // 此处检查是否允许下载数据
-        if (!$this->ALLOW_TEST_DOWNLOAD && !IsAdmin())
+        if (!$this->ALLOW_TEST_DOWNLOAD && !IsAdmin()) {
             $this->error("No permission to see test data.");
+        }
         $problem_id = $this->problemIdMap['abc2id'][$apid];
 
         $problem = db('contest_problem')->alias('cp')
@@ -940,31 +947,41 @@ class Contest extends Csgojbase
             if (!isset($code[$i]['user_id']) || $code[$i]['user_id'] == null)
                 $code[$i]['user_id'] = '-null-';
             $code[$i]['user_id'] = $this->SolutionUser($code[$i]['user_id']);
-            $code[$i]['source'] = htmlentities(str_replace("\n\r", "\n", $code[$i]['source']), ENT_QUOTES, "utf-8");
+            $code[$i]['source'] = htmlentities(str_replace("\r\n", "\n", $code[$i]['source']), ENT_QUOTES, "utf-8");
         }
         $this->assign('code', $code);
         $this->assign('userInfoUrl', $this->UserInfoUrl('', $this->contest['contest_id'], true));
         return $this->fetch();
     }
-    public function resdetail_ajax()
-    {
-        $data = [];
+    public function resdetail_ajax(){
         $solution_id = trim(input('solution_id'));
         $solution = db('solution')->where('solution_id', $solution_id)->find();
-        if (!$this->if_can_see_info($solution))
-            $this->error('Permission denied to see this infomation.');
-        if ($solution['result'] == 11) {
-            //Compile Error
-            $compileinfo = db('compileinfo')->where('solution_id', $solution_id)->find();
-            $this->success(htmlentities(str_replace("\n\r", "\n", $compileinfo['error']), ENT_QUOTES, "utf-8"));
-        } else if ((IsAdmin('source_browser') || $this->IsContestAdmin() || $this->ALLOW_WA_INFO) && in_array($solution['result'], [5, 6, 7, 8, 9, 10])) {
-            // PE || WA || TLE || MLE || OLE 暂时只允许管理员查看
-            $runtimeinfo = db('runtimeinfo')->where('solution_id', $solution_id)->find();
-            $this->success(htmlentities(str_replace("\n\r", "\n", $runtimeinfo['error']), ENT_QUOTES, "utf-8"));
+        $flg_can_see_special = IsAdmin('source_browser') || $this->IsContestAdmin() || $this->ALLOW_WA_INFO;
+        if ($this->if_can_see_info($solution)) {
+            if($solution['result'] == 11) {
+                // Compile Error
+                $table_name = 'compileinfo';
+            }
+            else if(in_array($solution['result'], [5, 6, 7, 8, 9, 10, 90]) && $flg_can_see_special) {
+                // PE || WA || TLE || MLE || OLE || RE 暂时只允许管理员查看
+                $table_name = 'runtimeinfo';
+            }
+            else {
+                $this->error('No infomation.');
+            }
+            
+            $info_item = db($table_name)->where('solution_id', $solution_id)->find();
+            $info = $info_item ? $info_item['error'] : '';
+            
+            $data = Json2Array($info);
+            if(!$data) {
+                $data = ['data_type' => 'text', 'data' => $info];
+            }
+            $this->success('', null, $data);
+            
         } else {
-            $this->error('No infomation.');
+            $this->error('Permission denied to see this infomation.');
         }
-        return $data;
     }
     public function showcode_ajax()
     {
@@ -978,13 +995,8 @@ class Contest extends Csgojbase
             $this->error('Permission denied to see this code.');
 
         $source = db('source_code_user')->where('solution_id', $solution_id)->find();
-        $data['source'] = htmlentities(str_replace("\n\r", "\n", $source['source']), ENT_QUOTES, "utf-8");
-        $data['auth'] = "\n/**********************************************************************\n" .
-            "\tProblem: " . $solution['problem_id'] . "\n\tUser: " . $solution['user_id'] . "\n" .
-            "\tLanguage: " . $oj_language[$solution['language']] . "\n\tResult: " . $oj_results[$solution['result']] . "\n";
-        if ($solution['result'] == 4)
-            $data['auth'] .= "\tTime:" . $solution['time'] . " ms\n" . "\tMemory:" . $solution['memory'] . " kb\n";
-        $data['auth'] .= "**********************************************************************/\n\n";
+        $data['source'] = htmlentities(str_replace("\r\n", "\n", $source['source']), ENT_QUOTES, "utf-8");
+        $data['result'] = array_key_exists($solution['result'], $oj_results) ? $oj_results[$solution['result']] : 'Unknown';
         $this->success('', null, $data);
     }
     public function single_status_ajax()
@@ -1026,11 +1038,13 @@ class Contest extends Csgojbase
     {
         $solution['res_show'] = false;
         $oj_results_html = config('CsgojConfig.OJ_RESULTS_HTML');
+        $oj_results_short = config('CsgojConfig.OJ_RESULTS_SHORT');
         // if_can_see_info 的前提下，【10 RE 或 11 CE】或者【5~9的结果且(为管理员或允许查看错误信息)】
-        $solution['res_show'] = $this->if_can_see_info($solution) && ($solution['result'] == 11 || (in_array($solution['result'], [5, 6, 7, 8, 9, 10])  && ($this->IsContestAdmin() || $this->ALLOW_WA_INFO)));
+        $solution['res_show'] = $this->if_can_see_info($solution) && ($solution['result'] == 11 || (in_array($solution['result'], [5, 6, 7, 8, 9, 10, 90])  && ($this->IsContestAdmin() || $this->ALLOW_WA_INFO)));
         $result_style = array_key_exists($solution['result'], $oj_results_html) ? $solution['result'] : 100;
         $solution['res_color'] = $oj_results_html[$result_style][0];
         $solution['res_text'] = $oj_results_html[$result_style][1];
+        $solution['res_short'] = array_key_exists($solution['result'], $oj_results_short) ? $oj_results_short[$solution['result']] : 'Unknown';
     }
     public function if_can_see_info($solution)
     {
@@ -1060,207 +1074,10 @@ class Contest extends Csgojbase
         $award_ratio /= 1000;
         return [$ratio_gold, $ratio_silver, $ratio_bronze];
     }
-    public function ranklist()
-    {
-        $award_ratio = $this->GetAwardRatio();
-        //设置school筛选表数据
-        $this->assign([
-            'contest'       => $this->contest,
-            'user_id'       => $this->contest_user,
-            'ratio_gold'    => $award_ratio[0],
-            'ratio_silver'  => $award_ratio[1],
-            'ratio_bronze'  => $award_ratio[2],
-            'use_cache'     => $this->rankUseCache
-            //bootstrap-table默认适应屏幕，题目数量比较多时横向滚动条会在底部，而提交人数很多时，横向移动显示内容很不方便，所以通过后台给出前端强制设置的表格宽度来得到浏览器的横向滚动条
-            //现已用jquery和scrollWidth解决
-            //            'tablewidth'     => 420 + count($problemIdMap['problem_ids']) * 90,
-        ]);
+    public function rank() {
         return $this->fetch();
     }
 
-    public function ranklist_ajax()
-    {
-        //使用rank的cache
-        $cache_option = config('CsgojConfig.OJ_RANK_CACHE_OPTION');
-        $cache_name = $this->OJ_MODE . '_rank' . $this->contest['contest_id'];
-        $use_cache = $this->rankUseCache;
-        if ($use_cache) {
-            //非管理员则使用cache
-            $ret = cache($cache_name, '', $cache_option);
-            if ($ret) {
-                return $ret['rows'];
-            }
-        }
-        $data = $this->GetRankData();
-        $firstBlood = &$data[0];
-        $rankDataList = &$data[1];
-        $retList = [];
-        $rk_real = 0;
-        $i = 0;
-        $lastSolved = -1;
-        $lastPenalty = -1;
-        foreach ($rankDataList as $key => &$rankData) {
-            if (!isset($rankData['userinfo'])) {
-                // 没有 userinfo，不合法数据
-                continue;
-            }
-            $star_team = $rankData['userinfo']['tkind'] == 2;
-            if (!$star_team) {
-                $rk_real++;
-            }
-            if ($rankData['solved'] != $lastSolved || $rankData['penalty'] != $lastPenalty) {
-                $i = $rk_real;
-            }
-            if (!$star_team) {
-                $lastPenalty = $rankData['penalty'];
-                $lastSolved = $rankData['solved'];
-            }
-            $row = [
-                'rank'      => $star_team ? "*" : $i,
-                'nick'      => htmlspecialchars($rankData['userinfo']['nick']),    //要转换html标签，以防用户使用特殊标签做nick
-                'tkind'     => intval($rankData['userinfo']['tkind']),
-                'solved'    => $rankData['solved'],
-                'penalty'   => $this->sec2str(-$rankData['penalty']), //前面用负数方便sort，此时反过来
-                'school'    => htmlspecialchars($rankData['userinfo']['school']),    //要转换html标签，以防用户使用特殊标签做nick
-                'room'      => array_key_exists('room', $rankData['userinfo']) ? $rankData['userinfo']['room'] : null
-            ];
-            if ($this->module == 'cpcsys') {
-                $row['school'] = htmlspecialchars($rankData['userinfo']['school']);
-                $row['tmember'] = htmlspecialchars($rankData['userinfo']['tmember']);
-                $row['coach'] = htmlspecialchars($rankData['userinfo']['coach']);
-            }
-            // $row['user_id'] = "<a href='" . $this->UserInfoUrl($key, $this->contest['contest_id']) . "''>".$key."</a>";
-            $row['user_id'] = $key;
-            // 每道题的显示内容
-            foreach ($this->problemIdMap['id2abc'] as $pid => $apid) {
-                //pstatus 3为fb， 2 为ac， 1为没ac， 5为封榜后有尝试
-                $problemstatus = 0;
-                if (array_key_exists($pid, $firstBlood) && in_array($key, $firstBlood[$pid]['userlist'])) {
-                    $problemstatus = 3;
-                } else if (array_key_exists($pid, $rankData['ac_sec'])) {
-                    $problemstatus = 2;
-                } else if (array_key_exists($pid, $rankData['tr_num'])) {
-                    $problemstatus = 5;
-                } else if (array_key_exists($pid, $rankData['wa_num'])) {
-                    $problemstatus = 1;
-                }
-                $row[$apid] = [
-                    'ac'    => array_key_exists($pid, $rankData['ac_sec']) ? $rankData['ac_sec'][$pid] : null,
-                    'wa'    => array_key_exists($pid, $rankData['wa_num']) ? $rankData['wa_num'][$pid] : null,
-                    'tr'    => array_key_exists($pid, $rankData['tr_num']) ? $rankData['tr_num'][$pid] : null,
-                    'pst'   => $problemstatus
-                ];
-            }
-            $retList[] = $row;
-        }
-        $ret['rows'] = $retList;
-        //设置rank的cache
-        if ($use_cache) {
-            cache($cache_name, $ret, $cache_option);
-        }
-        return $ret['rows'];
-    }
-    public function team_score_now_ajax() {
-        // 获取队伍当前解题情况
-        $team_id = input('team_id/s');
-        if($team_id == null) {
-            $team_id = $this->contest_user;
-        }
-        if($team_id == null) {
-            $this->error("No team_id provided");
-        }
-        $rank = $this->ranklist_ajax();
-        $award_ratio = $this->GetAwardRatio();
-        $ret = [
-            // 'problem_abc_list'  => $this->problemIdMap['num2abc'],
-            'solved'        => 0,
-            'tried'         => 0,
-            'rank'          => '-',
-            'ratio_gold'    => $award_ratio[0],
-            'ratio_silver'  => $award_ratio[1],
-            'ratio_bronze'  => $award_ratio[2],
-            'pro_res'       => [],
-            'star_team'     => false,
-        ];
-        $total_team_cnt = 0;
-        $total_valid_cnt = 0;
-        $rank_with_star = 0;
-        $rank_virtual = 0;  // 无论打星还是正式队，计算一个在正式队排名中的排名
-        $cnt_with_star = 0;
-        $flg_find = false;
-        $last = null;
-        $recnt_formal_team = ['rank' => 0, 'solved' => 1000, 'penalty' => 0];
-        foreach($rank as $item) {
-            if($item['solved'] > 0) {
-                $total_team_cnt++;
-                if($item['tkind'] != 2) {
-                    $total_valid_cnt++;
-                }
-            }
-            if(!$flg_find) {
-                if($last == null || $last['solved'] != $item['solved'] || $last['penalty'] != $item['penalty']) {
-                    $cnt_with_star ++;
-                }
-                $last = $item;
-                $rank_with_star = $cnt_with_star;
-            }
-            if($recnt_formal_team['solved'] != $item['solved'] || $recnt_formal_team['penalty'] != $item['penalty']) {
-                $rank_virtual = $recnt_formal_team['rank'] + 1;
-            } else {
-                $rank_virtual = $recnt_formal_team['rank'];
-            }
-            if($item['tkind'] != 2) {
-                $recnt_formal_team = $item;
-            }
-            if($item['user_id'] == $team_id) {
-                $tried_count = 0;
-                $ret['rank']     = $rank_virtual;
-                if($item['tkind'] == 2) {
-                    $ret['star_team'] = true;
-                }
-                $flg_find = true;
-            }
-        }
-        // 获取真实的 solved、tried、pro_res
-        $contestId = $this->contest['contest_id'];
-        $userId = $this->SolutionUser($this->contest_user, true);
-        
-        // 构建查询
-        $subQuery = db('solution')
-            ->field('problem_id, MIN(result) as min_result')
-            ->where([
-                'result'     => ['egt', 4],
-                'contest_id' => $contestId,
-                'user_id'    => $userId
-            ])
-            ->group('problem_id')
-            ->buildSql();
-        
-        $sol_pro_res = db()->table($subQuery . ' sub')
-            ->field('problem_id, min_result as result')
-            ->cache(30)
-            ->select();
-        $pro_status = [];
-        foreach($sol_pro_res as $pro_res) {
-            if(!array_key_exists($pro_res['problem_id'], $this->problemIdMap['id2abc'])) {
-                continue;
-            }
-            $ret['solved'] += $pro_res['result'] == 4;
-            $ret['tried'] += $pro_res['result'] != 4;
-            $pro_status[$this->problemIdMap['id2abc'][$pro_res['problem_id']]] = $pro_res['result'] == 4 ? 2 : 1;
-        }        
-        foreach ($this->problemIdMap['num2abc'] as $pid_abc) {
-            $ret['pro_res'][] = [
-                'pid_abc'   =>  $pid_abc,
-                'pst'       =>  array_key_exists($pid_abc, $pro_status) ? $pro_status[$pid_abc] : 0
-            ];
-        }
-        $ret['total_team_cnt'] = $total_team_cnt;               // 总有效含打星队伍数
-        $ret['total_valid_cnt'] = $total_valid_cnt;             // 总有效正式队伍数
-        $ret['rank_with_star'] = $rank_with_star;               // 含打星的排名
-        $ret['rank_frozen'] = $this->rankFrozen;
-        $this->success("no team", null, $ret);
-    }
     public function GetContestTeam($contest_list, $solution)
     {
         $team_map = array();
@@ -1270,10 +1087,20 @@ class Contest extends Csgojbase
             } else {
                 $cuser = [];
                 if ($solution == null) {
-                    $solution = db('solution')->where(['contest_id' => $contest['contest_id'], 'result' => ['egt', 4]])->field(['solution_id', 'problem_id', 'user_id', 'in_date', 'result', 'contest_id'])->select();
+                    $solution = db('solution')->where(['contest_id' => $contest['contest_id'], 'result' => ['egt', 4]])->group('user_id')->field('user_id')->select();
                 }
                 foreach ($solution as $sol) {
-                    $cuser[] = $sol['user_id'];
+                    // [
+                    //     [
+                    //         8230,                   // [0]solution_id
+                    //         1002,                   // [1]contest_id
+                    //         1001,                   // [2]problem_id
+                    //         admin,                  // [3]user_id
+                    //         0,                      // [4]tkind
+                    //         "2025-10-30 22:53:06    // [5]in_date
+                    //     ]
+                    // ]
+                    $cuser[] = $sol[3];
                 }
                 $cuser = array_unique($cuser);
                 $team_list = db('users')->where('user_id', 'in', $cuser)->field(['user_id as team_id', 'school', 'nick as name', '0 as contest_id', '0 as tkind'])->select();
@@ -1287,373 +1114,163 @@ class Contest extends Csgojbase
         }
         return array_values($team_map);
     }
-    public function contest_data_ajax()
-    {
-        // 新版rank使用
-        $witout_solution = input('without_solution/d');
-        $only_solution = input('only_solution/d');
-        $min_solution_id = input('min_solution_id/d');
-        $query_param = ($witout_solution == null ? '0' : $witout_solution) . '_' .
-            ($only_solution == null ? '0' : $only_solution) . '_' .
+    protected function GetContestData4Rank($param=[]) {
+        
+        $info_need = $param['info_need'] ?? [];
+        $min_solution_id = $param['min_solution_id'] ?? 0;
+        $solution_result = $param['solution_result'] ?? -1;  // 查询特定结果类型
+
+        if(!is_array($info_need) || count($info_need) == 0 || $info_need[0] == 'all') {
+            $info_need = [
+                'contest',
+                'problem',
+                'team', 
+                'solution', 
+                'contest_balloon'
+            ];
+        }
+        sort($info_need);
+        $query_param = implode('_', $info_need) . '_' . 
             ($min_solution_id == null ? '0' : $min_solution_id) . '_' .
+            ($solution_result == null ? '0' : $solution_result) . '_' .
             $this->contest['contest_id'];
 
         $cache_option = config('CsgojConfig.OJ_RANKDYNAMIC_CACHE_OPTION');
-        $cache_name = $this->OJ_MODE . '_drk_' . $query_param;
-        // $use_cache = $this->rankUseCache;
-        // if(!$this->isContestAdmin && !$this->IsContestAdmin('watcher')) {
-        //     //非管理员则使用cache
-        //     $contest_data = cache($cache_name, '', $cache_option);
-        //     if($contest_data) {
-        //         $this->success("ok", null, $contest_data);
-        //         return;
-        //     }
-        // }
-        $sol_map = [
-            'contest_id' => $this->contest['contest_id'],
-            // 'result' => ['egt', 4]
-        ];
-        if ($min_solution_id != null) {
-            $sol_map['solution_id'] = ['egt', $min_solution_id];
-        }
-        $solution = $witout_solution ? null : db('solution')->where($sol_map)->field(['solution_id', 'problem_id', 'user_id', 'in_date', 'result', 'contest_id'])->order('solution_id', 'asc')->select();
-        if ($only_solution) {
-            $contest_data = [
-                'solution'          => $solution
-            ];
-        } else {
-            $contest_data = [
-                'contest'           => $this->contest,
-                'problem'           => db('contest_problem')->where('contest_id', $this->contest['contest_id'])->select(),
-                'team'              => $this->GetContestTeam([$this->contest], $solution,),
-                'solution'          => $solution
-            ];
-        }
-        if ($this->rankFrozen) {
-            $closeRankTimeStr = date('Y-m-d H:i:s', $this->closeRankTime);
-            foreach ($contest_data['solution'] as &$s) {
-                if ($s['in_date'] > $closeRankTimeStr) {
-                    $s['result'] = -1;
-                }
+        $cache_key = $this->OJ_MODE . '_drk_' . $query_param;
+        $flg_use_cache = !$this->isContestAdmin && !$this->IsContestAdmin('watcher') && 
+            !$this->IsContestAdmin('balloon_manager');
+        if($flg_use_cache) {
+            //非管理员则使用cache
+            $contest_data = cache($cache_key, '', $cache_option);
+            if($contest_data) {
+                $contest_data['flg_cache'] = true;
+                return $contest_data;
             }
         }
-        // if(!$this->isContestAdmin && !$this->IsContestAdmin('watcher')) {
-        //     cache($cache_name, $contest_data, $cache_option);
-        // }        
-        $this->success("ok", null, $contest_data);
-    }
+        // 参数验证和过滤
+        $contest_id = intval($this->contest['contest_id']);
+        $min_solution_id = $min_solution_id ? intval($min_solution_id) : 0;
+        
+        $contest_data = [];
+        // ********************
+        // solution
+        if(in_array('solution', $info_need)) {
+            $sol_map = [
+                'contest_id' => $contest_id,
+            ];
+            if($solution_result >= 0) {
+                $sol_map['result'] = $solution_result;
+            }
+            if ($min_solution_id > 0) {
+                $sol_map['solution_id'] = ['egt', $min_solution_id];
+            }
+            $field = ['solution_id', 'contest_id', 'problem_id', 'user_id', 'result', 'in_date'];
+            // 正常查询获取数据
+            $solution_raw = db('solution')->where($sol_map)->field($field)->order('solution_id', 'asc')->select();
+            
+            // 转换为 list 格式
+            // 字段顺序：[0]solution_id, [1]contest_id, [2]problem_id, [3]team_id（数据库是user_id）, [4]result, [5]in_date
+            $solution = [];
+            if ($solution_raw && is_array($solution_raw)) {
+                foreach ($solution_raw as $item) {
+                    $solution[] = [
+                        $item['solution_id'],
+                        $item['contest_id'],
+                        $item['problem_id'],
+                        $item['user_id'],
+                        $item['result'],
+                        $item['in_date']
+                    ];
+                }
+            }
+            if ($this->rankFrozen) {
+                $closeRankTimeStr = date('Y-m-d H:i:s', $this->closeRankTime);
+                foreach ($solution as &$s) {
+                    if ($s[5] > $closeRankTimeStr) {
+                        $s[4] = -1;
+                    }
+                }
+            }
+            $contest_data['solution'] = $solution;
+        }
+        // ********************
+        // team
+        if(in_array('team', $info_need)) {
+            // 获取 team 信息
+            $team_data = $this->GetContestTeam([$this->contest], $solution ?? []);
+            
+            // 将 team dict 处理为 list 格式
+            // 字段顺序：[0]contest_id, [1]team_id, [2]name, [3]name_en, [4]coach, [5]tmember, [6]school, [7]region, [8]tkind, [9]room, [10]privilege, [11]team_global_code
+            $team_list = [];
+            foreach ($team_data as $team) {
+                $team_list[] = [
+                    $team['contest_id'] ?? '',
+                    $team['team_id'] ?? '',
+                    $team['name'] ?? '',
+                    $team['name_en'] ?? '',
+                    $team['coach'] ?? '',
+                    $team['tmember'] ?? '',
+                    $team['school'] ?? '',
+                    $team['region'] ?? '',
+                    $team['tkind'] ?? '',
+                    $team['room'] ?? '',
+                    $team['privilege'] ?? '',
+                    $team['team_global_code'] ?? ''
+                ];
+            }
+            $contest_data['team'] = $team_list;
+        }
+        // ********************
+        // problem
+        if(in_array('problem', $info_need)) {
+            $problem_data = db('contest_problem')->where('contest_id', $this->contest['contest_id'])->field([
+                "problem_id",
+                "contest_id",
+                "title as color",   // 使用 color 字段名
+                "num",
+            ])->select();
+            $contest_data['problem'] = $problem_data;
+        }
+        // ********************
+        // contest
+        if(in_array('contest', $info_need)) {
+            $contest_data['contest'] = $this->contest;
+        }
+        // ********************
+        // contest_balloon
+        if(in_array('contest_balloon', $info_need)) {
+            $contest_balloon = db('contest_balloon')->where(['contest_id' => $contest_id])->select();
+            $contest_data['contest_balloon'] = [];
+            foreach($contest_balloon as $item) {
+                $contest_data['contest_balloon'][] = [
+                    $item['contest_id'],
+                    $item['problem_id'],
+                    $item['team_id'],
+                    $item['ac_time'],   // int时间戳
+                    $item['pst'],       // int 0普通 10 正式队一血 20 全局一血
+                    $item['bst'],       // int 0未发 10已通知 20已分配 30已发放
+                    $item['balloon_sender'], // string 气球配送员
+                ];
+            }
+        }
+        if($flg_use_cache) {
+            cache($cache_key, $contest_data, $cache_option);
+        }
+        return $contest_data;
 
-    public function contest_data_joint_ajax()
-    {
-        // 多contest rank融合 （仅支持题目一致、起止时间一致的contest）
-        $witout_solution = input('without_solution/d');
-        $only_solution = input('only_solution/d');
+    }
+    public function contest_data_ajax(){
+        $info_need = input('info_need/a');
         $min_solution_id = input('min_solution_id/d');
-        $cid_list_str = input('cid_list/s');
-        $cid_list = explode(',', $cid_list_str);
-        if (count($cid_list) == 0) {
-            $this->error("没有提供比赛ID");
-        } else if (count($cid_list) > 5) {
-            $this->error("比赛ID过多");
-        }
-        $cid_list_str = join(',', $cid_list);
-        if (strlen($cid_list_str) > 50) {
-            $this->error("比赛ID不合法");
-        }
-        $query_param = ($witout_solution == null ? '0' : $witout_solution) . '_' .
-            ($only_solution == null ? '0' : $only_solution) . '_' .
-            ($min_solution_id == null ? '0' : $min_solution_id) . '_' .
-            $cid_list_str;
-
-        $cache_option = config('CsgojConfig.OJ_RANKDYNAMIC_CACHE_OPTION');
-        $cache_name = $this->OJ_MODE . '_drk_' . $query_param;
-        if (!IsAdmin()) {
-            //非管理员则使用cache
-            $contest_data = cache($cache_name, '', $cache_option);
-            if ($contest_data) {
-                $this->success("ok", null, $contest_data);
-                return;
-            }
-        }
-        $contest_list = db('contest')->where('contest_id', 'in', $cid_list)->select();
-        $contest_num = count($contest_list);
-        if ($contest_num == 0) {
-            $this->error("不存在的比赛");
-        }
-        $base_contest = $contest_list[0];
-        for ($i = 1; $i < $contest_num; $i++) {
-            $tmp_contest = $contest_list[$i];
-            if ($base_contest['start_time'] != $tmp_contest['start_time'] || $base_contest['end_time'] != $tmp_contest['end_time']) {
-                $this->error("存在时间不一致的比赛");
-            }
-        }
-        if ($contest_list instanceof \think\Collection) {
-            $contest_list = $contest_list->toArray();
-        }
-        if ($contest_num > 0) {
-            $titles = array_map(function ($contest) {
-                return $contest['title'];
-            }, $contest_list);
-
-            $commonPrefix = array_reduce($titles, function ($carry, $item) {
-                return $carry === null ? $item : substr($item, 0, strspn($item ^ $carry, "\0"));
-            });
-            $commonPrefix = trim(preg_replace('/^[\p{P}]+|[\p{P}]+$/u', '', $commonPrefix));
-            if ($commonPrefix == '') {
-                $base_contest['title'] = '融合比赛：' . $cid_list_str;
-            } else {
-                $base_contest['title'] = $commonPrefix;
-            }
-        }
-        $sol_map = [
-            'contest_id' => ['in', $cid_list]
-        ];
-        if ($min_solution_id != null) {
-            $sol_map['solution_id'] = ['egt', $min_solution_id];
-        }
-        $solution = $witout_solution ? null : db('solution')->where($sol_map)->field(['solution_id', 'problem_id', 'user_id', 'in_date', 'result', 'contest_id'])->order('solution_id', 'asc')->select();
-        if ($only_solution) {
-            $contest_data = [
-                'solution'          => $solution
-            ];
-        } else {
-            $contest_data = [
-                'contest'           => $base_contest,
-                'problem'           => db('contest_problem')->where('contest_id', $base_contest['contest_id'])->select(),
-                'team'              => $this->GetContestTeam($contest_list, $solution),
-                'solution'          => $solution
-            ];
-        }
-
-        $now = time();
-        // $start_time = strtotime($base_contest['start_time']);
-        $end_time = strtotime($base_contest['end_time']);
-        $closeRankTime = $end_time - ($base_contest['frozen_minute'] > 0 ? $base_contest['frozen_minute'] : 0) * 60;
-        $frozen_end_time = $end_time + ($base_contest['frozen_after'] > 0 ? $base_contest['frozen_after'] : 0) * 60;
-        $rankFrozen = false;
-        if ($now > $closeRankTime && $now < $frozen_end_time) {  // 封榜时间段
-            $rankFrozen = true;
-        }
-        if (IsAdmin()) {
-            $rankFrozen = false;
-        }
-
-        if ($rankFrozen) {
-            $closeRankTimeStr = date('Y-m-d H:i:s', $this->closeRankTime);
-            foreach ($contest_data['solution'] as &$s) {
-                if ($s['in_date'] > $closeRankTimeStr) {
-                    $s['result'] = -1;
-                }
-            }
-        }
-        if (!IsAdmin()) {
-            cache($cache_name, $contest_data, $cache_option);
-        }
+        $solution_result = input('solution_result/d');  // 查询特定结果类型
+        $contest_data = $this->GetContestData4Rank([
+            'info_need' => $info_need,            
+            'min_solution_id' => $min_solution_id,
+            'solution_result' => $solution_result,
+        ]);
         $this->success("ok", null, $contest_data);
     }
-    /**************************************************/
-    // OI mode 设置一个分数榜 scorerank ，不过并不是标准 OI 流程，只是用来教学考试打分
-    public function scorerank()
-    {
-        //设置school筛选表数据
-        $this->assign([
-            'contest'           => $this->contest,
-            'user_id'           => $this->contest_user,
-            'problemIdMap'      => $this->problemIdMap,
-            'use_cache'         => $this->rankUseCache
-        ]);
-        return $this->fetch();
-    }
-    public function scorerank_ajax()
-    {
-        // cache配置，除 cache_name 外其它同 ranklist,
-        $cache_option = config('CsgojConfig.OJ_RANK_CACHE_OPTION');
-        $cache_name = $this->OJ_MODE . '_scorerank' . $this->contest['contest_id'];
-        if (!$this->IsContestAdmin()) {
-            $ret = cache($cache_name, '', $cache_option);
-            if ($ret) {
-                return $ret['rows'];
-            }
-        }
-        $data = $this->GetRankData();
-        $firstBlood = &$data[0];
-        $rankDataList = &$data[1];
-        $problemCnt = count($this->problemIdMap['id2abc']);
-        $realProblemCnt = round($this->contest['private'] / 10) == 0 ? $problemCnt : $problemCnt - 1;
-        $retList = [];
-        $i = 1;
-        foreach ($rankDataList as $key => &$rankData) {
-            $row = [
-                'rank'        => "<span acforprize='" . $rankData['solved'] . "'>" . $i . "</span>",
-                'nick'        => htmlspecialchars($rankData['userinfo']['nick']),
-                'solved'      => $rankData['solved'],
-                'penalty'     => $this->sec2str(-$rankData['penalty']),
-                'school'        => htmlspecialchars($rankData['userinfo']['school']),
-            ];
-            if ($this->module == 'cpcsys') {
-                $infoTitle = htmlspecialchars($rankData['userinfo']['tmember']) . ' @ ' . htmlspecialchars($rankData['userinfo']['school']);
-                $row['school'] = htmlspecialchars($rankData['userinfo']['school']);
-                $row['tmember'] = htmlspecialchars($rankData['userinfo']['tmember']);
-            } else {
-                $infoTitle = htmlspecialchars($rankData['userinfo']['nick']) . ' @ ' . htmlspecialchars($rankData['userinfo']['school']);
-            }
-            $row['user_id'] = "<a href='" . $this->UserInfoUrl($key, $this->contest['contest_id']) . "''>" . $key . "</a>";
-            $row['score'] = 0;
-            $lastProAlpha = $this->ContestProblemId($problemCnt - 1);
-            foreach ($this->problemIdMap['id2abc'] as $pid => $apid) {
-                if (array_key_exists($pid, $rankData['pass_score'])) {
-                    $spscore = $rankData['pass_score'][$pid];
-                    if ($spscore > 0.1) {
-                        // 通过10%以上数据，认定 30 的逻辑分，通过比例按 70 分给分。
-                        $spscore = $spscore * 0.7 + 0.3;
-                    }
-                    // 根据设置，如果有附加题，则最后一题作为附加题不计入总分
-                    if ($apid != $lastProAlpha || round($this->contest['private'] / 10) == 0) {
-                        // // $row['score'] += $spscore * 100;
-                        // // 改为每道题独立算分
-                        $row['score'] += $spscore * $this->problemIdMap['id2score'][$pid];
-                    }
-                    $row[$apid] = number_format($spscore * 100, 1);
-                } else {
-                    $row[$apid] = '';
-                }
-                $problemstatus = 0;
-                if (array_key_exists($pid, $firstBlood) && in_array($key, $firstBlood[$pid]['userlist']))
-                    $problemstatus = 3;
-                else if (array_key_exists($pid, $rankData['ac_sec']))
-                    $problemstatus = 2;
-                else if (array_key_exists($pid, $rankData['wa_num']))
-                    $problemstatus = 1;
-                $row[$apid] = "<span pstatus=" . $problemstatus . ">" . $row[$apid] . "</span>";
-            }
-            $row['score'] = number_format($row['score'], 1);
-            $retList[] = $row;
-            $i++;
-        }
-        $ret['rows'] = $retList;
-        if (!$this->IsContestAdmin()) {
-            cache($cache_name, $ret, $cache_option);
-        }
-        return $ret['rows'];
-    }
-    /**************************************************/
-    // 学校 rank ，可以设置各校前 x 名的队伍作为学校排名参考
-    public function schoolrank()
-    {
-        $ojModeConfig = $this->OJ_MODE == 'cpcsys' ? 'CpcSysConfig' : 'CsgojConfig';
-        $this->assign([
-            'user_id'           => $this->contest_user,
-            'schoolRankTeamNum' => $this->contest['topteam'] < 1 ? 1 : $this->contest['topteam'], // config($ojModeConfig . '.SCHOOL_RANK_TEAMNUM'),
-            'use_cache'         => $this->rankUseCache
-            //            'tablewidth'     => 420 + count($problemIdMap['problem_ids']) * 90,
-        ]);
-        return $this->fetch();
-    }
-    public function schoolrank_ajax()
-    {
-        //使用rank的cache
-        $cache_option = config('CsgojConfig.OJ_RANK_CACHE_OPTION');
-        $cache_name = $this->OJ_MODE . '_schoolrank' . $this->contest['contest_id'];
-        if (!$this->IsContestAdmin()) {
-            //非管理员则使用cache
-            $retList = cache($cache_name, '', $cache_option);
-            if ($retList) {
-                return $retList;
-            }
-        }
-        $schoolRankTeamNum = $this->contest['topteam'] < 1 ? 1 : $this->contest['topteam']; // config($ojModeConfig . '.SCHOOL_RANK_TEAMNUM');
 
-        $data = $this->GetRankData(false);  // school rank 排除打星队，$with_star=false
-        $firstBlood = &$data[0];
-        $rankDataList = &$data[1];
-        $schoolDataList = [];
-        foreach ($rankDataList as $key => &$rankData) {
-            if (!isset($rankData['userinfo']) || $rankData['userinfo']['nick'] != '' && $rankData['userinfo']['nick'][0] == '*') {
-                // 没有 userinfo，不合法数据;
-                // 队名开头是“*”，不计入学校排名
-                continue;
-            }
-            //先去掉没有学校信息的
-            if ($rankData['userinfo']['school'] == null || strlen(trim($rankData['userinfo']['school'])) == 0 || trim($rankData['userinfo']['school']) == '-') {
-                continue;
-                // $rankData['userinfo']['school'] = '-';
-            }
-            $rankData['userinfo']['school'] = strtoupper($rankData['userinfo']['school']);
-            if (!array_key_exists($rankData['userinfo']['school'], $schoolDataList))
-                $schoolDataList[$rankData['userinfo']['school']] = [
-                    'solved'    => 0,     //AC题数
-                    'penalty'   => 0,     //罚时（分钟, minutes）
-                    'wa_num'    => [],     //在AC之前错了几次，AC之后的数据忽略
-                    'ac_sec'    => [],     //第一次AC距离比赛开始时间（秒，seconds），之后的数据忽略
-                    'tr_num'    => [],
-                    'ac_num'    => [],     //AC队伍个数
-                    'teamnum'   => 0,
-                    'topteam'   => "<a href='" . $this->UserInfoUrl($rankData['userinfo']['user_id'], $this->contest['contest_id']) . "'>" . $rankData['userinfo']['user_id'] . "</a><br/>" . htmlspecialchars($rankData['userinfo']['nick']),
-                ];
-            $schoolData = &$schoolDataList[$rankData['userinfo']['school']];
-            if ($schoolData['teamnum'] >= $schoolRankTeamNum)
-                continue;
-            foreach ($rankData['wa_num'] as $wakey => $wavalue) {
-                if (!array_key_exists($wakey, $schoolData['wa_num']))
-                    $schoolData['wa_num'][$wakey] = 0;
-                $schoolData['wa_num'][$wakey] += $wavalue;
-            }
-            foreach ($rankData['ac_sec'] as $ackey => $acvalue) {
-                if (!array_key_exists($ackey, $schoolData['ac_sec'])) {
-                    $schoolData['ac_sec'][$ackey] = PHP_INT_MAX;
-                    $schoolData['ac_num'][$ackey] = 0;
-                }
-                if ($acvalue < $schoolData['ac_sec'][$ackey])
-                    $schoolData['ac_sec'][$ackey] = $acvalue;
-                $schoolData['ac_num'][$ackey]++;
-            }
-            foreach ($rankData['tr_num'] as $trkey => $trvalue) {
-                if (!array_key_exists($trkey, $schoolData['tr_num']))
-                    $schoolData['tr_num'][$trkey] = 0;
-                $schoolData['tr_num'][$trkey] += $trvalue;
-            }
-            $schoolData['penalty'] += $rankData['penalty'];
-            $schoolData['solved'] += $rankData['solved'];
-            $schoolData['teamnum']++;
-        }
-        arsort($schoolDataList);
-        $retList = [];
-        $i = 1;
-        foreach ($schoolDataList as $key => &$schoolData) {
-            $row = [
-                'rank'        => "<span acforprize='" . $schoolData['solved'] . "'>" . $i . "</span>",
-                'school'    => htmlspecialchars($key),
-                'solved'    => $schoolData['solved'],
-                'penalty'    => $this->sec2str(-$schoolData['penalty']), //前面用负数方便sort，此时反过来
-                'topteam'    => $schoolData['topteam'],
-            ];
-            // 每道题的显示内容
-            foreach ($this->problemIdMap['id2abc'] as $pid => $apid) {
-                //pstatus 2为fb， 1 为ac， 0为没ac
-                $problemstatus = 0;
-                if (array_key_exists($pid, $schoolData['ac_sec']))
-                    $problemstatus = 2;
-                else if (array_key_exists($pid, $schoolData['tr_num']))
-                    $problemstatus = 5;
-                else if (array_key_exists($pid, $schoolData['wa_num']))
-                    $problemstatus = 1;
-                $row[$apid] = [
-                    'ac'    => array_key_exists($pid, $schoolData['ac_sec']) ? $schoolData['ac_sec'][$pid] : null,
-                    'acn'   => array_key_exists($pid, $schoolData['ac_num']) ? $schoolData['ac_num'][$pid] : null,
-                    'wan'   => array_key_exists($pid, $schoolData['wa_num']) ? $schoolData['wa_num'][$pid] : null,
-                    'trn'   => array_key_exists($pid, $schoolData['tr_num']) ? $schoolData['tr_num'][$pid] : null,
-                    'pst'   => $problemstatus
-                ];
-            }
-            $retList[] = $row;
-            $i++;
-        }
-        //设置rank的cache
-        if (!$this->IsContestAdmin()) {
-            cache($cache_name, $retList, $cache_option);
-        }
-        return $retList;
-    }
     public function RankUserList($map, $with_star = true)
     {
         return db('solution')->alias('s')
@@ -1677,108 +1294,6 @@ class Contest extends Csgojbase
         else
             return '/' . $this->module . '/user/userinfo?user_id=' . $user_id;
     }
-    protected function GetRankData($with_star = true)
-    {
-        $map = ['contest_id' => $this->contest['contest_id']];
-        $Solution = db('solution');
-        $solutionList = $Solution->where($map)->order('in_date', 'asc')->select();
-        $rankDataList = [];
-        //把所有solution整理为以user_id为键的一条条成绩信息
-        // $fb_include_star = input('fb_include_star/d');  // 一血是否考虑打星队
-        $fb_include_star = 0;  // 考虑到不同用户的缓存问题，暂时默认不考虑打星队，以后处理
-        $firstBlood = [];
-
-        // 先获取用户列表，Online版只需要nick，比赛里需要只计算比赛账号的rank，以免 fb 计算错误
-        // 解释：对于比赛系统，生成账号交题后，重新生成账号去掉了已交题账号，避免这个交题记录被作为fb，造成rank实际用户fb无信息
-
-        $userList = $this->RankUserList($map, $with_star);
-        $userMap = [];
-        foreach ($userList as $user) {
-            $userMap[$user['user_id']] = $user;
-        }
-        // 获取solution信息计算rank数据
-        $closeRankTimeStr = date('Y-m-d H:i:s', $this->closeRankTime);
-        $contestTotalTime = strtotime($this->contest['end_time']) - strtotime($this->contest['start_time']);
-        foreach ($solutionList as $s) {
-            $s['user_id'] = $this->SolutionUser($s['user_id'], false);
-            if (!array_key_exists($s['problem_id'], $this->problemIdMap['id2abc']))
-                continue;
-            if (!array_key_exists($s['user_id'], $userMap))
-                continue;
-            if (!array_key_exists($s['user_id'], $rankDataList))
-                $rankDataList[$s['user_id']] = [
-                    //solved和penalty放在前两个，sort的时候就很方便不需要额外写comp函数了。
-                    'solved'  => 0,         // AC题数
-                    'penalty' => 0,         // 罚时（XCPC规则的总时长，秒）
-                    'team_id' => $s['user_id'],
-                    'pass_rate' => [],      // 各题 pass_rate，取最大值
-                    'pass_score' => [],      // 如果不使用 pass_rate作为分数，而是增加额外算法，记录得分
-                    'wa_num' => [],         // 在AC之前错了几次，AC之后的数据忽略
-                    'ac_sec' => [],         // 第一次AC距离比赛开始时间（秒，seconds），之后的数据忽略
-                    'tr_num' => [],         // 封榜后尝试次数
-                ];
-            $rankData = &$rankDataList[$s['user_id']];
-            if (array_key_exists($s['problem_id'], $rankData['ac_sec']))
-                continue;
-
-            if ($s['result'] == 11) {
-                // Compile Error 不罚时，计算rank时视为不存在
-                continue;
-            } else if ($this->rankFrozen == true && $s['in_date'] > $closeRankTimeStr || $s['result'] < 4) {    // 20241021 增加，result < 4 的正在评测的题也是 try 
-                $rankData['tr_num'][$s['problem_id']] = array_key_exists($s['problem_id'], $rankData['tr_num']) ? $rankData['tr_num'][$s['problem_id']] + 1 : 1;
-            } else if ($s['result'] == 4) {
-                $rankData['ac_sec'][$s['problem_id']] = strtotime($s['in_date']) - strtotime($this->contest['start_time']);
-                $rankData['solved']++;
-                //用负数，sort的时候就很方便了。
-                $rankData['penalty'] -= $rankData['ac_sec'][$s['problem_id']] + (array_key_exists($s['problem_id'], $rankData['wa_num']) ? (1200 * $rankData['wa_num'][$s['problem_id']]) : 0);
-
-                if ($fb_include_star || !array_key_exists('tkind', $userMap[$s['user_id']]) || $userMap[$s['user_id']]['tkind'] != 2) {   // 只给正式队发一血
-                    //添加first blood标记，多个人同一秒出题则都是fb
-                    if (!array_key_exists($s['problem_id'], $firstBlood)) {
-                        $firstBlood[$s['problem_id']] = [
-                            'userlist' => [],
-                            'time'    => $rankData['ac_sec'][$s['problem_id']]
-                        ];
-                    }
-                    if ($firstBlood[$s['problem_id']]['time'] == $rankData['ac_sec'][$s['problem_id']]) {
-                        $firstBlood[$s['problem_id']]['userlist'][] = $s['user_id'];
-                    }
-                }
-            } else {
-                $rankData['wa_num'][$s['problem_id']] = array_key_exists($s['problem_id'], $rankData['wa_num']) ? $rankData['wa_num'][$s['problem_id']] + 1 : 1;
-            }
-            if (!array_key_exists($s['problem_id'], $rankData['pass_rate']) || $s['pass_rate'] > $rankData['pass_rate'][$s['problem_id']]) {
-                // 取最高的 pass_rate
-                $rankData['pass_rate'][$s['problem_id']] = $s['pass_rate'];
-            }
-            // 用完成时间对 pass_rate 进行 decline 计算score
-            $sPassTime = strtotime($s['in_date']) - strtotime($this->contest['start_time']);
-            $s['pass_score'] = $s['pass_rate'] - 0.1 * $sPassTime / $contestTotalTime;
-            if ($s['pass_score'] < 0) {
-                $s['pass_score'] = 0;
-            }
-            if (!array_key_exists($s['problem_id'], $rankData['pass_score']) || $s['pass_score'] > $rankData['pass_score'][$s['problem_id']]) {
-                // 取最高的 pass_score
-                $rankData['pass_score'][$s['problem_id']] = $s['pass_score'];
-            }
-        }
-        foreach ($userList as $user) {
-            foreach ($user as $key => &$value) {
-                if ($value == null || trim($value) == '') {
-                    $value = '-';
-                }
-            }
-            $user['school'] = strtoupper($user['school']);
-            // 如果比赛开始后管理员删除了题目，这里也要避免只交了删除题目的用户进入榜单数据里，否则会因为缺少预处理部分
-            // 的数据（比如'solved'等）而报错
-            if (!array_key_exists($user['user_id'], $rankDataList))
-                continue;
-            $rankDataList[$user['user_id']]['userinfo'] = $user;
-        }
-        // #####################排序在此处，就一行。此时各时间数据还是秒的int格式#######################
-        arsort($rankDataList);
-        return [$firstBlood, $rankDataList];
-    }
     public function sec2str($sec)
     {
         // 训练类比赛可能超过100小时，多于二位数了。
@@ -1788,78 +1303,6 @@ class Contest extends Csgojbase
             $sec = sprintf("%d:%02d:%02d", $sec / 3600, $sec % 3600 / 60, $sec % 60);
         return $sec;
     }
-    public function statistics()
-    {
-        $this->assign([
-            'ojRes'           => $this->ojResults,
-            'ojLang'          => $this->ojLang,
-            'useStatus'       => $this->allowResults,
-            'useLanguage'     => $this->allowLanguage
-        ]);
-        $limitLanguage = [];
-        foreach ($this->allowLanguage as $k => $val) {
-            //滤除旧数据中新OJ不支持的语言
-            if (array_key_exists($k, $this->ojLang))
-                $limitLanguage[] = $k;
-        }
-        $map = [
-            'contest_id' => $this->contest['contest_id'],
-            'language'   => ['in', $limitLanguage]
-        ];
-        if ($this->rankFrozen) {
-            //封榜
-            $map['in_date'] = ['lt', date('Y-m-d H:i:s', $this->closeRankTime)];
-        }
-        $solutionList = db('solution')->where($map)->order('in_date', 'asc')->select();
-
-        $lastLine = ['problem_id_show' => 'Total', 'total' => 0];
-        foreach ($this->allowResults as $status) {
-            $lastLine[$this->ojResults[$status]] = 0;
-        }
-        foreach ($this->allowLanguage as $language)
-            $lastLine[$language] = 0;
-        $problemStatistic = [];
-        foreach ($this->problemIdMap['abc2id'] as $apid => $pid) {
-            //初始化表格基本数据
-            //$problemStatistic中，key为num的problem_id，'problem_id'=>值为ABCD的编号。不保存10xx格式的。
-            $ps = &$problemStatistic[$this->problemIdMap['id2num'][$pid]];
-            $ps = [
-                'total' => 0,
-                'problem_id_show' => $apid
-            ];
-            foreach ($this->allowResults as $status)
-                $ps[$this->ojResults[$status]] = 0;
-            foreach ($this->allowLanguage as $language)
-                $ps[$language] = 0;
-        }
-        foreach ($solutionList as $s) {
-            if (!array_key_exists($s['problem_id'], $this->problemIdMap['id2abc'])) {
-                continue;
-            }
-            //不在考察范围内的状态和语言掠过
-            if (!in_array($s['result'], $this->allowResults)) {
-                continue;
-            }
-            if (!array_key_exists($s['language'], $this->allowLanguage)) {
-                continue;
-            }
-            //这里的key用"num"，即contest里对problem的排序编号0123，用来正确排序ABCD...(比如题数大于26个，AA、AB的字符串排序就不一定靠谱了)
-            $ps = &$problemStatistic[$this->problemIdMap['id2num'][$s['problem_id']]];
-            $ps[$this->ojResults[$s['result']]]++;
-            $ps[$this->ojLang[$s['language']]]++;
-
-            $lastLine[$this->ojResults[$s['result']]]++;
-            $lastLine[$this->ojLang[$s['language']]]++;
-
-            $ps['total']++;
-            $lastLine['total']++;
-        }
-        ksort($problemStatistic);
-        $problemStatistic[] = $lastLine;
-        $this->assign('problemStatistic', $problemStatistic);
-        return $this->fetch();
-    }
-
     public function FromLangMask($langmask)
     {
         $languages = [];
@@ -1900,7 +1343,10 @@ class Contest extends Csgojbase
         foreach ($replyList as $key => &$rep) {
             $rep['user_id'] = $this->SolutionUser($rep['user_id'], false);
         }
-        $topic['problem_id'] = $this->DisplayTopicPid(isset($topic['problem_id']) ? $topic['problem_id'] : null);
+        
+        // 使用统一的problem_id处理逻辑
+        $topic = $this->ProcessTopicProblemId($topic);
+        
         if ($topic['public_show'] == 1 && !$this->IsContestAdmin('admin')) {
             $this->assign('replyAvoid', true);
         }
@@ -2000,7 +1446,7 @@ class Contest extends Csgojbase
             $now = time();
             $submitWaitTime = config('CsgojConfig.OJ_TOPIC_WAIT_TIME');
             if ($now - session('last_topic_submit') < $submitWaitTime)
-                $this->error("You should not submit topic more than twice in " . $submitWaitTime . " seconds. " . ($submitWaitTime - ($now - session('last_topic_submit'))) . " seconds left.");
+                $this->error("回复过于频繁，请稍候。<br/>Reply too frequent, please wait.<br/>" . ($submitWaitTime - ($now - session('last_topic_submit'))) . " s");
         }
         session('last_topic_submit', time());
     }
@@ -2050,8 +1496,7 @@ class Contest extends Csgojbase
         }
         $topic['public_show'] = input('status/d') == 1 ? 1 : 0;
         $Topic->update($topic);
-        $newStatus = $topic['public_show'] == 1 ? 'Public' : 'Private';
-        $this->success("Topic " . $topic['topic_id'] . " status changed to " . $newStatus, null, ['status' => $topic['public_show'], 'statusstr' => $newStatus]);
+        $this->success("Topic " . $topic['topic_id'] . " status changed", null, ['status' => $topic['public_show']]);
     }
     public function topic_list()
     {
@@ -2061,17 +1506,25 @@ class Contest extends Csgojbase
         return $this->fetch();
     }
     public function topic_num_ajax() {
-        if(!$this->IsContestAdmin('admin')) {
-            $this->error("Permission denied");
-        }
-        $result = db('contest_topic')
+        $this->TopicAuth();
+        
+        // 构建查询器
+        $query = db('contest_topic')
             ->where([
                 'contest_id' => $this->contest['contest_id'],
                 'reply' => ['elt', 0]
             ])
-            ->where($this->topicDefaultMap)
-            ->field('COUNT(*) as count, SUM(reply) as reply_sum')
-            ->find();
+            ->where($this->topicDefaultMap);
+        
+        // 如果不是管理员，添加额外的权限限制
+        if (!$this->IsContestAdmin('admin')) {
+            $query->where(function($query) {
+                $query->where('user_id', '=', $this->contest_user_dbfull)
+                      ->whereOr('public_show', '=', 1);
+            });
+        }
+        
+        $result = $query->field('COUNT(*) as count, SUM(reply) as reply_sum')->find();
         
         $result['reply_sum'] = $result['reply_sum'] ?? 0;
         return $this->success('ok', null, $result);
@@ -2079,32 +1532,14 @@ class Contest extends Csgojbase
     public function topic_list_ajax()
     {
         $this->TopicAuth();
-        $offset     = intval(input('offset'));
-        $limit      = intval(input('limit'));
         $sort       = trim(input('sort', 'topic_id'));
         $fields     = ['topic_id', 'user_id', 'title', 'public_show', 'contest_id', 'in_date', 'problem_id', 'reply'];
         $sort       = validate_item_range($sort, $fields);
         $order      = input('order', 'desc');
-        $search     = trim(input('search/s', ''));
 
         $map = ['reply' => ['elt', 0]];
-
-        $apid       = trim(input('apid'));
-        $user_id    = trim(input('user_id'));
-        $topic_id   = trim(input('topic_id/d'));
-        $title      = trim(input('title'));
-        if ($apid != null && $apid != -1) {
-            $map['problem_id'] = array_key_exists($apid, $this->problemIdMap['abc2id']) ? $this->problemIdMap['abc2id'][$apid] : '';
-        }
-        if ($user_id != null && strlen($user_id) > 0)
-            $map['user_id'] = $this->SolutionUser($user_id, true);
-        if ($topic_id != null && $topic_id > 0)
-            $map['topic_id'] = $topic_id;
-        if ($title != null && strlen($title) > 0)
-            $map['title'] = ['like', '%' . $title . '%'];
         $map['contest_id'] = $this->contest['contest_id'];
 
-        $ret = [];
         $ordertype = [];
         if (strlen($sort) > 0) {
             $ordertype[$sort] = $order;
@@ -2124,56 +1559,74 @@ class Contest extends Csgojbase
                 })
                 ->field($fields)
                 ->order($ordertype)
-                ->limit($offset, $limit)
                 ->select();
         } else {
             $list = $Topic
                 ->where($map)
                 ->field($fields)
                 ->order($ordertype)
-                ->limit($offset, $limit)
                 ->select();
         }
 
         foreach ($list as &$item) {
             $item['user_id'] = $this->SolutionUser($item['user_id'], false);
-            $item['title'] = "<a href='/" . $this->request->module() . "/contest/topic_detail?topic_id=" . $item['topic_id'] . "&cid=" . $item['contest_id'] . "'>" . $item['title'] . "</a>";
-            $item['user_id'] = "<a href='" . $this->UserInfoUrl($item['user_id'], $this->contest['contest_id']) . "'>" . $item['user_id'] . "</a>";
-
-            if ($this->IsContestAdmin('admin')) {
-                $flg_public_show = $item['public_show'];
-                $item['public_show'] = "<button type='button' field='public_show' topic_id='" . $item['topic_id'] . "' class='change_status btn ";
-                if($flg_public_show == 0) {
-                    $item['public_show'] .= "btn-warning' status='0' >Private";
-                } else if($flg_public_show == -1) {
-                    $item['public_show'] .= "btn-default' status='-1' >Deleted";
-                } else {
-                    $item['public_show'] .= "btn-success' status='1' >Public";
-                }
-                $item['public_show'] .= "</button>";
-            }
-            $item['problem_id'] = $this->DisplayTopicPid(isset($item['problem_id']) ? $item['problem_id'] : null);
+            
+            // 使用统一的problem_id处理逻辑
+            $item = $this->ProcessTopicProblemId($item);
+            
             $item['reply'] = -$item['reply']; // 负数表示被回复次数
+            // 添加管理员标识，供前端formatter使用
+            $item['is_admin'] = $this->IsContestAdmin('admin');
         }
-        $ret['total'] = $Topic->where($map)->count();
-        $ret['rows'] = $list;
-        return $ret;
+        return $list;
     }
+    /**
+     * 处理topic的problem_id显示逻辑
+     * @param array $topic 包含problem_id的topic数组
+     * @return array 返回处理后的topic数组，包含problem_id和pid_abc字段
+     */
+    public function ProcessTopicProblemId($topic)
+    {
+        $realPid = isset($topic['problem_id']) ? $topic['problem_id'] : null;
+        
+        if ($realPid == null || $realPid == -1) {
+            $topic['problem_id'] = ''; // 无权限情况下设为空字符串
+            $topic['pid_abc'] = 'All';
+        } else {
+            // 根据权限决定是否显示真实ID
+            if ($this->IsContestAdmin() && $realPid != -1) {
+                $topic['problem_id'] = strval($realPid); // 保持真实ID
+            } else {
+                $topic['problem_id'] = ''; // 无权限情况下设为空字符串
+            }
+            
+            // 设置字母ID
+            if (array_key_exists($realPid, $this->problemIdMap['id2abc'])) {
+                $topic['pid_abc'] = $this->problemIdMap['id2abc'][$realPid];
+            } else {
+                $topic['pid_abc'] = strval($realPid); // 如果题目被移出比赛，显示原ID
+            }
+        }
+        
+        return $topic;
+    }
+
+    /**
+     * 兼容旧版本的DisplayTopicPid函数
+     * @deprecated 请使用ProcessTopicProblemId替代
+     */
     public function DisplayTopicPid($topicPid)
     {
-        $pid = $topicPid == null ? -1 : $topicPid;
-        if (array_key_exists($pid, $this->problemIdMap['id2abc']))
-            $apid = $this->problemIdMap['id2abc'][$pid];
-        else
-            $apid = $pid == -1 ? "All" : strval($pid); // 如果题目被移出这个比赛，至少这个信息能提示管理员问题所在
-        $retPid = $apid;
-        if ($this->IsContestAdmin())
-            $display_pid = $apid . "(" . $pid . ")";
-        else
-            $display_pid = $apid;
-        if (array_key_exists($pid, $this->problemIdMap['id2abc']))
-            $retPid = "<a href='problem?cid=" . $this->contest['contest_id'] . "&pid=" . $apid . "'>" . $display_pid . "</a>";
-        return $retPid;
+        $topic = ['problem_id' => $topicPid];
+        $processed = $this->ProcessTopicProblemId($topic);
+        
+        // 构建显示文本：如果有problem_id则显示括号，否则只显示字母ID
+        $displayText = $processed['pid_abc'];
+        if ($processed['problem_id'] && $processed['problem_id'] !== '') {
+            $displayText = $processed['pid_abc'] . '(' . $processed['problem_id'] . ')';
+        }
+        
+        return $displayText;
     }
 
     /**************************************************/
@@ -2196,147 +1649,49 @@ class Contest extends Csgojbase
     {
         return $this->AC($value['ac']) . $this->TR($value['tr']) . '<br/>' . $this->WA($value['wa']) . '</span>';
     }
-    public function contest_export()
-    {
-        if (!$this->IsContestAdmin()) {
+    
+    public function contest2print() {
+        if (!$this->isContestAdmin) {
             $this->error("You are not administrator!");
         }
-        $ret_content = "# " . $this->contest['contest_id'] . ": " . $this->contest['title'] . " 数据归档\n\n";
-        // ********************
-        // Problem Description
+        
+        // 禁用布局（打印页面不需要布局）
+        $this->view->engine->layout(false);
+        
+        // 获取题目列表（参考 problem() 方法和 contest_problem_description_export()）
         $problem_list_export = [];
         foreach ($this->problemIdMap['id2abc'] as $key => $val) {
             $problem_list_export[] = intval($key);
         }
         $problem_list_export = array_unique($problem_list_export);
-        if (count($problem_list_export) == 0)
+        if (count($problem_list_export) == 0) {
             $this->error("Cannot find problems for contest " . $this->contest['contest_id']);
+        }
+        
         $whereMap = [
-            "p.problem_id" => ['in', $problem_list_export]
+            "problem_id" => ['in', $problem_list_export]
         ];
-        $orderMap = new Expression("field(p.problem_id," . implode(",", $problem_list_export) . ")");
-
+        $orderMap = new Expression("field(problem_id," . implode(",", $problem_list_export) . ")");
+        
         $Problem = db('problem');
-        $problemList = $Problem->alias('p')
-            ->join('problem_md pmd', 'p.problem_id = pmd.problem_id', 'left')
-            ->where($whereMap)
+        $problem_list = $Problem->where($whereMap)
             ->order($orderMap)
-            ->field([
-                'p.problem_id problem_id',
-                'p.title title',
-                'p.sample_input sample_input',
-                'p.sample_output sample_output',
-                'p.spj spj',
-                'p.time_limit time_limit',
-                'p.memory_limit memory_limit',
-                'pmd.description description_md',
-                'pmd.input input_md',
-                'pmd.output output_md',
-                'pmd.hint hint_md',
-                'pmd.source source_md',
-                'pmd.author author_md',
-            ])
             ->select();
-        $ret_content .= "## 题目\n\n";
-        foreach ($problemList as $pro) {
-            $ret_content .= "### " . $this->problemIdMap['id2abc'][$pro['problem_id']] . "(" . $pro['problem_id'] . ")：" . $pro['title'] . "\n\n";
-            $ret_content .= "> Time Limit: " . $pro['time_limit'] . "s    \t Memory Limit: " . $pro['memory_limit'] . "MB    \t Special Judge: " . ($pro['spj'] == '0' ? "False" : "True") . "\n\n";
-            $ret_content .= $pro['description_md'] . "\n\n";
-            $ret_content .= "#### Input\n\n" . $pro['input_md'] . "\n\n";
-            $ret_content .= "#### Output\n\n" . $pro['output_md'] . "\n\n";
-            $ret_content .= "#### Sample Input\n\n````txt\n" . $pro['sample_input'] . "\n````\n\n";
-            $ret_content .= "#### Sample Output\n\n````txt\n" . $pro['sample_output'] . "\n````\n\n";
-            if (strlen(trim($pro['hint_md'])) > 0)
-                $ret_content .= "#### Hint\n\n" . $pro['hint_md'] . "\n\n";
-            if (strlen(trim($pro['source_md'])) > 0)
-                $ret_content .= "#### Source\n\n" . $pro['source_md'] . "\n\n";
-            if (strlen(trim($pro['author_md'])) > 0)
-                $ret_content .= "#### Author\n\n" . $pro['author_md'] . "\n\n";
+        
+        // 处理题目数据，添加题号（A, B, C...）
+        foreach ($problem_list as &$problem) {
+            $problem_id = $problem['problem_id'];
+            if (isset($this->problemIdMap['id2abc'][$problem_id])) {
+                $problem['apid'] = $this->problemIdMap['id2abc'][$problem_id];
+            }            
         }
-        // ********************
-        // Rank
-        $ret_content .= "## 排名\n\n";
-        $rank = $this->ranklist_ajax();
-        $ret_content .= "| Rank | User ID | Nick | School | Member | Solved | Penalty | ";
-        foreach ($this->problemIdMap['id2abc'] as $key => $val) {
-            $ret_content .= $val . "     | ";
-        }
-        $ret_content .= "\n|";
-        for ($i = 0; $i < 7; $i++) {
-            $ret_content .= ":---------|";
-        }
-        foreach ($this->problemIdMap['id2abc'] as $key => $val) {
-            $ret_content .= ":-----|";
-        }
-        $ret_content .= "\n";
-        $userRec = [];
-        foreach ($rank as $item) {
-            $userRec[$item['user_id']] = [
-                'user_id' => $item['user_id'],
-                'nick' => $item['nick'],
-                'tmember' => array_key_exists('tmember', $item) ? $item['tmember'] : '',
-                'school' => $item['school']
-            ];
-            $ret_content .= "| " . $item['rank'] . " | " . $item['user_id'] . " | " . $item['nick'] . " | " . $item['school'] . " | " .
-                (array_key_exists('tmember', $item) ? $item['tmember'] : "") . " | " . $item['solved'] . " | " . $item['penalty'] . " | ";
-
-            foreach ($this->problemIdMap['id2abc'] as $key => $val) {
-                $ret_content .= (array_key_exists($val, $item) ? $this->FormatterRankPro($item[$val]) : "") . " | ";
-            }
-            $ret_content .= "\n";
-        }
-        // ********************
-        // Solution
-        $ret_content .= "\n## 源代码\n\n";
-
-        $Solution = db('solution');
-        $solutionList = $Solution->alias('s')
-            ->join('source_code sc', 's.solution_id = sc.solution_id', 'left')
-            ->where(['s.contest_id' => $this->contest['contest_id']])
-            ->order(['s.solution_id' => 'ASC'])
-            ->field([
-                's.solution_id solution_id',
-                's.problem_id problem_id',
-                's.user_id user_id',
-                's.time time',
-                's.memory memory',
-                's.result result',
-                's.language language',
-                's.code_length code_length',
-                's.pass_rate pass_rate',
-                'sc.source source'
-            ])
-            ->select();
-
-        foreach ($solutionList as $sol) {
-            $sol['user_id'] = $this->SolutionUser($sol['user_id'], false);
-            $ret_content .= "### " . $sol['solution_id'] . ": pro[" . $sol['problem_id'] . "] user[" . $sol['user_id'] . "][" .
-                (array_key_exists($sol['user_id'], $userRec) ? $userRec[$sol['user_id']]['nick'] .
-                    (array_key_exists('tmember', $userRec[$sol['user_id']]) && $userRec[$sol['user_id']]['tmember'] != '' ? "." . $userRec[$sol['user_id']]['tmember'] : '') : "") .
-                "] result[" . $this->ojResults[$sol['result']] . "]\n\n";
-
-            if (array_key_exists($sol['language'], $this->ojLang))
-                $language = $this->ojLang[$sol['language']];
-            else
-                $language = "Unknown";
-            $solContent = "````" . ($language == "Unknown" ? "" : $language);
-            $solContent .= "\n/**********************************************************************\n" .
-                "\tProblem: " . $sol['problem_id'] . "\n\tUser: " . $sol['user_id'] . "\n" .
-                "\tLanguage: " . $language . "\n\tResult: " . $this->ojResults[$sol['result']] . "\n";
-            if ($sol['result'] == 4)
-                $solContent .= "\tTime:" . $sol['time'] . " ms\n" . "\tMemory:" . $sol['memory'] . " kb\n";
-            $solContent .= "**********************************************************************/\n\n";
-            $solContent .= str_replace("\n\r", "\n", $sol['source']);
-
-            // $solContent .= htmlentities(str_replace("\n\r","\n", $sol['source']),ENT_QUOTES,"utf-8");
-            $solContent .= "\n````\n\n";
-            $ret_content .= $solContent;
-        }
-        if (Request::instance()->isGet()) {
-            echo "$ret_content";
-        } else {
-            $this->success("ok", null, $ret_content);
-        }
+        
+        $this->assign([
+            "pagetitle" => "Contest Problem Print",
+            "contest" => $this->contest,
+            "problem_list" => $problem_list
+        ]);
+        return $this->fetch();
     }
     public function contest_problem_description_export()
     {
@@ -2389,38 +1744,6 @@ class Contest extends Csgojbase
                 ])
                 ->select()
         ];
-        // $pro_ret_all = [];
-        // foreach($problemList as $pro){
-        //     $ret_content = "# " . $this->problemIdMap['id2abc'][$pro['problem_id']] . ". " . $pro['title'] . "\n\n";
-        //     $ret_content .= "> Time Limit: " . $pro['time_limit'] . "s    \t Memory Limit: " . $pro['memory_limit'] . "MB    \t Special Judge: " . ($pro['spj']=='0' ? "False" : "True") . "\n\n";            
-        //     // $ret_content .= $pro['description_md'] . "\n\n";
-        //     // $ret_content .= "## Input\n\n" . $pro['input_md'] . "\n\n";
-        //     // $ret_content .= "## Output\n\n" . $pro['output_md'] . "\n\n";
-        //     $ret_content .= $pro['description'] . "\n\n";
-        //     $ret_content .= "## Input\n\n" . $pro['input'] . "\n\n";
-        //     $ret_content .= "## Output\n\n" . $pro['output'] . "\n\n";
-
-        //     $ret_content .= "## Sample Input\n\n````txt\n" . $pro['sample_input'] . "\n````\n\n";
-        //     $ret_content .= "## Sample Output\n\n````txt\n" . $pro['sample_output'] . "\n````\n\n";
-        //     if(strlen(trim($pro['hint'])) > 0) {
-        //         // $ret_content .= "## Hint\n\n" . $pro['hint_md'] . "\n\n";
-        //         $ret_content .= "## Hint\n\n" . $pro['hint'] . "\n\n";
-        //     }
-        //     if($with_source != 0 && strlen(trim($pro['source'])) > 0){
-        //         // $ret_content .= "## Source\n\n" . $pro['source_md'] . "\n\n";   
-        //         $ret_content .= "## Source\n\n" . $pro['source'] . "\n\n";
-        //     }
-        //     if($with_author != 0 && strlen(trim($pro['author'])) > 0) {
-        //         // $ret_content .= "## Author\n\n" . $pro['author_md'] . "\n\n";
-        //         $ret_content .= "## Author\n\n" . $pro['author'] . "\n\n";
-        //     }
-        //     $pro_ret_all[] = $ret_content;
-        // }
-        // if (Request::instance()->isGet()) {
-        //     echo implode("\n\n", $pro_ret_all);;
-        // } else {
-        //     $this->success("ok", null, $pro_ret_all);
-        // }
     }
     public function msg() {
         return $this->fetch();

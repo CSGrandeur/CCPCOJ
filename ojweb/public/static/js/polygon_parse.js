@@ -28,18 +28,15 @@ async function HandlePolygonZipFile(file) {
 
         // 合并 ordered_contest_problems 和 list_other_problem
         list_problem = ordered_contest_problems.concat(list_other_problem);
-        for(let i = 0; i < list_problem.length; i ++) {
-            const pid = i + 1;
-            list_problem[i].idx         =    pid;
-            list_problem[i].title       =   `<a href="#" onclick="DownloadPro(${pid})">${list_problem[i].title}</a>`;
-            list_problem[i].testdata    =   `<a href="#" onclick="handleDownloadTestData(${pid})">${list_problem[i].testdata}</a>`;
-            list_problem[i].spj         =   `<input type="checkbox" class="spj-switch" data-pid="${pid}" checked>`;
-        }
-        // 组织数据并更新表格
+        // 组织数据并更新表格，保持纯数据，不包含 HTML 标签，formatter 会在表格渲染时处理
         const tableData = [];
-        let idx = 1;
-        for (const value of list_problem) {
-            tableData.push({ idx: idx++, ...value });
+        for (let i = 0; i < list_problem.length; i++) {
+            const pid = i + 1;
+            // 确保每个问题都有 idx，用于 formatter 中的引用
+            tableData.push({ 
+                idx: pid,
+                ...list_problem[i]
+            });
         }
         // 隐藏 overlay
         hideOverlay();
@@ -188,12 +185,14 @@ async function MakeProblemJson(entry, pid) {
                 memory_limit:   Math.round((projson?.memoryLimit || 268435456) / 1024 / 1024),
                 problem_id:     0,
                 problem_new_id: pid,
-                sample_input:   projson.sampleTests
-                                    .map((test) => test.input.replace(/\r\n/g, "\n"))
-                                    .join("\n##CASE##\n"),
-                sample_output:  projson.sampleTests
-                                    .map((test) => test.output.replace(/\r\n/g, "\n"))
-                                    .join("\n##CASE##\n"),
+                sample_input:   JSON.stringify({
+                    data_type: 'json',
+                    data: projson.sampleTests.map((test) => test.input.replace(/\r\n/g, "\n"))
+                }),
+                sample_output:  JSON.stringify({
+                    data_type: 'json',
+                    data: projson.sampleTests.map((test) => test.output.replace(/\r\n/g, "\n"))
+                }),
                 solved:         0,
                 source:         "",
                 source_md:      "",
@@ -204,7 +203,10 @@ async function MakeProblemJson(entry, pid) {
             attach_files: attach_files
         };
     } catch (error) {
-        alertify.error(`Read file ${entry.filename} failed: ${error}`);
+        alerty.error(
+            `读取文件 ${entry.filename} 失败：${error}`,
+            `Failed to read file ${entry.filename}: ${error}`
+        );
         console.error("Error reading or parsing file:", error);
         throw error;
     }
@@ -232,12 +234,19 @@ function FindChecker(entries, problemXmlDir) {
     return entries.find((entry) => 
         problemXmlDir == ""  ? entry.filename == "check.cpp" : entry.filename == `${problemXmlDir}/check.cpp`
     );
+}
+
+function FindInteractor(entries, problemXmlDir) {
+    const interactorPath = problemXmlDir == "" ? "files/interactor.cpp" : `${problemXmlDir}/files/interactor.cpp`;
+    return entries.find((entry) => {
+        return entry.filename === interactorPath || entry.filename.endsWith("/files/interactor.cpp");
+    });
 } 
 async function MakeTestData(
     proble_title,
     problem_entries,
     problem_xml_entry,
-    includeSpj,
+    spjType,
     tip_info="Processing"
 ) {
     const zipWriter = new zip.ZipWriter(new zip.BlobWriter("application/zip"));
@@ -284,16 +293,36 @@ async function MakeTestData(
             }
         }
     }
-    if (includeSpj) {
+    
+    // 根据 spj 类型添加对应的文件
+    if (spjType === "1") {
+        // 特判评测：使用 check.cpp
         const spjEntry = FindChecker(problem_entries, problemDir);
         if (spjEntry) {
             const spjContent = await spjEntry.getData(new zip.BlobWriter());
             await zipWriter.add("tpj.cc", new zip.BlobReader(spjContent));
             totalSize += spjContent.size; // 计算SPJ文件大小
         } else {
-            alertify.warn(`problem ${proble_title} does not have check.cpp`);
+            alerty.warn(
+                `题目 ${proble_title} 不存在 check.cpp`,
+                `Problem ${proble_title} does not have check.cpp`
+            );
+        }
+    } else if (spjType === "2") {
+        // 交互评测：使用 files/interactor.cpp
+        const interactorEntry = FindInteractor(problem_entries, problemDir);
+        if (interactorEntry) {
+            const interactorContent = await interactorEntry.getData(new zip.BlobWriter());
+            await zipWriter.add("tpj.cc", new zip.BlobReader(interactorContent));
+            totalSize += interactorContent.size; // 计算交互文件大小
+        } else {
+            alerty.warn(
+                `题目 ${proble_title} 不存在 files/interactor.cpp`,
+                `Problem ${proble_title} does not have files/interactor.cpp`
+            );
         }
     }
+    // spjType === "0" 时不添加任何文件（标准评测）
 
     const zipContent = await zipWriter.close();
     return { zipContent, fileCount, totalSize, problem_xml_entry, entries: problem_entries };
@@ -320,11 +349,32 @@ async function FetchProblem(problem_entries, problem_xml_entry) {
     }
     let pid = polygon_pid++;
     const { problem, attach_files } = await MakeProblemJson(statement_entry, pid);
+    
+    // 检测交互题：如果存在 files/interactor.cpp，则认为是交互题 (spj=2)
+    const problemDir = GetDirPath(problem_xml_entry.filename);
+    const interactorEntry = FindInteractor(problem_entries, problemDir);
+    const checkerEntry = FindChecker(problem_entries, problemDir);
+    
+    let spjType = "0"; // 默认标准评测
+    if (interactorEntry) {
+        // 存在 interactor.cpp，确定为交互题
+        spjType = "2";
+        problem.spj = "2";
+    } else if (checkerEntry) {
+        // 存在 check.cpp，确定为特判题
+        spjType = "1";
+        problem.spj = "1";
+    } else {
+        // 都不存在，标准评测
+        spjType = "0";
+        problem.spj = "0";
+    }
+    
     const testData = await MakeTestData(
         problem.title,
         problem_entries,
         problem_xml_entry,
-        true
+        spjType
     );
 
     // 更新 overlay 信息
@@ -353,7 +403,8 @@ async function FetchProblem(problem_entries, problem_xml_entry) {
         title:          problem.title,
         author:         problem.author_md,
         testdata:       `${testData.fileCount} tests, ${totalSizeMB} MB`,
-        spj:            '',
+        spj:            spjType, // 保存 spj 类型：0=标准, 1=特判, 2=交互
+        spjType:        spjType, // 用于 formatter 判断显示类型
         hash:           problem.attach,
         problemJson:    problem,
         testData,
@@ -363,16 +414,24 @@ async function FetchProblem(problem_entries, problem_xml_entry) {
 }
 
 function GetSpjSwitch(pid) {
-    return document.querySelector(`.spj-switch[data-pid="${pid}"]`);
+    return document.querySelector(`.csg-switch-input[data-pid="${pid}"]`);
 }
 function DownloadPro(pid) {
     const problem = list_problem.find((p) => p.idx === pid);
     if (problem) {
-        const spjCheckbox = GetSpjSwitch(pid);
-        if (spjCheckbox && spjCheckbox.checked) {
-            problem.problemJson.spj = "1";
+        // 交互题和标准评测不需要用户选择，直接使用检测到的类型
+        // 只有特判题需要根据开关状态决定是否包含 check.cpp
+        if (problem.spjType === "1") {
+            // 特判题：根据开关状态决定
+            const spjCheckbox = GetSpjSwitch(pid);
+            if (spjCheckbox && spjCheckbox.checked) {
+                problem.problemJson.spj = "1";
+            } else {
+                problem.problemJson.spj = "0";
+            }
         } else {
-            problem.problemJson.spj = "0";
+            // 交互题或标准评测：使用检测到的类型
+            problem.problemJson.spj = problem.spjType;
         }
         problem.problemJson.problem_new_id = 1;
 
@@ -409,21 +468,35 @@ function DownloadPro(pid) {
 async function DownloadTestData(pid) {
     const problem = list_problem.find((p) => p.idx === pid);
     if (problem) {
-        const spjCheckbox = GetSpjSwitch(pid);
-        const includeSpj = spjCheckbox && spjCheckbox.checked;
+        let spjType = problem.spjType;
+        // 只有特判题需要根据开关状态决定
+        if (spjType === "1") {
+            const spjCheckbox = GetSpjSwitch(pid);
+            if (spjCheckbox && spjCheckbox.checked) {
+                spjType = "1";
+            } else {
+                spjType = "0"; // 不包含特判文件
+            }
+        }
         try {
             const testData = await MakeTestData(
                 problem.problemJson.title,
                 problem.testData.entries,
                 problem.testData.problem_xml_entry,
-                includeSpj,
+                spjType,
                 "Packing"
             );
             if (testData && testData.zipContent) {
                 const url = URL.createObjectURL(testData.zipContent);
                 const a = document.createElement("a");
+                let suffix = '';
+                if (spjType === "1") {
+                    suffix = '_with_tpj';
+                } else if (spjType === "2") {
+                    suffix = '_interactive';
+                }
+                a.download = `${pid}${suffix}.zip`;
                 a.href = url;
-                a.download = `${pid}${includeSpj ? '_with_tpj' : ''}.zip`;
                 a.click();
                 URL.revokeObjectURL(url);
             } else {
@@ -450,7 +523,10 @@ async function DownloadSelectedProblems() {
             "getSelections"
         );
         if (selectedProblems.length === 0) {
-            alertify.error("At least one problem should be selected.");
+            alerty.error(
+                "至少需要选择一个题目",
+                "At least one problem should be selected"
+            );
             return;
         }
 
@@ -459,12 +535,19 @@ async function DownloadSelectedProblems() {
 
         for (let i = 0; i < selectedProblems.length; i++) {
             const problem = selectedProblems[i];
-            const spjCheckbox = GetSpjSwitch(problem.idx);
-            if (spjCheckbox && spjCheckbox.checked) {
-                problem.problemJson.spj = "1";
-            } else {
-                problem.problemJson.spj = "0";
+            let finalSpjType = problem.spjType;
+            
+            // 只有特判题需要根据开关状态决定
+            if (problem.spjType === "1") {
+                const spjCheckbox = GetSpjSwitch(problem.idx);
+                if (spjCheckbox && spjCheckbox.checked) {
+                    finalSpjType = "1";
+                } else {
+                    finalSpjType = "0";
+                }
             }
+            
+            problem.problemJson.spj = finalSpjType;
             problem.problemJson.problem_new_id = i + 1;
             problemList.push(problem.problemJson);
 
@@ -486,14 +569,28 @@ async function DownloadSelectedProblems() {
                 }
             }
 
-            if (problem.problemJson.spj === "1") {                
-                const spjEntry = FindChecker(problem.testData.entries, GetDirPath(problem.testData.problem_xml_entry.filename));
+            // 根据最终类型添加对应的文件
+            const problemDir = GetDirPath(problem.testData.problem_xml_entry.filename);
+            if (finalSpjType === "1") {
+                // 特判评测：使用 check.cpp
+                const spjEntry = FindChecker(problem.testData.entries, problemDir);
                 if (spjEntry) {
                     const spjContent = await spjEntry.getData(new zip.BlobWriter());
                     const spjFilePath = `${testDir}/tpj.cc`;
                     if (!addedFiles.has(spjFilePath)) {
                         await zipWriter.add(spjFilePath, new zip.BlobReader(spjContent));
                         addedFiles.add(spjFilePath);
+                    }
+                }
+            } else if (finalSpjType === "2") {
+                // 交互评测：使用 files/interactor.cpp
+                const interactorEntry = FindInteractor(problem.testData.entries, problemDir);
+                if (interactorEntry) {
+                    const interactorContent = await interactorEntry.getData(new zip.BlobWriter());
+                    const interactorFilePath = `${testDir}/tpj.cc`;
+                    if (!addedFiles.has(interactorFilePath)) {
+                        await zipWriter.add(interactorFilePath, new zip.BlobReader(interactorContent));
+                        addedFiles.add(interactorFilePath);
                     }
                 }
             }
@@ -528,4 +625,50 @@ async function DownloadSelectedProblems() {
     } finally {
         hideOverlay();
     }
+}
+
+
+// ========================================
+// Polygon Parser 表格 Formatter 函数
+// ========================================
+
+// 索引 formatter
+function FormatterProParserIdx(value, row, index, field) {
+    return value || (index + 1);
+}
+
+// 标题 formatter - 带下载链接
+function FormatterProParserTitle(value, row, index, field) {
+    if (!value) return '-';
+    const pid = row.idx || (index + 1);
+    return `<a href="#" onclick="DownloadPro(${pid}); return false;" class="text-decoration-none text-primary" title="下载题目 (Download Problem)">${value}</a>`;
+}
+
+// 作者 formatter
+function FormatterProParserAuthor(value, row, index, field) {
+    return value || '-';
+}
+
+// 测试数据 formatter - 带下载链接
+function FormatterProParserTestData(value, row, index, field) {
+    if (!value) return '-';
+    const pid = row.idx || (index + 1);
+    return `<a href="#" onclick="handleDownloadTestData(${pid}); return false;" class="text-decoration-none text-success" title="下载测试数据 (Download Test Data)">${value}</a>`;
+}
+
+// 特判 formatter - csg-switch 开关
+function FormatterProParserSpj(value, row, index, field) {
+    const pid = row.idx || (index + 1);
+    // 初始化时默认选中（checked），因为 Polygon 默认有 check.cpp
+    const isChecked = (row.spj_checked !== false && value !== '0'); // 默认选中，除非明确设置为 false 或 '0'
+    return `<div class="csg-switch">
+        <input type="checkbox" class="csg-switch-input" data-pid="${pid}" ${isChecked ? 'checked' : ''}>
+    </div>`;
+}
+
+// 哈希 formatter
+function FormatterProParserHash(value, row, index, field) {
+    if (!value) return '-';
+    // 哈希值可以用代码格式显示
+    return `<code style="font-size: 0.85em;">${value}</code>`;
 }

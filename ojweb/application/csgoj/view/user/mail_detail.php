@@ -3,7 +3,7 @@
 <p class="help-block">
     {if($running) }
     <a href="#topic_reply_form" id="reply_button" class="a_noline">
-        <button type="button" class="btn btn-sm btn-default">Reply</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary">Reply</button>
     </a>
     &nbsp;
     {/if}
@@ -18,7 +18,7 @@
     &nbsp;
     {/if}
     <span class="inline_span">Create Time: <span class="inline_span text-warning">{$topic['in_date']}</span></span>&nbsp;&nbsp;&nbsp;&nbsp;
-    <span class="inline_span">Creator: <span class="inline_span text-default"><a href="/{$module}/user/userinfo?user_id={$topic['user_id']}">{$topic['user_id']}</a></span></span>&nbsp;&nbsp;&nbsp;&nbsp;
+    <span class="inline_span">Creator: <span class="inline_span text-secondary"><a href="/{$module}/user/userinfo?user_id={$topic['user_id']}">{$topic['user_id']}</a></span></span>&nbsp;&nbsp;&nbsp;&nbsp;
 </p>
 <article class="md_display_div topic_content_div">
     <p>
@@ -36,7 +36,7 @@
             &nbsp;&nbsp;
             {/if}
             <span class="inline_span">Time: <span class="inline_span text-warning">{$reply['in_date']}</span></span>&nbsp;&nbsp;&nbsp;&nbsp;
-            <span class="inline_span">User: <span class="inline_span text-default"><a href="/{$module}/user/userinfo?user_id={$topic['user_id']}">{$reply['user_id']}</a></span></span>&nbsp;&nbsp;&nbsp;&nbsp;
+            <span class="inline_span">User: <span class="inline_span text-secondary"><a href="/{$module}/user/userinfo?user_id={$topic['user_id']}">{$reply['user_id']}</a></span></span>&nbsp;&nbsp;&nbsp;&nbsp;
         </p>
         <p>
             {$reply['content']|htmlspecialchars|nl2br}
@@ -91,8 +91,8 @@
 {if($running) }
 <form role="form" id="topic_reply_form" action="/{$module}/contest/topic_reply_ajax" method="POST">
 
-    <div class="form-group">
-        <label for="topic_content">Reply Content：</label>
+    <div class="mb-3">
+        <label for="topic_content" class="form-label">Reply Content：</label>
         <textarea
             id="topic_reply_content"
             class="form-control"
@@ -105,8 +105,7 @@
     </div>
     <input type="hidden" id="contest_id_input" class="form-control" name="cid" value="{$contest['contest_id']}" >
     <input type="hidden" id="contest_id_input" class="form-control" name="topic_id" value="{$topic['topic_id']}" >
-    <div class="form-group" id="fn-nav">
-
+    <div class="mb-3" id="fn-nav">
         <button type="submit" id='submit_button' class="btn btn-primary" {if isset($replyAvoid) && $replyAvoid == true} disabled="disabled"{/if}>Submit Reply</button>
     </div>
 </form>
@@ -137,7 +136,7 @@
                         var reply = "<article class='md_display_div reply_display_div'>\n" +
                             "<p class='help-block'>\n" +
                             "<span class='inline_span'>Time: <span class='inline_span text-warning'>" + data['in_date'] + "</span></span>&nbsp;&nbsp;&nbsp;&nbsp;\n" +
-                            "<span class='inline_span'>User: <span class='inline_span text-default'>\n" +
+                            "<span class='inline_span'>User: <span class='inline_span text-secondary'>\n" +
                             "<a href='/" + data['module'] + "/user/userinfo?user_id=" + data['user_id'] + "'>" + data['user_id'] + "</a></span></span>&nbsp;&nbsp;&nbsp;&nbsp;\n" +
                             "</p>\n" +
                             data['content'] + "\n" +

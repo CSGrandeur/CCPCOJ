@@ -3,6 +3,8 @@ namespace app;
 use think\Validate;
 use think\Db;
 trait ContestAdminTrait {
+    var $TINFO_NAME_MAX = 100;
+    var $TINFO_NAME_EN_MAX = 120;
     public function _initialize()
     {
         $this->OJMode();
@@ -17,6 +19,9 @@ trait ContestAdminTrait {
     public function index()
     {
         $this->redirect("/$this->module/$this->controller/contest_edit?cid=" . input('get.cid'));
+    }
+    public function rank_roll() {
+        return $this->fetch();
     }
     // **************************************************
     // Contest Edit
@@ -56,7 +61,7 @@ trait ContestAdminTrait {
     }
     public function CalLangMask($languages)
     {
-        $ret = LangMask($languages);
+        $ret = LangList2LangMask($languages);
         if($ret == -1) $this->error('Please select at least 1 language.');
         if($ret == -2) $this->error('Some languages are not allowed for this OJ.');
         return $ret;
@@ -140,6 +145,7 @@ trait ContestAdminTrait {
         $Contest_md = db('contest_md');
         $contest_md = $Contest_md->where('contest_id', $this->contest['contest_id'])->find();
         if(!$contest_md) {
+            $contest_md_edit['contest_id'] = $this->contest['contest_id'];
             $Contest_md->insert($contest_md_edit);
         }
         else
@@ -163,6 +169,7 @@ trait ContestAdminTrait {
         return $this->fetch();
     }
     public function contest_rejudge_ajax() {
+        // 比赛内题目重判
         if(!$this->IsContestAdmin()) {
             $this->error("No privilege to rejudge");
         }
@@ -264,7 +271,7 @@ trait ContestAdminTrait {
         $msg_id = input('msg_id/d');
         $content = input('content/s');
         if (strlen($content) > 255) {
-            $this->error("Message too long");
+            $this->error("消息过长<br/>Message too long");
         }
         $ContestMsg = db('contest_msg');
         if(!$msg_id) {
@@ -300,5 +307,11 @@ trait ContestAdminTrait {
         }
         db('contest_msg')->update($msg);
         $this->success('Status to ' . ($msg['defunct'] == 1 ? 'Prepared' : 'Sent'), null, $msg);
+    }
+
+    // **************************************************
+    // 外榜
+    public function outrank() {
+        return $this->fetch();
     }
 }
