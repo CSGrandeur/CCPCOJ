@@ -17,6 +17,8 @@ if(typeof CSGAnim == 'undefined') {
             this.animationQueues = new Map(); // container -> 队列
             this.isAnimating = new Map(); // container -> 是否正在动画
             this.risingElements = new WeakSet(); // 标记正在上升的元素
+            // z-index 自增计数器（从100开始，表头使用100000）
+            this.risingZIndexCounter = 100;
         }
     
         /**
@@ -573,7 +575,8 @@ if(typeof CSGAnim == 'undefined') {
                             
                             data.element.style.willChange = 'transform';
                             if (data.isRising) {
-                                data.element.style.zIndex = '100';
+                                // 使用自增z-index，确保每个上升队伍都有唯一的z-index
+                                data.element.style.zIndex = String(this.risingZIndexCounter++);
                             }
                         });
                         
@@ -594,7 +597,7 @@ if(typeof CSGAnim == 'undefined') {
                             if (actualDistance < 0.5) {
                                 element.style.transform = '';
                                 element.style.willChange = 'auto';
-                                element.style.zIndex = '';
+                                // 不移除z-index，让上升队伍的z-index自然保留
                                 return;
                             }
                             
@@ -623,7 +626,7 @@ if(typeof CSGAnim == 'undefined') {
                                 // 动画创建失败，清理样式
                                 element.style.transform = '';
                                 element.style.willChange = 'auto';
-                                element.style.zIndex = '';
+                                // 不移除z-index，让上升队伍的z-index自然保留
                             }
                         });
                         
@@ -652,8 +655,7 @@ if(typeof CSGAnim == 'undefined') {
                         // 立即清理transform，避免回弹
                     element.style.transform = '';
                         element.style.willChange = 'auto';
-                        // 清除 z-index（如果之前设置了）
-                        element.style.zIndex = '';
+                        // 不移除z-index，让上升队伍的z-index自然保留
                         
                         // 清理引用
                         this.activeAnimations.delete(element);
@@ -669,7 +671,7 @@ if(typeof CSGAnim == 'undefined') {
                 sortedElements.forEach(element => {
                     element.style.transform = '';
                     element.style.willChange = 'auto';
-                    element.style.zIndex = '';
+                    // 不移除z-index，让上升队伍的z-index自然保留
                     this.activeAnimations.delete(element);
                     this.risingElements.delete(element);
                 });
@@ -942,9 +944,9 @@ if(typeof CSGAnim == 'undefined') {
                             // 立即应用反向transform和transition，避免用户看到最终位置
                             element.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0)`;
                             element.style.transition = `transform ${duration}ms ${easing}`;
-                            // 上升队伍设置较高的 z-index，避免被其他队伍遮挡
+                            // 上升队伍设置自增的 z-index，避免被其他队伍遮挡
                             if (isRising) {
-                                element.style.zIndex = '99';
+                                element.style.zIndex = String(this.risingZIndexCounter++);
                             }
                         });
                         
@@ -969,7 +971,7 @@ if(typeof CSGAnim == 'undefined') {
                         element.style.transform = '';
                         element.style.transition = '';
                         element.style.willChange = 'auto';
-                        element.style.zIndex = '';
+                        // 不移除z-index，让上升队伍的z-index自然保留
                     });
                     if (onComplete) onComplete();
                     resolve();

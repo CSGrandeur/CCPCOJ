@@ -716,7 +716,9 @@ main() {
                 REMAINING_ARGS=("$@")
                 ;;
             --help|-h|-H)
-                # help 在 parse_args 中处理
+                # 直接显示帮助信息并退出
+                show_help
+                exit 0
                 ;;
             *)
                 # 不是命令模式，检查是否是隐式的 judge 模式参数

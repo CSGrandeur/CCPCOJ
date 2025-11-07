@@ -190,8 +190,18 @@ class Alerty {
     formatTextWithLineBreaks(text) {
         if (!text) return '';
         
-        // 先处理换行符：将 \n 转换为 <br>
-        let processed = text.replace(/\n/g, '<br>');
+        let processed = String(text);
+        
+        // 先处理转义的换行符（字符串字面量 "\\n"），转换为真正的换行符
+        // 这处理了可能被双重转义的情况
+        processed = processed.replace(/\\n/g, '\n');
+        processed = processed.replace(/\\r\\n/g, '\r\n');
+        processed = processed.replace(/\\r/g, '\r');
+        
+        // 处理各种换行符：\r\n, \r, \n 都转换为 <br>
+        processed = processed.replace(/\r\n/g, '<br>');
+        processed = processed.replace(/\r/g, '<br>');
+        processed = processed.replace(/\n/g, '<br>');
         
         // 处理已存在的 <br> 和 <br/> 标签（统一为 <br>）
         processed = processed.replace(/<br\s*\/?>/gi, '<br>');
@@ -226,18 +236,19 @@ class Alerty {
             'pre': true
         };
         
-        // 临时替换允许的标签为占位符
+        // 临时替换允许的标签为占位符（使用更安全的占位符格式）
         const placeholders = {};
         let placeholderIndex = 0;
         
-        // 匹配所有 HTML 标签
-        const tagRegex = /<\/?([a-z][a-z0-9]*)\b[^>]*>/gi;
+        // 匹配所有 HTML 标签（包括自闭合标签）
+        const tagRegex = /<\/?([a-z][a-z0-9]*)\b[^>]*\/?>/gi;
         
         // 先处理允许的标签，用占位符替换
         let processed = html.replace(tagRegex, (match, tagName) => {
             const lowerTagName = tagName.toLowerCase();
             if (allowedTags[lowerTagName]) {
-                const placeholder = `__ALERTY_PLACEHOLDER_${placeholderIndex}__`;
+                // 使用更独特的占位符，避免与文本内容冲突
+                const placeholder = `__ALERTY_SAFE_TAG_${placeholderIndex}_${Date.now()}__`;
                 placeholders[placeholder] = match;
                 placeholderIndex++;
                 return placeholder;
@@ -249,12 +260,19 @@ class Alerty {
         // 转义所有剩余的 HTML 特殊字符
         processed = this.escapeHtml(processed);
         
-        // 恢复占位符（允许的标签）
+        // 恢复占位符（允许的标签）- 使用全局替换确保所有占位符都被恢复
         for (const placeholder in placeholders) {
-            processed = processed.replace(placeholder, placeholders[placeholder]);
+            // 使用正则表达式进行全局替换，确保所有占位符都被恢复
+            const regex = new RegExp(this.escapeRegex(placeholder), 'g');
+            processed = processed.replace(regex, placeholders[placeholder]);
         }
         
         return processed;
+    }
+    
+    // 转义正则表达式特殊字符
+    escapeRegex(str) {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
     // 创建模态框按钮

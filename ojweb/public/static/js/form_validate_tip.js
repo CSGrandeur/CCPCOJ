@@ -408,11 +408,13 @@ function initFormValidation(formSelector, fieldConfigs = {}, submitHandler = nul
     });
 
     // 表单提交验证
-    form.addEventListener('submit', (e) => {
+    // 先移除可能存在的旧事件监听器，避免重复绑定
+    const submitHandlerWrapper = (e) => {
         e.preventDefault();
+        e.stopPropagation();
         
         let isFormValid = true;
-        const firstInvalidField = null;
+        let firstInvalidField = null;
 
         // 验证所有字段
         Object.keys(fieldConfigs).forEach(fieldName => {
@@ -428,7 +430,7 @@ function initFormValidation(formSelector, fieldConfigs = {}, submitHandler = nul
                 
                 // 聚焦到第一个无效字段
                 if (!firstInvalidField) {
-                    element.focus();
+                    firstInvalidField = element;
                 }
             } else {
                 clearFieldError(element);
@@ -439,7 +441,20 @@ function initFormValidation(formSelector, fieldConfigs = {}, submitHandler = nul
         if (isFormValid && submitHandler && typeof submitHandler === 'function') {
             submitHandler(form);
         }
-    });
+        
+        // 确保阻止默认行为
+        return false;
+    };
+    
+    // 移除旧的事件监听器（如果存在）
+    const oldHandler = form._formValidationSubmitHandler;
+    if (oldHandler) {
+        form.removeEventListener('submit', oldHandler);
+    }
+    
+    // 保存新的事件处理器引用，以便后续清理
+    form._formValidationSubmitHandler = submitHandlerWrapper;
+    form.addEventListener('submit', submitHandlerWrapper);
 
     return form;
 }

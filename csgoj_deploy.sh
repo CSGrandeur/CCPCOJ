@@ -48,7 +48,7 @@ OJ_UPDATE_STATIC=0
 BELONG_TO=0
 
 # 其他配置
-NGINX_PORT_RANGS=''
+NGINX_PORT_RANGES=''
 SECRET_KEY='super_secret_oj'
 DOCKER_PULL_NEW=1
 DOCKER_NET_NAME="csgoj_net"
@@ -99,7 +99,7 @@ OJ 配置:
 端口配置:
   --PORT_OJ=<端口>               OJ Web 服务端口（默认: 20080）
   --PORT_MYADMIN=<端口>          PHPMyAdmin Web 端口（默认: 20050）
-  --NGINX_PORT_RANGS=<映射>      额外的 Nginx 端口映射，如 "-p 80-89:80-89"
+  --NGINX_PORT_RANGES=<映射>      额外的 Nginx 端口映射，如 "-p 80-89:80-89"
 
 其他配置:
   --PASS_MYADMIN_PAGE=<密码>     PHPMyAdmin 页面访问密码（默认: 987654321）
@@ -195,7 +195,7 @@ parse_args() {
         PORT_MYADMIN:,
         PORT_DB:,
         BELONG_TO:,
-        NGINX_PORT_RANGS:,
+        NGINX_PORT_RANGES:,
         SECRET_KEY:,
         DOCKER_PULL_NEW:,
         DOCKER_NET_NAME:,
@@ -308,8 +308,8 @@ parse_args() {
                 BELONG_TO="$2"
                 shift 2
                 ;;
-            --NGINX_PORT_RANGS)             # 额外的 Nginx 端口映射
-                NGINX_PORT_RANGS="$2"
+            --NGINX_PORT_RANGES)             # 额外的 Nginx 端口映射
+                NGINX_PORT_RANGES="$2"
                 shift 2
                 ;;
             --SECRET_KEY)                   # 系统加密密钥
@@ -539,7 +539,7 @@ BELONG_TO="${belong_to_value}"
 # 其他配置
 PASS_MYADMIN_PAGE="${PASS_MYADMIN_PAGE:-987654321}"
 SECRET_KEY="${SECRET_KEY:-super_secret_oj}"
-NGINX_PORT_RANGS="${NGINX_PORT_RANGS}"
+NGINX_PORT_RANGES="${NGINX_PORT_RANGES}"
 EOF
     elif [ -n "$existing_web_config" ]; then
         # 保留已有的 web 配置
@@ -973,8 +973,8 @@ start_nginx() {
         echo "✅ Nginx 容器已存在"
     else
         # 端口映射配置
-        if [ -z "$NGINX_PORT_RANGS" ]; then
-            NGINX_PORT_RANGS="-p $PORT_OJ:$PORT_OJ -p $PORT_MYADMIN:$PORT_MYADMIN"
+        if [ -z "$NGINX_PORT_RANGES" ]; then
+            NGINX_PORT_RANGES="-p $PORT_OJ:$PORT_OJ -p $PORT_MYADMIN:$PORT_MYADMIN"
         fi
         
         # 开发模式挂载
@@ -1050,7 +1050,7 @@ start_nginx() {
         # 启动 Nginx 容器（官方镜像，docker 会自动 pull）
         local docker_run_output
         docker_run_output=$(docker run --name nginx-server $LINK_LOCAL \
-            $NGINX_PORT_RANGS \
+            $NGINX_PORT_RANGES \
             -v "$PATH_DATA/var/www:/var/www" \
             $PUBLIC_MOUNT \
             -v "$PATH_DATA/dataspace:$PATH_DATA/dataspace" \
@@ -1823,8 +1823,8 @@ interactive_configure_web() {
     # SECRET_KEY 使用默认值 super_secret_oj，不需要交互配置
     SECRET_KEY="${SECRET_KEY:-super_secret_oj}"
     
-    # NGINX_PORT_RANGS 使用默认值（空），不需要交互配置
-    NGINX_PORT_RANGS="${NGINX_PORT_RANGS:-}"
+    # NGINX_PORT_RANGES 使用默认值（空），不需要交互配置
+    NGINX_PORT_RANGES="${NGINX_PORT_RANGES:-}"
     
     echo ""
 }

@@ -97,12 +97,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="outrank_edit_modal_body">
-                <!-- 表单内容将通过 AJAX 加载到这里 -->
-                <div class="text-center py-4">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">加载中...</span>
-                    </div>
-                </div>
+                {include file="../../outrank/view/index/outrank_edit_form"}
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭<span class="en-text">Close</span></button>
@@ -199,7 +194,6 @@ function FormatterOutrankEdit(value, row, index, field) {
 // 打开编辑 modal
 function openOutrankEditModal(id) {
     const modal = new bootstrap.Modal(document.getElementById('outrank_edit_modal'));
-    const modalBody = $('#outrank_edit_modal_body');
     const modalTitle = $('#outrankModalLabel');
     const submitBtn = $('#outrank_modal_submit_btn');
     
@@ -211,42 +205,47 @@ function openOutrankEditModal(id) {
     }
     
     // 显示加载状态
-    modalBody.html('<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">加载中...</span></div></div>');
     submitBtn.attr('disabled', true);
     
-    // 加载表单内容
+    // 清空表单
+    clearOutrankForm();
+    
+    // 加载数据
     if (id) {
-        // 编辑模式：加载数据
-        $.get('/outrank/index/outrank_get_ajax', {id: id}, function(html) {
-            modalBody.html(html);
-            submitBtn.attr('disabled', false);
-            // 初始化表单
-            if (typeof initOutrankEditForm === 'function') {
-                initOutrankEditForm(true);
+        // 编辑模式：获取数据并填充表单
+        $.get('/outrank/index/outrank_get_ajax', {id: id}, function(res) {
+            if (res.code == 1 || res.status == 'success') {
+                const data = res.data || {};
+                fillOutrankForm(data);
+                submitBtn.attr('disabled', false);
+                // 初始化表单（编辑模式）
+                if (typeof initOutrankEditForm === 'function') {
+                    initOutrankEditForm(true);
+                }
+            } else {
+                alerty.error({
+                    message: res.msg || '加载数据失败',
+                    message_en: res.msg_en || 'Failed to load data'
+                });
+                modal.hide();
             }
-        }).fail(function() {
+        }, 'json').fail(function(xhr) {
+            let errorMsg = '加载数据失败';
+            if (xhr.responseJSON && xhr.responseJSON.msg) {
+                errorMsg = xhr.responseJSON.msg;
+            }
             alerty.error({
-                message: '加载数据失败',
+                message: errorMsg,
                 message_en: 'Failed to load data'
             });
             modal.hide();
         });
     } else {
-        // 新增模式：加载空表单
-        $.get('/outrank/index/outrank_get_ajax', {id: 0}, function(html) {
-            modalBody.html(html);
-            submitBtn.attr('disabled', false);
-            // 初始化表单
-            if (typeof initOutrankEditForm === 'function') {
-                initOutrankEditForm(false);
-            }
-        }).fail(function() {
-            alerty.error({
-                message: '加载表单失败',
-                message_en: 'Failed to load form'
-            });
-            modal.hide();
-        });
+        // 新增模式：直接初始化表单
+        submitBtn.attr('disabled', false);
+        if (typeof initOutrankEditForm === 'function') {
+            initOutrankEditForm(false);
+        }
     }
     
     // Modal 关闭时清理表单
@@ -257,10 +256,59 @@ function openOutrankEditModal(id) {
             form.data('formValidationTip').destroy();
         }
         // 清空表单内容
-        modalBody.html('<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">加载中...</span></div></div>');
+        clearOutrankForm();
     });
     
     modal.show();
+}
+
+// 清空表单
+function clearOutrankForm() {
+    $('#outrank_edit_form')[0].reset();
+    // 清除隐藏字段
+    $('input[name="outrank_id"]').remove();
+    // 隐藏 UUID 字段组
+    $('#outrank_uuid_group').hide();
+    // 清除验证状态
+    $('#outrank_edit_form .is-invalid, #outrank_edit_form .is-valid').removeClass('is-invalid is-valid');
+    $('#outrank_edit_form .invalid-feedback').remove();
+}
+
+// 填充表单数据
+function fillOutrankForm(data) {
+    if (!data) return;
+    
+    // 填充基本字段
+    if (data.outrank_id) {
+        // 添加隐藏字段
+        if ($('input[name="outrank_id"]').length === 0) {
+            $('#outrank_edit_form').prepend(`<input type="hidden" name="outrank_id" value="${data.outrank_id}">`);
+        } else {
+            $('input[name="outrank_id"]').val(data.outrank_id);
+        }
+    }
+    
+    if (data.title !== undefined) $('#title').val(data.title || '');
+    if (data.outrank_uuid !== undefined) {
+        $('#outrank_uuid').val(data.outrank_uuid || '');
+        // 显示 UUID 字段组
+        $('#outrank_uuid_group').show();
+    }
+    if (data.token !== undefined) $('#token').val(data.token || '');
+    if (data.ckind !== undefined) $('#ckind').val(data.ckind || '');
+    if (data.description !== undefined) $('#description').val(data.description || '');
+    
+    // 填充时间字段（数据库返回的是 datetime 字符串格式，如 '2024-01-01 12:00:00'）
+    if (data.start_time) {
+        // 将 datetime 字符串转换为 datetime-local 格式 (YYYY-MM-DDTHH:mm)
+        const startTimeStr = data.start_time.replace(' ', 'T').slice(0, 16);
+        $('#start_time').val(startTimeStr);
+    }
+    if (data.end_time) {
+        // 将 datetime 字符串转换为 datetime-local 格式 (YYYY-MM-DDTHH:mm)
+        const endTimeStr = data.end_time.replace(' ', 'T').slice(0, 16);
+        $('#end_time').val(endTimeStr);
+    }
 }
 
 // 初始化

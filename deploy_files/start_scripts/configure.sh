@@ -114,10 +114,8 @@ interactive_configure_web() {
             PASS_SQL_ROOT="${input_pass_sql_root:-$PASS_SQL_ROOT}"
         fi
         
-        if [ -z "$SQL_USER" ] || [ "$skip_if_provided" != "skip" ]; then
-            read -p "MySQL 业务用户 (当前: ${SQL_USER}): " input_sql_user
-            SQL_USER="${input_sql_user:-$SQL_USER}"
-        fi
+        # 业务用户使用默认值 csgcpc，不再交互询问
+        SQL_USER="${SQL_USER:-csgcpc}"
         
         if [ -z "$PASS_SQL_USER" ] || [ "$skip_if_provided" != "skip" ]; then
             read -p "MySQL 业务用户密码 (当前: ${PASS_SQL_USER}): " input_pass_sql_user
@@ -215,8 +213,8 @@ interactive_configure_web() {
     # SECRET_KEY 使用默认值 super_secret_oj，不需要交互配置
     SECRET_KEY="${SECRET_KEY:-super_secret_oj}"
     
-    # NGINX_PORT_RANGS 使用默认值（空），不需要交互配置
-    NGINX_PORT_RANGS="${NGINX_PORT_RANGS:-}"
+    # NGINX_PORT_RANGES 使用默认值（空），不需要交互配置
+    NGINX_PORT_RANGES="${NGINX_PORT_RANGES:-}"
     
     echo ""
 }

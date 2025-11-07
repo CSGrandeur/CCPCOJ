@@ -41,7 +41,10 @@ if(typeof RankSystem == 'undefined') {
             this.isFullscreen = false;
             this.autoRefresh = false;
             this.autoScroll = false;
-            this.showCountdown = false;
+            this.showTimeOverlay = false; // 全屏时间遮罩层显示状态（倒计时功能）
+            this.timeOverlayInterval = null; // 时间遮罩层更新定时器
+            this.refreshInterval = null; // 自动刷新定时器
+            this.autoScrollInterval = null; // 自动滚动定时器
             // 动画基础持续时间（毫秒）
             this.baseAnimationDuration = 1000; // 基础动画持续时间，用于排序动画
             this.minAnimationDuration = 300; // 最小动画持续时间
@@ -98,6 +101,7 @@ if(typeof RankSystem == 'undefined') {
                         { id: 'summary-btn', icon: RankToolGenerateIconOnly('info'), label: '统计', label_en: 'Summary', class: 'summary-btn' },
                         { id: 'team-rank-btn', icon: RankToolGenerateIconOnly('player'), label: '队伍排名', label_en: 'Team Rank', class: 'active' },
                         { id: 'school-rank-btn', icon: RankToolGenerateIconOnly('school'), label: ' 学校/组织 排名', label_en: 'School Rank', class: '' },
+                        { id: 'help-btn', icon: RankToolGenerateIconOnly('question-circle'), label: '帮助', label_en: 'Help', class: 'help-btn' },
                         { id: 'fullscreen-btn', icon: RankToolGenerateIconOnly('fullscreen'), label: '全屏', label_en: 'Fullscreen', class: 'fullscreen-btn' }
                     ]
                 }
@@ -178,14 +182,16 @@ if(typeof RankSystem == 'undefined') {
         Cleanup() {
             // 清理时间进度条自动更新定时器
             this.StopTimeProgressAutoUpdate();
+            // 清理时间遮罩层定时器
+            this.StopTimeOverlay();
             // 清理观察器
             if (this.logoObserver) {
                 this.logoObserver.disconnect();
                 this.logoObserver = null;
             }
-            if (this.flagObserver) {
-                this.flagObserver.disconnect();
-                this.flagObserver = null;
+            if (this._flagObserver) {
+                this._flagObserver.disconnect();
+                this._flagObserver = null;
             }
             // 清理DOM事件监听器
             if (this.elements) {
@@ -195,6 +201,13 @@ if(typeof RankSystem == 'undefined') {
                         // 这里可以添加具体的事件清理逻辑
                     }
                 });
+            }
+            // 清理header元素（从容器外部移除）
+            if (this.container) {
+                const oldHeader = this.GetHeaderElement();
+                if (oldHeader) {
+                    oldHeader.remove();
+                }
             }
             // 清理全屏状态
             if (this.isFullscreen) {
@@ -317,8 +330,6 @@ if(typeof RankSystem == 'undefined') {
             this.CreateLoading();
             // 创建模态框
             this.CreateModals();
-            // 创建倒计时覆盖层
-            this.CreateCountdown();
         }
         CreateHeader() {
             const config = this.htmlConfigs.headerControls;
@@ -793,14 +804,59 @@ if(typeof RankSystem == 'undefined') {
                 </div>
             `;
             this.container.appendChild(summaryModal);
-        }
-        CreateCountdown() {
-            const countdown = document.createElement('div');
-            countdown.id = 'countdown-overlay';
-            countdown.className = 'countdown-overlay';
-            countdown.style.display = 'none';
-            countdown.innerHTML = '<div id="countdown-text">00:00:00</div>';
-            this.container.appendChild(countdown);
+            
+            // 快捷键帮助模态框
+            const helpModal = document.createElement('div');
+            helpModal.id = 'rank-help-modal';
+            helpModal.className = 'modal-overlay';
+            helpModal.style.display = 'none';
+            helpModal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>${this.CreateBilingualText('快捷键说明', 'Keyboard Shortcuts')}</h3>
+                        <button id="close-rank-help" class="close-btn">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="roll-help-content">
+                            <div class="roll-help-section">
+                                <div class="roll-help-section-title">${this.CreateBilingualText('基本控制', 'Basic Control')}</div>
+                                <div class="roll-help-items">
+                                    <div class="roll-help-item">
+                                        <code>F5</code>
+                                        <span>${this.CreateBilingualText('刷新数据', 'Refresh Data')}</span>
+                                    </div>
+                                    <div class="roll-help-item">
+                                        <code>A</code> / <code>a</code>
+                                        <span>${this.CreateBilingualText('开启/关闭自动刷新', 'Toggle Auto Refresh')}</span>
+                                    </div>
+                                    <div class="roll-help-item">
+                                        <code>B</code> / <code>b</code>
+                                        <span>${this.CreateBilingualText('开启/关闭自动滚动', 'Toggle Auto Scroll')}</span>
+                                    </div>
+                                    <div class="roll-help-item">
+                                        <code>T</code> / <code>t</code>
+                                        <span>${this.CreateBilingualText('显示/隐藏倒计时（仅全屏模式）', 'Toggle Countdown (Fullscreen Only)')}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            this.container.appendChild(helpModal);
+            
+            // 全屏时间遮罩层
+            const timeOverlay = document.createElement('div');
+            timeOverlay.id = 'time-overlay';
+            timeOverlay.className = 'time-overlay';
+            timeOverlay.style.display = 'none';
+            timeOverlay.innerHTML = `
+                <div class="time-overlay-content">
+                    <div id="time-overlay-text" class="time-overlay-text">00:00:00</div>
+                </div>
+            `;
+            this.container.appendChild(timeOverlay);
         }
         InitElements() {
             // 获取 header 元素（在容器外部）
@@ -820,8 +876,11 @@ if(typeof RankSystem == 'undefined') {
                 summaryContent: this.container.querySelector('#summary-content'),
                 closeSummary: this.container.querySelector('#close-summary'),
                 closeAward: this.container.querySelector('#close-award'),
-                countdownOverlay: this.container.querySelector('#countdown-overlay'),
-                countdownText: this.container.querySelector('#countdown-text'),
+                helpModal: this.container.querySelector('#rank-help-modal'),
+                closeHelp: this.container.querySelector('#close-rank-help'),
+                helpBtn: header ? header.querySelector('#help-btn') : null,
+                timeOverlay: this.container.querySelector('#time-overlay'),
+                timeOverlayText: this.container.querySelector('#time-overlay-text'),
                 // 响应式折叠相关
                 headerControls: header ? header.querySelector('#header-controls') : null,
                 foldBtn: header ? header.querySelector('#fold-btn') : null,
@@ -991,7 +1050,22 @@ if(typeof RankSystem == 'undefined') {
         BindEvents() {
             this.BindHeaderEvents();
             // 模态框关闭
-            this.elements.closeSummary.addEventListener('click', () => this.HideModal('summary'));
+            if (this.elements.closeSummary) {
+                this.elements.closeSummary.addEventListener('click', () => this.HideModal('summary'));
+            }
+            if (this.elements.closeHelp) {
+                this.elements.closeHelp.addEventListener('click', () => this.HideModal('help'));
+            }
+            // 帮助按钮
+            if (this.elements.helpBtn) {
+                this.AddButtonEventListeners(this.elements.helpBtn, () => this.ShowHelp());
+            }
+            // 点击模态框背景关闭
+            if (this.elements.helpModal) {
+                this.elements.helpModal.addEventListener('click', (e) => {
+                    if (e.target === this.elements.helpModal) this.HideModal('help');
+                });
+            }
             // 页面可见性：后台暂停自动刷新
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) {
@@ -1027,6 +1101,9 @@ if(typeof RankSystem == 'undefined') {
             // 全屏按钮 - 添加键盘支持（同时处理宽屏和下拉菜单中的按钮）
             const fullscreenButtons = document.querySelectorAll('#fullscreen-btn');
             fullscreenButtons.forEach(btn => this.AddButtonEventListeners(btn, () => this.ToggleFullscreen()));
+            // 帮助按钮 - 添加键盘支持（同时处理宽屏和下拉菜单中的按钮）
+            const helpButtons = document.querySelectorAll('#help-btn');
+            helpButtons.forEach(btn => this.AddButtonEventListeners(btn, () => this.ShowHelp()));
             
             // 模式切换按钮（同时处理宽屏和下拉菜单中的按钮）
             const teamRankButtons = document.querySelectorAll('#team-rank-btn');
@@ -2079,6 +2156,8 @@ if(typeof RankSystem == 'undefined') {
         CreateHeaderRow() {
             const headerRow = document.createElement('div');
             headerRow.className = 'rank-header-row';
+            // 设置表头z-index为100000，确保始终在最上层
+            headerRow.style.zIndex = '100000';
             // 基础列 - 使用与CreateRankContainer相同的格式
             let headerHtml = `
                 <div class="rank-col rank-col-rank"><div class="header-cell">${this.CreateBilingualText('排名', 'Rank')}</div></div>
@@ -3572,6 +3651,8 @@ if(typeof RankSystem == 'undefined') {
                     this.container.classList.add('fullscreen');
                 }
             } else {
+                // 退出全屏时，关闭时间遮罩层
+                this.StopTimeOverlay();
                 // 滚榜模式：移除全屏类
                 if (this.currentMode === 'roll') {
                     const rankContainer = this.container;
@@ -3606,6 +3687,10 @@ if(typeof RankSystem == 'undefined') {
         ToggleAutoRefresh() {
             this.autoRefresh = !this.autoRefresh;
             if (this.autoRefresh) {
+                // 开启前先清除可能存在的旧定时器
+                if (this.refreshInterval) {
+                    clearInterval(this.refreshInterval);
+                }
                 this.refreshInterval = setInterval(() => {
                     // 自动刷新时不是初始加载
                     this.isInitialLoad = false;
@@ -3613,48 +3698,26 @@ if(typeof RankSystem == 'undefined') {
                 }, 60000);
                 this.ShowMessage('开启自动刷新');
             } else {
-                clearInterval(this.refreshInterval);
+                // 关闭时清除定时器并重置引用
+                if (this.refreshInterval) {
+                    clearInterval(this.refreshInterval);
+                    this.refreshInterval = null;
+                }
                 this.ShowMessage('关闭自动刷新');
             }
         }
+        // 切换倒计时（仅在全屏模式下支持，使用全屏时间遮罩层）
         ToggleCountdown() {
-            this.showCountdown = !this.showCountdown;
-            if (this.showCountdown) {
-                this.StartCountdown();
-            } else {
-                this.StopCountdown();
+            if (!this.isFullscreen) {
+                return; // 非全屏模式不支持倒计时
             }
-        }
-        StartCountdown() {
-            this.elements.countdownOverlay.style.display = 'block';
-            this.UpdateCountdown();
-            this.countdownInterval = setInterval(() => this.UpdateCountdown(), 1000);
-        }
-        StopCountdown() {
-            this.elements.countdownOverlay.style.display = 'none';
-            clearInterval(this.countdownInterval);
-        }
-        UpdateCountdown() {
-            if (!this.data) return;
-            const now = new Date();
-            const startTime = new Date(this.data.contest.start_time);
-            const endTime = new Date(this.data.contest.end_time);
-            let text = '';
-            if (now < startTime) {
-                const diff = Math.floor((startTime - now) / 1000);
-                const minutes = Math.floor(diff / 60);
-                const seconds = diff % 60;
-                text = `-${minutes}:${seconds.toString().padStart(2, '0')}`;
-            } else if (now < endTime) {
-                const diff = Math.floor((endTime - now) / 1000);
-                const hours = Math.floor(diff / 3600);
-                const minutes = Math.floor((diff % 3600) / 60);
-                const seconds = diff % 60;
-                text = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            // 使用全屏时间遮罩层作为倒计时显示
+            this.showTimeOverlay = !this.showTimeOverlay;
+            if (this.showTimeOverlay) {
+                this.StartTimeOverlay();
             } else {
-                text = '已结束';
+                this.StopTimeOverlay();
             }
-            this.elements.countdownText.textContent = text;
         }
         HandleKeydown(e) {
             if (e.key === 'F5' && !e.ctrlKey) {
@@ -3670,12 +3733,20 @@ if(typeof RankSystem == 'undefined') {
             } else if (e.key === 'b' || e.key === 'B') {
                 this.ToggleAutoScroll();
             } else if (e.key === 't' || e.key === 'T') {
+                // 全屏模式下显示/隐藏倒计时（使用全屏时间遮罩层）
                 this.ToggleCountdown();
+            } else if (e.key === 'h' || e.key === 'H') {
+                // 显示帮助
+                this.ShowHelp();
             }
         }
         ToggleAutoScroll() {
             this.autoScroll = !this.autoScroll;
             if (this.autoScroll) {
+                // 开启前先清除可能存在的旧定时器
+                if (this.autoScrollInterval) {
+                    clearInterval(this.autoScrollInterval);
+                }
                 this.StartAutoScroll();
                 this.ShowMessage('开启自动滚动');
             } else {
@@ -3694,20 +3765,36 @@ if(typeof RankSystem == 'undefined') {
             }, scrollDelay);
         }
         StopAutoScroll() {
-            clearInterval(this.autoScrollInterval);
+            if (this.autoScrollInterval) {
+                clearInterval(this.autoScrollInterval);
+                this.autoScrollInterval = null;
+            }
         }
         ShowModal(type) {
-            const modal = this.elements[`${type}Modal`];
-            if (modal) {
-                modal.style.display = 'flex';
+            if (type === 'help') {
+                const modal = this.elements.helpModal;
+                if (modal) {
+                    modal.style.display = 'flex';
+                }
+            } else {
+                const modal = this.elements[`${type}Modal`];
+                if (modal) {
+                    modal.style.display = 'flex';
+                }
             }
         }
         HideModal(type) {
-            const modal = this.elements[`${type}Modal`];
-            if (modal) {
-                modal.style.display = 'none';
+            if (type === 'help') {
+                const modal = this.elements.helpModal;
+                if (modal) {
+                    modal.style.display = 'none';
+                }
+            } else {
+                const modal = this.elements[`${type}Modal`];
+                if (modal) {
+                    modal.style.display = 'none';
+                }
             }
-            
         }
         ShowLoading() {
             if(this.externalMode) {
@@ -3787,11 +3874,10 @@ if(typeof RankSystem == 'undefined') {
         }
         ShowError(message) {
             this.HideLoading();
-            if (this.externalMode) {
-                console.error('RankSystem Error:', message);
-            } else {
-                alert(message);
-            }
+            // 输出详细错误信息到控制台
+            console.error('RankSystem Error:', message);
+            // 使用浮动提示显示用户友好的消息
+            this.ShowMessage('数据尚未准备好');
         }
         ShowMessage(message) {
             // 简单的消息提示 - 限制在容器内
@@ -3818,6 +3904,80 @@ if(typeof RankSystem == 'undefined') {
         ShowKeyHint(msg, key) {
             // TODO
             return this.ShowMessage(`${msg} (${key})`);
+        }
+        // 显示帮助模态框
+        ShowHelp() {
+            this.ShowModal('help');
+        }
+        // 切换全屏时间遮罩层
+        ToggleTimeOverlay() {
+            if (!this.isFullscreen) {
+                return; // 非全屏模式不显示
+            }
+            this.showTimeOverlay = !this.showTimeOverlay;
+            if (this.showTimeOverlay) {
+                this.StartTimeOverlay();
+            } else {
+                this.StopTimeOverlay();
+            }
+        }
+        // 启动时间遮罩层
+        StartTimeOverlay() {
+            if (!this.elements.timeOverlay || !this.elements.timeOverlayText) {
+                return;
+            }
+            this.elements.timeOverlay.style.display = 'flex';
+            this.UpdateTimeOverlay();
+            // 每秒更新一次
+            this.timeOverlayInterval = setInterval(() => {
+                this.UpdateTimeOverlay();
+            }, 1000);
+        }
+        // 停止时间遮罩层
+        StopTimeOverlay() {
+            if (this.timeOverlayInterval) {
+                clearInterval(this.timeOverlayInterval);
+                this.timeOverlayInterval = null;
+            }
+            if (this.elements.timeOverlay) {
+                this.elements.timeOverlay.style.display = 'none';
+            }
+            this.showTimeOverlay = false;
+        }
+        // 更新时间遮罩层显示
+        UpdateTimeOverlay() {
+            if (!this.elements.timeOverlayText || !this.data || !this.data.contest) {
+                return;
+            }
+            
+            const actualCurrentTime = this.GetActualCurrentTime();
+            const startTime = new Date(this.data.contest.start_time);
+            const endTime = new Date(this.data.contest.end_time);
+            
+            let timeText = '000:00:00';
+            
+            if (actualCurrentTime < startTime) {
+                // 比赛开始前：显示倒计时（距离开始时间）
+                const diff = Math.floor((startTime - actualCurrentTime) / 1000);
+                const hours = Math.floor(diff / 3600);
+                const minutes = Math.floor((diff % 3600) / 60);
+                const seconds = diff % 60;
+                // 支持三位数小时（使用 padStart(3, '0')）
+                timeText = `${hours.toString().padStart(3, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            } else if (actualCurrentTime < endTime) {
+                // 比赛进行中：显示倒计时（距离结束时间）
+                const diff = Math.floor((endTime - actualCurrentTime) / 1000);
+                const hours = Math.floor(diff / 3600);
+                const minutes = Math.floor((diff % 3600) / 60);
+                const seconds = diff % 60;
+                // 支持三位数小时（使用 padStart(3, '0')）
+                timeText = `${hours.toString().padStart(3, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            } else {
+                // 比赛已结束：显示 000:00:00
+                timeText = '000:00:00';
+            }
+            
+            this.elements.timeOverlayText.textContent = timeText;
         }
         IsFrozen(solution) {
             // 是否显示为封榜状态
@@ -4231,4 +4391,135 @@ function RankjsFormatSecondsToHMS(seconds) {
 function RankjsFormatSecondsToMinutes(seconds) {
     if (seconds == null || isNaN(seconds)) return '0';
     return Math.floor(seconds / 60).toString();
+}
+
+// #########################################
+//  OutrankRankSystem 外榜专用子类
+// #########################################
+if(typeof OutrankRankSystem == 'undefined') {
+    class OutrankRankSystem extends RankSystem {
+        constructor(containerId, config = {}) {
+            // 设置默认配置
+            const defaultConfig = {
+                cache_duration: 60 * 1000, // 60秒缓存
+                request_t_param: true, // 启用 t 参数
+            };
+            const mergedConfig = RankToolMergeConfig(defaultConfig, config);
+            super(containerId, mergedConfig);
+        }
+        
+        /**
+         * 重写 LoadData 方法，处理外榜的特殊需求：
+         * 1. 使用 60 秒缓存（而不是 30 秒）
+         * 2. 添加 t 参数（60秒更新一次）
+         * 3. 处理 JSON 文件请求（直接返回 JSON，不需要 code 字段）
+         */
+        async LoadData() {
+            try {
+                this.ShowLoading();
+                const cacheKey = `${this.key}_data_v2`;
+                const cacheDuration = this.config.cache_duration || 60 * 1000; // 默认 60 秒
+                
+                // 如果启用缓存，尝试从缓存加载数据
+                if (this.config.flg_rank_cache) {
+                    const cachedData = await this.cache.get(cacheKey);
+                    if (cachedData) {
+                        this.OriInit(cachedData);
+                        return;
+                    }
+                }
+                
+                const apiUrl = this.config.api_url;
+                
+                // 判断 api_url 是数据对象还是 URL 字符串
+                if (typeof apiUrl === 'object' && apiUrl !== null && !Array.isArray(apiUrl)) {
+                    // 检查是否包含比赛数据的字段（contest, team, problem, solution）
+                    if (apiUrl.contest || apiUrl.team || apiUrl.problem || apiUrl.solution) {
+                        // 这是数据对象，直接使用
+                        this.data = apiUrl;
+                        // 如果启用缓存，使用缓存管理器保存数据
+                        if (this.config.flg_rank_cache) {
+                            await this.cache.set(cacheKey, this.data, cacheDuration);
+                        }
+                        this.OriInit(this.data);
+                        this.HideLoading();
+                        this.isInitialLoad = false;
+                        return;
+                    }
+                }
+                
+                // 如果是字符串（URL），使用 fetch 请求
+                if (typeof apiUrl === 'string') {
+                    // 构建请求 URL
+                    let fullUrl = apiUrl;
+                    
+                    // 如果需要添加 t 参数（60秒更新一次）
+                    if (this.config.request_t_param) {
+                        // 计算当前时间戳，向下取整到 60 秒
+                        const now = Date.now();
+                        const t = Math.floor(now / (60 * 1000)) * (60 * 1000); // 每60秒更新一次
+                        const urlParams = new URLSearchParams();
+                        urlParams.append('t', t);
+                        fullUrl = `${apiUrl}?${urlParams.toString()}`;
+                    }
+                    
+                    // 请求 JSON 文件
+                    const response = await fetch(fullUrl, {
+                        method: 'GET',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Content-Type': 'application/json'
+                        },
+                        cache: 'no-cache' // 禁用浏览器缓存，使用 t 参数控制
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    
+                    // 外榜 JSON 文件可能有两种格式：
+                    // 1. 直接是数据对象 { contest, team, problem, solution }
+                    // 2. 包装格式 { code: 1, data: { contest, team, problem, solution } }
+                    let data = null;
+                    if (result.code === 1 && result.data) {
+                        // 包装格式
+                        data = result.data;
+                    } else if (result.contest || result.team || result.problem || result.solution) {
+                        // 直接数据格式
+                        data = result;
+                    } else {
+                        throw new Error('Invalid data format');
+                    }
+                    
+                    this.data = data;
+                    
+                    // 如果启用缓存，使用缓存管理器保存数据
+                    if (this.config.flg_rank_cache) {
+                        await this.cache.set(cacheKey, this.data, cacheDuration);
+                    }
+                    
+                    this.OriInit(this.data);
+                    this.HideLoading();
+                    this.isInitialLoad = false; // 标记初始加载完成
+                } else {
+                    this.ShowError('无效的 api_url 配置');
+                }
+            } catch (error) {
+                console.error('数据加载错误:', error);
+                this.ShowError('网络错误，请检查连接');
+            }
+        }
+    }
+    window.OutrankRankSystem = OutrankRankSystem;
+}
+
+// 外榜初始化函数
+function OutrankRankSystemInit(containerId, config = {}) {
+    // 如果没有传入配置，尝试从全局获取
+    if (!config || Object.keys(config).length === 0) {
+        config = window.RANK_CONFIG || {};
+    }
+    return new OutrankRankSystem(containerId, config);
 }

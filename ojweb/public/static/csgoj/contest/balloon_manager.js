@@ -3,55 +3,54 @@
  * 继承自 RankSystem，用于管理气球发放状态
  */
 
-if (typeof BalloonManagerSystem === 'undefined') {
+if (typeof BalloonManagerSystem === "undefined") {
     class BalloonManagerSystem extends RankSystem {
         constructor(containerId, config = {}) {
-            
             // 调用父类构造函数
             super(containerId, config);
-            
+
             // 气球管理特定配置
             this.autoRefreshInterval = 10000; // 默认10秒刷新一次
             this.refreshTimer = null;
             this.countdownTimer = null;
             this.countdownSeconds = 0;
             this.autoRefreshEnabled = false;
-            
+
             // 气球状态映射
             this.balloonStatusMap = {
-                0: { cn: '未处理', en: 'Not Sent', color: '#dc3545' }, // 红色 - 未发
-                10: { cn: '已通知', en: 'Printed/Issued', color: '#ffc107' }, // 黄色 - 已通知
-                20: { cn: '已分配', en: 'Assigned', color: '#0dcaf0' }, // 青色 - 已分配
-                30: { cn: '已发放', en: 'Delivered', color: '#198754' } // 绿色 - 已发放
+                0: { cn: "未处理", en: "Not Sent", color: "#dc3545" }, // 红色 - 未发
+                10: { cn: "已通知", en: "Printed/Issued", color: "#ffc107" }, // 黄色 - 已通知
+                20: { cn: "已分配", en: "Assigned", color: "#0dcaf0" }, // 青色 - 已分配
+                30: { cn: "已发放", en: "Delivered", color: "#198754" }, // 绿色 - 已发放
             };
-            
+
             // 气球状态统计
             this.balloonStats = {
-                0: 0,  // 未发气球
+                0: 0, // 未发气球
                 10: 0, // 已通知
                 20: 0, // 已分配
-                30: 0  // 已发放
+                30: 0, // 已发放
             };
-            
+
             // 注册problem-item的特殊tooltip处理函数
             this.specialTooltipHandlers = {
-                'problem-item': this.GenerateProblemItemTooltip.bind(this)
+                "problem-item": this.GenerateProblemItemTooltip.bind(this),
             };
         }
-        
+
         /**
          * 重写 Init 方法，确保容器添加balloon-manager-system类
          */
         Init() {
             // 调用父类Init
             super.Init();
-            
+
             // 为容器添加balloon-manager-system类，用于CSS选择器
             if (this.container) {
-                this.container.classList.add('balloon-manager-system');
+                this.container.classList.add("balloon-manager-system");
             }
         }
-        
+
         /**
          * 重写 CreateHeader 方法，隐藏默认header（模板中已有自定义header）
          */
@@ -62,30 +61,30 @@ if (typeof BalloonManagerSystem === 'undefined') {
                 this.InitAutoRefreshSwitch();
             }, 100);
         }
-        
+
         /**
          * 初始化自动刷新开关
          */
         InitAutoRefreshSwitch() {
-            const switchEl = document.querySelector('#balloon-auto-refresh-switch');
+            const switchEl = document.querySelector("#balloon-auto-refresh-switch");
             if (!switchEl) return;
-            
+
             // 初始化 csg-switch
             if (window.csgSwitch) {
                 window.csgSwitch.initSwitch(switchEl, {
                     onChange: (checked) => {
                         this.OnAutoRefreshToggle(checked);
-                    }
+                    },
                 });
             }
         }
-        
+
         /**
          * 处理自动刷新开关切换
          */
         OnAutoRefreshToggle(checked) {
             this.autoRefreshEnabled = checked;
-            
+
             if (checked) {
                 // 开启自动刷新
                 this.StartAutoRefresh();
@@ -94,29 +93,29 @@ if (typeof BalloonManagerSystem === 'undefined') {
                 this.StopAutoRefresh();
             }
         }
-        
+
         /**
          * 启动自动刷新
          */
         StartAutoRefresh() {
             // 清除已有定时器
             this.StopAutoRefresh();
-            
+
             // 重置倒计时
             this.countdownSeconds = Math.floor(this.autoRefreshInterval / 1000);
             this.UpdateCountdownDisplay();
-            
+
             // 显示倒计时
-            const countdownEl = document.getElementById('balloon-refresh-countdown');
+            const countdownEl = document.getElementById("balloon-refresh-countdown");
             if (countdownEl) {
-                countdownEl.style.display = 'inline-block';
+                countdownEl.style.display = "inline-block";
             }
-            
+
             // 启动倒计时定时器
             this.countdownTimer = setInterval(() => {
                 this.countdownSeconds--;
                 this.UpdateCountdownDisplay();
-                
+
                 if (this.countdownSeconds <= 0) {
                     // 倒计时结束，刷新数据
                     this.RefreshData();
@@ -125,7 +124,7 @@ if (typeof BalloonManagerSystem === 'undefined') {
                 }
             }, 1000);
         }
-        
+
         /**
          * 停止自动刷新
          */
@@ -134,63 +133,68 @@ if (typeof BalloonManagerSystem === 'undefined') {
                 clearInterval(this.refreshTimer);
                 this.refreshTimer = null;
             }
-            
+
             if (this.countdownTimer) {
                 clearInterval(this.countdownTimer);
                 this.countdownTimer = null;
             }
-            
+
             // 隐藏倒计时
-            const countdownEl = document.getElementById('balloon-refresh-countdown');
+            const countdownEl = document.getElementById("balloon-refresh-countdown");
             if (countdownEl) {
-                countdownEl.style.display = 'none';
+                countdownEl.style.display = "none";
             }
-            
+
             this.countdownSeconds = 0;
         }
-        
+
         /**
          * 更新倒计时显示
          */
         UpdateCountdownDisplay() {
-            const countdownTextEl = document.getElementById('balloon-countdown-text');
+            const countdownTextEl = document.getElementById("balloon-countdown-text");
             if (countdownTextEl) {
                 countdownTextEl.textContent = this.countdownSeconds;
             }
         }
-        
+
         /**
          * 重写 HandleKeydown 方法
          * 只允许 F5 刷新数据，禁用其他所有快捷键
          */
         HandleKeydown(e) {
             // 允许 F5 刷新数据（阻止默认刷新行为）
-            if (e.key === 'F5' && !e.ctrlKey) {
+            if (e.key === "F5" && !e.ctrlKey) {
                 e.preventDefault();
                 this.RefreshData();
                 return;
             }
-            
+
             // 其他所有快捷键都被禁用
             // 不调用父类方法
             return;
         }
-        
+
         /**
          * 重写 ProcessData 方法，处理气球数据
          */
         ProcessData(flg_real_rank = false) {
             if (!this.data) return;
-            
+
             // 过滤solution，只保留AC结果（result=4）
             if (this.data.solution) {
-                this.data.solution = this.data.solution.filter(solution => solution.result === 4);
+                this.data.solution = this.data.solution.filter(
+                    (solution) => solution.result === 4
+                );
             }
-            
+
             // 构建contest_balloon映射表，方便后续查找
             this.balloonMap = new Map();
-            if (this.data.contest_balloon && Array.isArray(this.data.contest_balloon)) {
-                this.data.contest_balloon.forEach(item => {
+            if (
+                this.data.contest_balloon &&
+                Array.isArray(this.data.contest_balloon)
+            ) {
+                this.data.contest_balloon.forEach((item) => {
                     // item格式: [contest_id, problem_id, team_id, ac_time, pst, bst, balloon_sender]
                     const key = `${item[2]}_${item[1]}`; // team_id_problem_id
                     this.balloonMap.set(key, {
@@ -199,46 +203,46 @@ if (typeof BalloonManagerSystem === 'undefined') {
                         ac_time: item[3],
                         pst: item[4],
                         bst: item[5], // 0未发 10已通知 20已分配 30已发放
-                        balloon_sender: item[6]
+                        balloon_sender: item[6],
                     });
                 });
             }
-            
+
             // 调用父类方法处理数据
             super.ProcessData(flg_real_rank);
-            
+
             // 统计气球状态
             this.CalculateBalloonStats();
-            
+
             // 更新全局统计显示
             this.UpdateGlobalStats();
         }
-        
+
         /**
          * 计算气球状态统计
          */
         CalculateBalloonStats() {
             // 重置统计
             this.balloonStats = {
-                0: 0,  // 未发气球
+                0: 0, // 未发气球
                 10: 0, // 已通知
                 20: 0, // 已分配
-                30: 0  // 已发放
+                30: 0, // 已发放
             };
-            
+
             if (!this.data || !this.data.solution) return;
-            
+
             // 统计所有AC的solution（这些都应该有气球）
             // 对于每个AC，如果在contest_balloon中有记录，使用记录中的bst状态
             // 如果没有记录，则默认为0（未发气球）
-            this.data.solution.forEach(solution => {
+            this.data.solution.forEach((solution) => {
                 const teamId = solution.team_id;
                 const problemId = solution.problem_id;
                 const key = `${teamId}_${problemId}`;
-                
+
                 // 从balloonMap中获取气球状态，如果没有记录则默认为0（未发气球）
                 const balloon = this.balloonMap?.get(key);
-                const bst = balloon ? (balloon.bst || 0) : 0;
+                const bst = balloon ? balloon.bst || 0 : 0;
                 if (this.balloonStats.hasOwnProperty(bst)) {
                     this.balloonStats[bst]++;
                 } else {
@@ -247,58 +251,60 @@ if (typeof BalloonManagerSystem === 'undefined') {
                 }
             });
         }
-        
+
         /**
          * 更新全局统计信息显示
          */
         UpdateGlobalStats() {
             // 计算全局统计
             this.CalculateBalloonStats();
-            
+
             // 更新DOM中的统计数值（不重新生成HTML）
-            const statValue0 = document.getElementById('balloon-stat-value-0');
-            const statValue10 = document.getElementById('balloon-stat-value-10');
-            const statValue20 = document.getElementById('balloon-stat-value-20');
-            const statValue30 = document.getElementById('balloon-stat-value-30');
-            
+            const statValue0 = document.getElementById("balloon-stat-value-0");
+            const statValue10 = document.getElementById("balloon-stat-value-10");
+            const statValue20 = document.getElementById("balloon-stat-value-20");
+            const statValue30 = document.getElementById("balloon-stat-value-30");
+
             if (statValue0) statValue0.textContent = this.balloonStats[0] || 0;
             if (statValue10) statValue10.textContent = this.balloonStats[10] || 0;
             if (statValue20) statValue20.textContent = this.balloonStats[20] || 0;
             if (statValue30) statValue30.textContent = this.balloonStats[30] || 0;
-            
+
             // 绑定点击事件（只需要绑定一次）
             this.BindGlobalStatsClickEvents();
         }
-        
+
         /**
          * 绑定全局统计点击事件（只绑定一次）
          */
         BindGlobalStatsClickEvents() {
-            const statsContainer = document.getElementById('balloon-global-stats') || document.getElementById('balloon-queue-stats');
+            const statsContainer =
+                document.getElementById("balloon-global-stats") ||
+                document.getElementById("balloon-queue-stats");
             if (!statsContainer) return;
-            
+
             // 防止重复绑定
-            if (statsContainer.dataset.eventsBound === 'true') return;
-            
-            const statItems = statsContainer.querySelectorAll('.balloon-stat-item');
-            statItems.forEach(statItem => {
-                statItem.addEventListener('click', (e) => {
+            if (statsContainer.dataset.eventsBound === "true") return;
+
+            const statItems = statsContainer.querySelectorAll(".balloon-stat-item");
+            statItems.forEach((statItem) => {
+                statItem.addEventListener("click", (e) => {
                     e.stopPropagation();
-                    const status = parseInt(statItem.getAttribute('data-status'));
-                    
+                    const status = parseInt(statItem.getAttribute("data-status"));
+
                     // 如果是队列系统，使用筛选功能；否则使用滚动功能
                     if (this instanceof BalloonQueueSystem) {
                         this.OnStatClick(status);
                     } else {
-                    this.ScrollToFirstBalloonStatus(null, status);
+                        this.ScrollToFirstBalloonStatus(null, status);
                     }
                 });
             });
-            
+
             // 标记已绑定
-            statsContainer.dataset.eventsBound = 'true';
+            statsContainer.dataset.eventsBound = "true";
         }
-        
+
         /**
          * 滚动到第一个符合指定气球状态的行
          * @param {string|null} problemId - 题目ID，null表示所有题目
@@ -306,11 +312,11 @@ if (typeof BalloonManagerSystem === 'undefined') {
          */
         ScrollToFirstBalloonStatus(problemId, targetStatus) {
             if (!this.rankList || !this.data) return;
-            
+
             // 查找第一个符合状态的队伍
             for (const rankItem of this.rankList) {
                 const teamId = rankItem.team_id;
-                
+
                 if (problemId) {
                     // 指定题目
                     const balloonStatus = this.GetProblemBalloonStatus(teamId, problemId);
@@ -322,7 +328,10 @@ if (typeof BalloonManagerSystem === 'undefined') {
                     // 所有题目中查找第一个符合状态的
                     if (this.data.problem) {
                         for (const problem of this.data.problem) {
-                            const balloonStatus = this.GetProblemBalloonStatus(teamId, problem.problem_id);
+                            const balloonStatus = this.GetProblemBalloonStatus(
+                                teamId,
+                                problem.problem_id
+                            );
                             if (balloonStatus === targetStatus) {
                                 this.ScrollToTeamAndHighlight(teamId, problem.problem_id);
                                 return;
@@ -332,7 +341,7 @@ if (typeof BalloonManagerSystem === 'undefined') {
                 }
             }
         }
-        
+
         /**
          * 滚动到队伍并高亮题目
          */
@@ -340,85 +349,101 @@ if (typeof BalloonManagerSystem === 'undefined') {
             const row = document.getElementById(`rank-grid-${teamId}`);
             if (row) {
                 // 滚动到该行
-                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
+                row.scrollIntoView({ behavior: "smooth", block: "center" });
+
                 // 高亮显示该题目
                 if (problemId && this.problemMap[problemId]) {
-                    const problemAlphabetIdx = RankToolGetProblemAlphabetIdx(this.problemMap[problemId].num);
-                    const problemItem = row.querySelector(`[d-pro-idx="${problemAlphabetIdx}"]`);
+                    const problemAlphabetIdx = RankToolGetProblemAlphabetIdx(
+                        this.problemMap[problemId].num
+                    );
+                    const problemItem = row.querySelector(
+                        `[d-pro-idx="${problemAlphabetIdx}"]`
+                    );
                     if (problemItem) {
-                        problemItem.style.transition = 'all 0.3s ease';
-                        problemItem.style.transform = 'scale(1.1)';
-                        problemItem.style.boxShadow = '0 0 20px rgba(13, 110, 253, 0.5)';
-                        
+                        problemItem.style.transition = "all 0.3s ease";
+                        problemItem.style.transform = "scale(1.1)";
+                        problemItem.style.boxShadow = "0 0 20px rgba(13, 110, 253, 0.5)";
+
                         setTimeout(() => {
-                            problemItem.style.transform = '';
-                            problemItem.style.boxShadow = '';
+                            problemItem.style.transform = "";
+                            problemItem.style.boxShadow = "";
                         }, 2000);
                     }
                 }
             }
         }
-        
+
         /**
          * 重写 CreateProblemGroup 方法，显示气球状态边框
          */
         CreateProblemGroup(problemStats, item = null) {
-            let html = '';
-            
+            let html = "";
+
             if (!this.problemMap || Object.keys(this.problemMap).length === 0) {
                 return '<div class="problem-group"><!-- 题目数据加载中 --></div>';
             }
-            
-            const problemIds = Object.keys(this.problemMap).sort((a, b) => 
-                this.problemMap[a].num - this.problemMap[b].num
+
+            const problemIds = Object.keys(this.problemMap).sort(
+                (a, b) => this.problemMap[a].num - this.problemMap[b].num
             );
-            
-            problemIds.forEach(problemId => {
+
+            problemIds.forEach((problemId) => {
                 const stats = problemStats[problemId] || {
-                    status: 'none',
+                    status: "none",
                     submitCount: 0,
-                    lastSubmitTime: '',
-                    problemAlphabetIdx: RankToolGetProblemAlphabetIdx(this.problemMap[problemId].num)
+                    lastSubmitTime: "",
+                    problemAlphabetIdx: RankToolGetProblemAlphabetIdx(
+                        this.problemMap[problemId].num
+                    ),
                 };
-                
+
                 // 检查一血状态（保留一血效果）
                 let isGlobalFirstBlood = false;
                 let isRegularFirstBlood = false;
-                
+
                 // 直接比较team_id
-                isGlobalFirstBlood = this.map_fb?.global?.[problemId]?.team_id === item?.team_id;
-                isRegularFirstBlood = this.map_fb?.regular?.[problemId]?.team_id === item?.team_id;
-                
+                isGlobalFirstBlood =
+                    this.map_fb?.global?.[problemId]?.team_id === item?.team_id;
+                isRegularFirstBlood =
+                    this.map_fb?.regular?.[problemId]?.team_id === item?.team_id;
+
                 // 构建一血相关的CSS类
-                let firstBloodClasses = '';
+                let firstBloodClasses = "";
                 if (isRegularFirstBlood) {
-                    firstBloodClasses += ' pro-first-blood-regular';
+                    firstBloodClasses += " pro-first-blood-regular";
                 }
                 if (isGlobalFirstBlood) {
-                    firstBloodClasses += ' pro-first-blood-global';
+                    firstBloodClasses += " pro-first-blood-global";
                 }
-                
+
                 // 只在有AC时才获取气球状态和添加边框
-                let balloonBorderClass = '';
-                let balloonBorderStyle = '';
-                
-                if (stats.status === 'ac') {
+                let balloonBorderClass = "";
+                let balloonBorderStyle = "";
+
+                if (stats.status === "ac") {
                     // 获取该题目的气球状态
-                    const balloonStatus = this.GetProblemBalloonStatus(item.team_id, problemId);
-                    const balloonStatusInfo = this.balloonStatusMap[balloonStatus] || this.balloonStatusMap[0];
-                    
+                    const balloonStatus = this.GetProblemBalloonStatus(
+                        item.team_id,
+                        problemId
+                    );
+                    const balloonStatusInfo =
+                        this.balloonStatusMap[balloonStatus] || this.balloonStatusMap[0];
+
                     // 构建气球状态边框类名
                     balloonBorderClass = `balloon-status-${balloonStatus}`;
-                    
+
                     // 构建气球状态边框样式（使用outline，不占DOM空间，更粗的边框）
                     balloonBorderStyle = `outline: 6px solid ${balloonStatusInfo.color}; outline-offset: -6px;`;
                 }
-                
+
                 // 计算总分钟数
-                let briefMinute = '';
-                if (stats.status === 'ac' && stats.lastSubmitTime && /^(\d{1,2}:)?\d{1,2}:\d{2}$/.test(stats.lastSubmitTime)) {
-                    const timeParts = stats.lastSubmitTime.split(':');
+                let briefMinute = "";
+                if (
+                    stats.status === "ac" &&
+                    stats.lastSubmitTime &&
+                    /^(\d{1,2}:)?\d{1,2}:\d{2}$/.test(stats.lastSubmitTime)
+                ) {
+                    const timeParts = stats.lastSubmitTime.split(":");
                     let totalMinutes = 0;
                     if (timeParts.length === 3) {
                         const hours = parseInt(timeParts[0]) || 0;
@@ -429,20 +454,31 @@ if (typeof BalloonManagerSystem === 'undefined') {
                     }
                     briefMinute = totalMinutes + "'";
                 }
-                
+
                 // 存储额外信息用于tooltip（通过data属性）
-                const teamId = item?.team_id || '';
+                const teamId = item?.team_id || "";
                 const globalFB = this.map_fb?.global?.[problemId];
                 const regularFB = this.map_fb?.regular?.[problemId];
-                const globalFBTeamId = globalFB?.team_id || '';
-                const regularFBTeamId = regularFB?.team_id || '';
-                const balloonStatus = stats.status === 'ac' ? this.GetProblemBalloonStatus(teamId, problemId) : null;
-                const balloonStatusInfo = balloonStatus !== null ? (this.balloonStatusMap[balloonStatus] || this.balloonStatusMap[0]) : null;
-                
+                const globalFBTeamId = globalFB?.team_id || "";
+                const regularFBTeamId = regularFB?.team_id || "";
+                const balloonStatus =
+                    stats.status === "ac"
+                        ? this.GetProblemBalloonStatus(teamId, problemId)
+                        : null;
+                const balloonStatusInfo =
+                    balloonStatus !== null
+                        ? this.balloonStatusMap[balloonStatus] || this.balloonStatusMap[0]
+                        : null;
+
                 html += `
                     <div class="rank-col rank-col-problem">
-                        <div class="${this.GetProblemStatusClass(stats)}${firstBloodClasses} ${balloonBorderClass}" 
-                            ${balloonBorderStyle ? `style="${balloonBorderStyle}"` : ''}
+                        <div class="${this.GetProblemStatusClass(
+                    stats
+                )}${firstBloodClasses} ${balloonBorderClass}" 
+                            ${balloonBorderStyle
+                        ? `style="${balloonBorderStyle}"`
+                        : ""
+                    }
                             d-pro-idx="${stats.problemAlphabetIdx}"
                             d-sub-cnt="${stats.submitCount || 0}"
                             d-last-sub="${this.GetLastSubmitTimeDisplay(stats)}"
@@ -450,112 +486,117 @@ if (typeof BalloonManagerSystem === 'undefined') {
                             d-problem-id="${problemId}"
                             d-global-fb-team="${globalFBTeamId}"
                             d-regular-fb-team="${regularFBTeamId}"
-                            d-balloon-status="${balloonStatus !== null ? balloonStatus : ''}">
+                            d-balloon-status="${balloonStatus !== null ? balloonStatus : ""
+                    }">
                             <div class="problem-content balloon-problem-content">
-                                ${briefMinute ? `<span class="time-brief">${briefMinute}</span>` : '<span class="time-brief"></span>'}
+                                ${briefMinute
+                        ? `<span class="time-brief">${briefMinute}</span>`
+                        : '<span class="time-brief"></span>'
+                    }
                             </div>
                         </div>
                     </div>
                 `;
             });
-            
+
             return html;
         }
-        
+
         /**
          * 重写 CreateHeaderRow 方法，移除罚时列
          */
         CreateHeaderRow() {
             const headerRow = super.CreateHeaderRow();
             // 移除罚时列
-            const penaltyCol = headerRow.querySelector('.rank-col-penalty');
+            const penaltyCol = headerRow.querySelector(".rank-col-penalty");
             if (penaltyCol) {
                 penaltyCol.remove();
             }
             return headerRow;
         }
-        
+
         /**
          * 重写 CreateRankRow 方法，在校名前面加上team_id，并移除罚时列
          */
         async CreateRankRow(item, rank, index) {
             // 调用父类方法创建基础行
             const row = await super.CreateRankRow(item, rank, index);
-            
+
             // 移除罚时列
-            const penaltyCol = row.querySelector('.rank-col-penalty');
+            const penaltyCol = row.querySelector(".rank-col-penalty");
             if (penaltyCol) {
                 penaltyCol.remove();
             }
-            
+
             // 在校名前面添加team_id
-            const schoolNameEl = row.querySelector('.school-name');
+            const schoolNameEl = row.querySelector(".school-name");
             if (schoolNameEl && item.team) {
                 const teamId = item.team.team_id;
                 const originalText = schoolNameEl.textContent.trim();
-                const originalTitleCn = schoolNameEl.getAttribute('title-cn') || '';
-                const originalTitleEn = schoolNameEl.getAttribute('title-en') || '';
-                
+                const originalTitleCn = schoolNameEl.getAttribute("title-cn") || "";
+                const originalTitleEn = schoolNameEl.getAttribute("title-en") || "";
+
                 // 保持原有的tooltip和结构，只添加team_id和分割线
                 // 分割线样式与team-names的分割线一致（使用border-left样式）
                 schoolNameEl.innerHTML = `<span class="team-id-display">${teamId}</span><span class="team-id-separator"> | </span>${originalText}`;
-                
+
                 // 保持原有的title属性
                 if (originalTitleCn) {
-                    schoolNameEl.setAttribute('title-cn', originalTitleCn);
+                    schoolNameEl.setAttribute("title-cn", originalTitleCn);
                 }
                 if (originalTitleEn) {
-                    schoolNameEl.setAttribute('title-en', originalTitleEn);
+                    schoolNameEl.setAttribute("title-en", originalTitleEn);
                 }
             }
-            
+
             return row;
         }
-        
+
         /**
          * 重写 GenerateProblemItemTooltip 方法，显示完整的气球管理信息
          */
         GenerateProblemItemTooltip(element) {
             // 从data属性中提取信息
-            const problemAlphabetIdx = element.getAttribute('d-pro-idx') || '?';
-            const teamId = element.getAttribute('d-team-id') || '';
-            const problemId = element.getAttribute('d-problem-id') || '';
-            const globalFBTeamId = element.getAttribute('d-global-fb-team') || '';
-            const regularFBTeamId = element.getAttribute('d-regular-fb-team') || '';
-            const balloonStatus = element.getAttribute('d-balloon-status');
-            
+            const problemAlphabetIdx = element.getAttribute("d-pro-idx") || "?";
+            const teamId = element.getAttribute("d-team-id") || "";
+            const problemId = element.getAttribute("d-problem-id") || "";
+            const globalFBTeamId = element.getAttribute("d-global-fb-team") || "";
+            const regularFBTeamId = element.getAttribute("d-regular-fb-team") || "";
+            const balloonStatus = element.getAttribute("d-balloon-status");
+
             // 构建tooltip内容，使用更好的排版
-            let titlecn = '';
-            let titleen = '';
-            
+            let titlecn = "";
+            let titleen = "";
+
             // 分隔线
-            const separator = '─'.repeat(15);
-            
+            const separator = "─".repeat(15);
+
             // 题号（第一行）
             titlecn += `题目 ${problemAlphabetIdx}`;
             titleen += `Problem ${problemAlphabetIdx}`;
-            
+
             // 分隔线
             titlecn += `\n${separator}`;
             titleen += `\n${separator}`;
-            
+
             // 队伍ID
             if (teamId) {
                 titlecn += `\n队伍ID：${teamId}`;
                 titleen += `\nTeam ID: ${teamId}`;
             }
-            
+
             // 气球状态（仅在有AC时显示）
-            if (balloonStatus !== null && balloonStatus !== '') {
-                const balloonStatusInfo = this.balloonStatusMap[balloonStatus] || this.balloonStatusMap[0];
+            if (balloonStatus !== null && balloonStatus !== "") {
+                const balloonStatusInfo =
+                    this.balloonStatusMap[balloonStatus] || this.balloonStatusMap[0];
                 titlecn += `\n气球状态：${balloonStatusInfo.cn}`;
                 titleen += `\nBalloon Status: ${balloonStatusInfo.en}`;
             }
-            
+
             // 分隔线
             titlecn += `\n${separator}`;
             titleen += `\n${separator}`;
-            
+
             // 正式队首答
             if (regularFBTeamId) {
                 const isRegularFB = regularFBTeamId === teamId;
@@ -570,7 +611,7 @@ if (typeof BalloonManagerSystem === 'undefined') {
                 titlecn += `\n正式队首答：—`;
                 titleen += `\nRegular First Blood: —`;
             }
-            
+
             // 全场首答
             if (globalFBTeamId) {
                 const isGlobalFB = globalFBTeamId === teamId;
@@ -585,46 +626,46 @@ if (typeof BalloonManagerSystem === 'undefined') {
                 titlecn += `\n全场首答：—`;
                 titleen += `\nGlobal First Blood: —`;
             }
-            
+
             return { titlecn, titleen };
         }
-        
+
         /**
          * 获取指定队伍在指定题目的气球状态
          */
         GetProblemBalloonStatus(teamId, problemId) {
             if (!this.balloonMap) return 0;
-            
+
             // 从contest_balloon映射表中查找
             const key = `${teamId}_${problemId}`;
             const balloon = this.balloonMap.get(key);
-            
+
             if (balloon) {
                 return balloon.bst || 0;
             }
-            
+
             // 如果没有对应的contest_balloon条目，等同于bst为0（未发气球）
             return 0;
         }
-        
+
         /**
          * 重写 UpdatePageTitle 方法
          */
         UpdatePageTitle() {
             if (!this.data) return;
-            
-            const shouldShowTitle = this.isFullscreen 
-                ? this.config.flg_show_fullscreen_contest_title 
+
+            const shouldShowTitle = this.isFullscreen
+                ? this.config.flg_show_fullscreen_contest_title
                 : this.config.flg_show_page_contest_title;
-            
+
             if (!shouldShowTitle) return;
-            
+
             const title = this.data.contest.title;
-            const modeText = '气球全览';
-            
+            const modeText = "气球全览";
+
             if (this.elements.pageTitle) {
                 // 更新标题，保持双语结构
-                const pageTitleEl = document.getElementById('balloon-page-title');
+                const pageTitleEl = document.getElementById("balloon-page-title");
                 if (pageTitleEl) {
                     pageTitleEl.innerHTML = `${title} - 气球全览<en-text>${title} - Balloon Overview</en-text>`;
                 } else if (this.elements.pageTitle) {
@@ -632,34 +673,34 @@ if (typeof BalloonManagerSystem === 'undefined') {
                 }
             }
         }
-        
+
         /**
          * 重写 Cleanup 方法，清理定时器
          */
         Cleanup() {
             // 停止自动刷新
             this.StopAutoRefresh();
-            
+
             // 调用父类清理方法
             super.Cleanup();
         }
-        
+
         /**
          * 重写 RefreshData 方法，保持自动刷新状态
          */
         async RefreshData() {
             const wasAutoRefreshEnabled = this.autoRefreshEnabled;
-            
+
             // 调用父类刷新方法
             await super.RefreshData();
-            
+
             // 如果之前开启了自动刷新，重新启动
             if (wasAutoRefreshEnabled) {
                 this.StartAutoRefresh();
             }
         }
     }
-    
+
     // #########################################
     //  BalloonQueueSystem - 气球队列系统
     //  继承自 BalloonManagerSystem
@@ -670,49 +711,53 @@ if (typeof BalloonManagerSystem === 'undefined') {
             // 合并全局配置和传入配置
             const globalConfig = window.RANK_CONFIG || {};
             const mergedConfig = Object.assign({}, globalConfig, config);
-            
+
             // 在调用 super() 之前，先读取队列配置（因为 super() 会立即触发 Init()）
             const queueConfig = window.BALLOON_QUEUE_CONFIG || {};
-            
+
             // 调用父类构造函数（传入合并后的配置）
             // 注意：父类构造函数会立即调用 this.Init()，所以需要在 Init() 中也能访问这些配置
             super(containerId, mergedConfig);
-            
+
             // 队列系统特定配置（从window.BALLOON_QUEUE_CONFIG获取）
             // 优先判断是管理员，如果是管理员就不再判断is_balloon_sender
             this.isBalloonManager = queueConfig.is_balloon_manager || false;
-            this.isBalloonSender = this.isBalloonManager ? false : (queueConfig.is_balloon_sender || false);
+            this.isBalloonSender = this.isBalloonManager
+                ? false
+                : queueConfig.is_balloon_sender || false;
             this.currentUser = queueConfig.current_user || null;
             this.teamRoom = queueConfig.team_room || null;
-            this.changeStatusUrl = queueConfig.change_status_url || '/cpcsys/contest/balloon_change_status_ajax';
-            
+            this.changeStatusUrl =
+                queueConfig.change_status_url ||
+                "/cpcsys/contest/balloon_change_status_ajax";
+
             // 获取 contest_id（用于 localStorage key）
-            this.contestId = mergedConfig.cid_list || globalConfig.cid_list || '';
-            
+            this.contestId = mergedConfig.cid_list || globalConfig.cid_list || "";
+
             // 从 localStorage 读取筛选条件
             this.filters = this.LoadFiltersFromStorage();
-            
+
             // 当前标签页（仅balloonSender使用）
-            this.currentTab = 'queue';  // 'queue' 或 'my_balloons'
-            
+            this.currentTab = "queue"; // 'queue' 或 'my_balloons'
+
             // 数据缓存
-            this.balloonList = [];      // 处理后的气球列表
-            this.rooms = [];            // 所有room列表
-            this.senders = [];          // 所有配送员列表
-            this.schools = [];          // 所有学校列表
-            this.problems = [];         // 所有题号列表
-            
+            this.balloonList = []; // 处理后的气球列表
+            this.rooms = []; // 所有room列表
+            this.senders = []; // 所有配送员列表
+            this.schools = []; // 所有学校列表
+            this.problems = []; // 所有题号列表
+
             // 自动打印相关
-            this.autoPrintEnabled = false;      // 自动打印开关状态
-            this.autoPrintTimer = null;         // 自动打印定时器
-            this.autoPrintCountdown = 10;       // 倒计时（秒）
+            this.autoPrintEnabled = false; // 自动打印开关状态
+            this.autoPrintTimer = null; // 自动打印定时器
+            this.autoPrintCountdown = 10; // 倒计时（秒）
             this.autoPrintCountdownTimer = null; // 倒计时定时器
             this.autoPrintWaitStartTime = null; // 等待开始时间（用于20秒超时判断）
-            this.sortedBalloonList = [];       // 排序后的气球列表（用于自动打印）
-            this.autoPrintLastIdx = 0;          // 上次打印的最大序号（用于判断是否需要刷新数据）
+            this.sortedBalloonList = []; // 排序后的气球列表（用于自动打印）
+            this.autoPrintLastIdx = 0; // 上次打印的最大序号（用于判断是否需要刷新数据）
+            this.autoPrintPageFinishTime = null; // 第一页打印完成的时间
         }
-        
-        
+
         /**
          * 重写 Init 方法（external mode，不依赖容器）
          */
@@ -721,45 +766,53 @@ if (typeof BalloonManagerSystem === 'undefined') {
             // 注意：父类 RankSystem.Init() 在 externalMode 时会提前返回，不会初始化缓存
             // 所以我们需要自己初始化缓存
             if (!this.cache) {
-                this.cache = new IndexedDBCache('csgoj_rank', 'logotable');
-                this.logoCache = new IndexedDBCache('csgoj_rank', 'logotable');
+                this.cache = new IndexedDBCache("csgoj_rank", "logotable");
+                this.logoCache = new IndexedDBCache("csgoj_rank", "logotable");
             }
-            
+
             // external mode：不依赖容器ID
             this.externalMode = true;
             this.container = null;
-            
+
             // 清理之前的状态（调用父类方法）
             this.Cleanup();
-            
+
             // 从 window.BALLOON_QUEUE_CONFIG 读取配置（因为构造函数可能还没执行完）
             // 这样可以确保在 Init() 中也能正确判断 isBalloonManager 和 isBalloonSender
             const queueConfig = window.BALLOON_QUEUE_CONFIG || {};
             const isBalloonManager = queueConfig.is_balloon_manager || false;
-            const isBalloonSender = isBalloonManager ? false : (queueConfig.is_balloon_sender || false);
-            
+            const isBalloonSender = isBalloonManager
+                ? false
+                : queueConfig.is_balloon_sender || false;
+
             // 如果构造函数已经初始化了这些属性，使用实例属性；否则使用配置中的值
             // 这样可以兼容构造函数执行前后的两种情况
-            const finalIsBalloonManager = this.isBalloonManager !== undefined ? this.isBalloonManager : isBalloonManager;
-            const finalIsBalloonSender = this.isBalloonSender !== undefined ? this.isBalloonSender : isBalloonSender;
-            
+            const finalIsBalloonManager =
+                this.isBalloonManager !== undefined
+                    ? this.isBalloonManager
+                    : isBalloonManager;
+            const finalIsBalloonSender =
+                this.isBalloonSender !== undefined
+                    ? this.isBalloonSender
+                    : isBalloonSender;
+
             // 初始化标签页事件（如果是配送员）
             if (finalIsBalloonSender) {
                 this.InitTabs();
             }
-            
+
             // 初始化筛选器事件（如果是管理员）
             if (finalIsBalloonManager) {
                 this.InitFilters();
                 // 初始化自动打印功能
                 this.InitAutoPrint();
             }
-            
+
             // 绑定键盘事件（F5刷新数据）
             // 注意：父类 RankSystem.BindEvents() 在 externalMode 时不会执行
             // 所以我们需要自己绑定 keydown 事件
-            document.addEventListener('keydown', (e) => this.HandleKeydown(e));
-            
+            document.addEventListener("keydown", (e) => this.HandleKeydown(e));
+
             // 先初始化缓存，然后加载数据
             // 注意：父类 RankSystem.Init() 在 externalMode 时会提前返回，不会执行这部分
             // 所以我们需要自己处理
@@ -767,29 +820,29 @@ if (typeof BalloonManagerSystem === 'undefined') {
                 this.LoadData();
             });
         }
-        
+
         /**
          * 初始化自动打印功能
          */
         InitAutoPrint() {
             // 获取比赛 ID（用于 localStorage key）
-            const contestId = this.config.cid_list || '';
+            const contestId = this.config.cid_list || "";
             const storageKeyPageSize = `${contestId}_balloon_print_page_size`;
             const storageKeyPerPage = `${contestId}_balloon_print_per_page`;
             const storageKeyCustomWidth = `${contestId}_balloon_print_custom_width`;
             const storageKeyCustomHeight = `${contestId}_balloon_print_custom_height`;
-            
+
             // 初始化自动打印开关（参考 print_manager.js 的实现）
-            const switchEl = document.getElementById('balloon-auto-print-box');
+            const switchEl = document.getElementById("balloon-auto-print-box");
             if (switchEl && window.csgSwitch) {
                 window.csgSwitch.initSwitch(switchEl, {
                     onChange: (checked) => {
                         this.OnAutoPrintToggle(checked);
-                    }
+                    },
                 });
             }
             // 初始化页面尺寸选择（使用普通 select，避免 multiple-select 冲突）
-            const pageSizeSelect = document.getElementById('balloon-print-page-size');
+            const pageSizeSelect = document.getElementById("balloon-print-page-size");
             if (pageSizeSelect) {
                 // 从 localStorage 读取保存的值
                 const savedPageSize = csg.store(storageKeyPageSize);
@@ -797,24 +850,26 @@ if (typeof BalloonManagerSystem === 'undefined') {
                     // 设置值（在绑定事件之前，避免触发 change 事件）
                     pageSizeSelect.value = savedPageSize;
                 }
-                
+
                 // 监听尺寸变化
-                pageSizeSelect.addEventListener('change', () => {
+                pageSizeSelect.addEventListener("change", () => {
                     this.OnPageSizeChange();
                 });
             }
-            
+
             // 初始化自定义尺寸输入
-            const customWidth = document.getElementById('balloon-print-custom-width');
-            const customHeight = document.getElementById('balloon-print-custom-height');
-            
+            const customWidth = document.getElementById("balloon-print-custom-width");
+            const customHeight = document.getElementById(
+                "balloon-print-custom-height"
+            );
+
             // 从 localStorage 读取保存的自定义尺寸
             if (customWidth) {
                 const savedWidth = csg.store(storageKeyCustomWidth);
                 if (savedWidth) {
                     customWidth.value = savedWidth;
                 }
-                customWidth.addEventListener('input', () => {
+                customWidth.addEventListener("input", () => {
                     // 保存到 localStorage
                     csg.store(storageKeyCustomWidth, customWidth.value);
                     // 自定义尺寸变化时，重新计算最大数量（联动更新）
@@ -826,41 +881,41 @@ if (typeof BalloonManagerSystem === 'undefined') {
                 if (savedHeight) {
                     customHeight.value = savedHeight;
                 }
-                customHeight.addEventListener('input', () => {
+                customHeight.addEventListener("input", () => {
                     // 保存到 localStorage
                     csg.store(storageKeyCustomHeight, customHeight.value);
                     // 自定义尺寸变化时，重新计算最大数量（联动更新）
                     this.CalculateMaxPerPage();
                 });
             }
-            
+
             // 初始化每页数量输入
-            const perPageInput = document.getElementById('balloon-print-per-page');
+            const perPageInput = document.getElementById("balloon-print-per-page");
             if (perPageInput) {
                 // 从 localStorage 读取保存的值
                 const savedPerPage = csg.store(storageKeyPerPage);
                 if (savedPerPage) {
                     perPageInput.value = savedPerPage;
                 }
-                
+
                 // 输入时实时验证
-                perPageInput.addEventListener('input', () => {
+                perPageInput.addEventListener("input", () => {
                     this.OnPerPageChange();
                 });
                 // 失去焦点时验证并修正
-                perPageInput.addEventListener('blur', () => {
+                perPageInput.addEventListener("blur", () => {
                     this.OnPerPageChange();
                 });
                 // 键盘事件：Enter 键时验证
-                perPageInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
+                perPageInput.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") {
                         e.preventDefault();
                         this.OnPerPageChange();
                         perPageInput.blur();
                     }
                 });
             }
-            
+
             // 初始计算最大数量和显示状态
             // 使用 setTimeout 确保 multiple-select 已完全初始化，并且值已设置完成
             // 注意：这里只计算最大数量，不触发 change 事件（因为值已经在上面设置过了）
@@ -871,13 +926,13 @@ if (typeof BalloonManagerSystem === 'undefined') {
                 this.OnPerPageChange();
             }, 100);
         }
-        
+
         /**
          * 处理自动打印开关切换
          */
         OnAutoPrintToggle(checked) {
             this.autoPrintEnabled = checked;
-            
+
             if (checked) {
                 // 开启自动打印
                 this.StartAutoPrint();
@@ -886,64 +941,65 @@ if (typeof BalloonManagerSystem === 'undefined') {
                 this.StopAutoPrint();
             }
         }
-        
+
         /**
          * 启动自动打印
          */
         StartAutoPrint() {
             this.StopAutoPrint(); // 先清除已有定时器
-            
+
             // 设置全局变量，启用自动打印排序（必须在 LoadData 之前设置）
             window.AUTO_PRINT_SORT_ENABLED = true;
-            
+
             // 重置倒计时
             this.autoPrintCountdown = 10;
             this.UpdateAutoPrintCountdown();
-            
+
             // 重置已打印序号
             this.autoPrintLastIdx = 0;
-            
+
+            // 重置第一页打印完成的时间
+            this.autoPrintPageFinishTime = null;
+
             // 显示倒计时
-            const countdownEl = document.getElementById('balloon-print-countdown');
+            const countdownEl = document.getElementById("balloon-print-countdown");
             if (countdownEl) {
-                countdownEl.style.display = 'inline-block';
+                countdownEl.style.display = "inline-block";
             }
-            
+            console.log(444);
             // 立即执行一次数据加载（按 bst、in_date 排序）
             // 数据加载完成后执行打印
             (async () => {
                 try {
                     await this.LoadData();
+                    console.log(555);
                     // 数据加载完成后执行打印
                     this.DoAutoPrint();
                 } catch (error) {
                     // 加载失败时停止自动打印
                     this.StopAutoPrint();
-                    const switchInput = document.getElementById('balloon-auto-print-box');
+                    const switchInput = document.getElementById("balloon-auto-print-box");
                     if (switchInput && window.csgSwitch) {
                         // 使用正确的方法：setChecked（直接传入 input 元素）
                         window.csgSwitch.setChecked(switchInput, false);
                     }
                 }
             })();
-            
-            // 启动倒计时定时器（用于后续的周期性打印）
+
+            // 启动倒计时定时器（只负责倒计时，不负责刷新）
             this.autoPrintCountdownTimer = setInterval(() => {
                 this.autoPrintCountdown--;
                 this.UpdateAutoPrintCountdown();
-                
+
                 if (this.autoPrintCountdown <= 0) {
-                    // 倒计时结束，刷新数据并执行打印
-                    this.RefreshData().then(() => {
-                        // 数据刷新完成后执行打印
-                        this.DoAutoPrint();
-                    });
+                    // 倒计时到0，检查是否需要刷新（取两者中较大的间隔）
+                    this.CheckAndRefreshForAutoPrint();
                     // 重置倒计时
                     this.autoPrintCountdown = 10;
                 }
             }, 1000);
         }
-        
+
         /**
          * 停止自动打印
          */
@@ -952,99 +1008,179 @@ if (typeof BalloonManagerSystem === 'undefined') {
                 clearTimeout(this.autoPrintTimer);
                 this.autoPrintTimer = null;
             }
-            
+
             if (this.autoPrintCountdownTimer) {
                 clearInterval(this.autoPrintCountdownTimer);
                 this.autoPrintCountdownTimer = null;
             }
-            
+
             // 清除全局变量，禁用自动打印排序
             window.AUTO_PRINT_SORT_ENABLED = false;
-            
+
             // 隐藏倒计时
-            const countdownEl = document.getElementById('balloon-print-countdown');
+            const countdownEl = document.getElementById("balloon-print-countdown");
             if (countdownEl) {
-                countdownEl.style.display = 'none';
+                countdownEl.style.display = "none";
             }
-            
+
             this.autoPrintCountdown = 10;
             this.autoPrintWaitStartTime = null;
+            this.autoPrintPageFinishTime = null;
         }
-        
+
+        /**
+         * 检查并刷新数据（取第一页打完时间和倒计时两者中较大的间隔）
+         */
+        CheckAndRefreshForAutoPrint() {
+            const now = Date.now();
+            const countdownElapsed = 10 * 1000; // 10秒（倒计时刚结束）
+
+            // 如果第一页还没打完，不刷新，继续打印
+            if (this.autoPrintPageFinishTime === null) {
+                // 继续打印，不刷新
+                this.DoAutoPrint();
+                return;
+            }
+
+            // 计算第一页打完后的时间间隔
+            const pageFinishElapsed = now - this.autoPrintPageFinishTime;
+
+            // 取两者中较大的间隔（较小的频率）
+            // 如果第一页打完时间 < 10秒，说明10秒内打完了，等倒计时到0再刷新
+            // 如果第一页打完时间 >= 10秒，说明倒计时到0时第一页还没打完，不刷新，继续打印
+            if (pageFinishElapsed < countdownElapsed) {
+                // 第一页在10秒内打完了，现在倒计时到0，刷新数据
+                this.RefreshData().then(() => {
+                    this.DoAutoPrint();
+                });
+                // 重置第一页完成时间
+                this.autoPrintPageFinishTime = null;
+            } else {
+                // 倒计时到0时第一页还没打完，不刷新，继续打印
+                this.DoAutoPrint();
+            }
+        }
+
+        /**
+         * 检查并提示过滤条件（除房间外）
+         */
+        CheckAndNotifyFilters() {
+            // 检查是否有除房间外的过滤条件
+            const hasNonRoomFilters =
+                (this.filters.status && this.filters.status.length > 0) ||
+                this.filters.balloon_sender !== null ||
+                (this.filters.schools && this.filters.schools.length > 0) ||
+                (this.filters.problems && this.filters.problems.length > 0) ||
+                (this.filters.searchText && this.filters.searchText.trim() !== "");
+
+            if (!hasNonRoomFilters) {
+                return; // 没有过滤条件，不提示
+            }
+
+            // 检查 localStorage，避免重复提示
+            const contestId = this.config.cid_list || "";
+            const storageKey = `${contestId}_balloon_print_filter_notified`;
+            const hasNotified = csg.store(storageKey);
+
+            if (hasNotified) {
+                return; // 已经提示过，不再提示
+            }
+
+            // 提示用户
+            alerty.notify({
+                message: "当前筛选条件可能导致没有可打印的气球，请检查筛选设置",
+                message_en:
+                    "Current filter conditions may result in no printable balloons, please check filter settings",
+                type: "warning",
+                duration: 5000,
+            });
+
+            // 记录到 localStorage
+            csg.store(storageKey, true);
+        }
+
         /**
          * 更新自动打印倒计时显示
          */
         UpdateAutoPrintCountdown() {
-            const countdownTextEl = document.getElementById('balloon-print-countdown-text');
+            const countdownTextEl = document.getElementById(
+                "balloon-print-countdown-text"
+            );
             if (countdownTextEl) {
                 countdownTextEl.textContent = this.autoPrintCountdown;
             }
         }
-        
+
         /**
          * 处理页面尺寸变化
          */
         OnPageSizeChange() {
-            const pageSizeSelect = document.getElementById('balloon-print-page-size');
-            const customWidthGroup = document.getElementById('balloon-print-custom-size-group');
-            const customHeightGroup = document.getElementById('balloon-print-custom-size-group2');
-            
+            const pageSizeSelect = document.getElementById("balloon-print-page-size");
+            const customWidthGroup = document.getElementById(
+                "balloon-print-custom-size-group"
+            );
+            const customHeightGroup = document.getElementById(
+                "balloon-print-custom-size-group2"
+            );
+
             if (!pageSizeSelect) return;
-            
+
             // 获取比赛 ID（用于 localStorage key）
-            const contestId = this.config.cid_list || '';
+            const contestId = this.config.cid_list || "";
             const storageKeyPageSize = `${contestId}_balloon_print_page_size`;
-            
+
             // 使用普通 select 的 value 属性
             const selectedValue = pageSizeSelect.value;
-            
+
             // 保存到 localStorage
             if (selectedValue) {
                 csg.store(storageKeyPageSize, selectedValue);
             }
-            
+
             // 显示/隐藏自定义尺寸输入
-            if (selectedValue === 'custom') {
+            if (selectedValue === "custom") {
                 // 显示自定义尺寸输入框
                 if (customWidthGroup) {
-                    customWidthGroup.style.display = 'flex';
-                    customWidthGroup.classList.add('show');
+                    customWidthGroup.style.display = "flex";
+                    customWidthGroup.classList.add("show");
                 }
                 if (customHeightGroup) {
-                    customHeightGroup.style.display = 'flex';
-                    customHeightGroup.classList.add('show');
+                    customHeightGroup.style.display = "flex";
+                    customHeightGroup.classList.add("show");
                 }
             } else {
                 // 隐藏自定义尺寸输入框
                 if (customWidthGroup) {
-                    customWidthGroup.style.display = 'none';
-                    customWidthGroup.classList.remove('show');
+                    customWidthGroup.style.display = "none";
+                    customWidthGroup.classList.remove("show");
                 }
                 if (customHeightGroup) {
-                    customHeightGroup.style.display = 'none';
-                    customHeightGroup.classList.remove('show');
+                    customHeightGroup.style.display = "none";
+                    customHeightGroup.classList.remove("show");
                 }
             }
-            
+
             // 计算最大数量（纸张尺寸变化时联动更新）
             this.CalculateMaxPerPage();
         }
-        
+
         /**
          * 处理每页数量变化
          */
         OnPerPageChange() {
-            const perPageInput = document.getElementById('balloon-print-per-page');
-            const maxCount = parseInt(document.getElementById('balloon-print-max-count')?.textContent || '1');
-            
+            const perPageInput = document.getElementById("balloon-print-per-page");
+            const maxCount = parseInt(
+                document.getElementById("balloon-print-max-count")?.textContent || "1"
+            );
+
             if (perPageInput) {
                 let value = parseInt(perPageInput.value);
-                
+
                 // 如果输入为空或无效，设为1
-                if (isNaN(value) || value === '') {
+                if (isNaN(value) || value === "") {
                     value = 1;
                 }
-                
+
                 // 限制在有效范围内
                 if (value > maxCount) {
                     value = maxCount;
@@ -1052,74 +1188,79 @@ if (typeof BalloonManagerSystem === 'undefined') {
                 if (value < 1) {
                     value = 1;
                 }
-                
+
                 // 更新输入框值
                 perPageInput.value = value;
-                
+
                 // 保存到 localStorage
-                const contestId = this.config.cid_list || '';
+                const contestId = this.config.cid_list || "";
                 const storageKeyPerPage = `${contestId}_balloon_print_per_page`;
                 csg.store(storageKeyPerPage, value.toString());
-                
+
                 // 添加视觉反馈：如果值被修正，短暂高亮
-                if (parseInt(perPageInput.value) !== parseInt(perPageInput.getAttribute('data-last-value') || '1')) {
-                    perPageInput.style.backgroundColor = '#fff3cd';
+                if (
+                    parseInt(perPageInput.value) !==
+                    parseInt(perPageInput.getAttribute("data-last-value") || "1")
+                ) {
+                    perPageInput.style.backgroundColor = "#fff3cd";
                     setTimeout(() => {
-                        perPageInput.style.backgroundColor = '';
+                        perPageInput.style.backgroundColor = "";
                     }, 500);
                 }
-                
+
                 // 记录当前值
-                perPageInput.setAttribute('data-last-value', value);
+                perPageInput.setAttribute("data-last-value", value);
             }
         }
-        
+
         /**
          * 计算每页最大数量（根据纸张尺寸）
          */
         CalculateMaxPerPage() {
-            const pageSizeSelect = document.getElementById('balloon-print-page-size');
-            const customWidth = document.getElementById('balloon-print-custom-width');
-            const customHeight = document.getElementById('balloon-print-custom-height');
-            const maxCountEl = document.getElementById('balloon-print-max-count');
-            
+            const pageSizeSelect = document.getElementById("balloon-print-page-size");
+            const customWidth = document.getElementById("balloon-print-custom-width");
+            const customHeight = document.getElementById(
+                "balloon-print-custom-height"
+            );
+            const maxCountEl = document.getElementById("balloon-print-max-count");
+
             if (!pageSizeSelect || !maxCountEl) return;
-            
+
             let width, height;
             // 使用普通 select 的 value 属性
             const selectedValue = pageSizeSelect.value;
-            
-            if (selectedValue === 'custom') {
+
+            if (selectedValue === "custom") {
                 width = parseFloat(customWidth?.value || 58);
                 height = parseFloat(customHeight?.value || 80);
             } else {
-                const parts = selectedValue.split('x');
+                const parts = selectedValue.split("x");
                 width = parseFloat(parts[0]) || 58;
                 height = parseFloat(parts[1]) || 80;
             }
-            
+
             // 每个小票需要的最小尺寸（估算：58mm x 80mm）
             const minTicketWidth = 58;
             const minTicketHeight = 80;
-            
+
             // 计算可以放置的数量（横向和纵向）
             const cols = Math.floor(width / minTicketWidth);
             const rows = Math.floor(height / minTicketHeight);
             const maxCount = Math.max(1, cols * rows);
-            
+
             // 更新最大数量显示
             maxCountEl.textContent = maxCount;
-            
+
             // 更新每页数量输入的最大值（联动更新）
-            const perPageInput = document.getElementById('balloon-print-per-page');
+            const perPageInput = document.getElementById("balloon-print-per-page");
             if (perPageInput) {
                 // 更新 max 属性（HTML 属性和 JavaScript 属性）
-                perPageInput.setAttribute('max', maxCount);
+                perPageInput.setAttribute("max", maxCount);
                 perPageInput.max = maxCount;
-                
+
                 // 获取当前值
                 const currentValue = parseInt(perPageInput.value) || 1;
-                
+
                 // 如果当前值超过新的最大值，自动调整为最大值
                 if (currentValue > maxCount) {
                     perPageInput.value = maxCount;
@@ -1129,40 +1270,41 @@ if (typeof BalloonManagerSystem === 'undefined') {
                     // 如果当前值小于1，设为1
                     perPageInput.value = 1;
                 }
-                
+
                 // 如果当前值为空或无效，设为1
                 if (!perPageInput.value || isNaN(parseInt(perPageInput.value))) {
                     perPageInput.value = 1;
                 }
             }
         }
-        
+
         /**
          * 执行自动打印
          */
         DoAutoPrint() {
             if (!this.autoPrintEnabled) return;
-            
+
             // 获取排序后的气球列表（只获取 bst=0 的）
             const sortedList = this.GetSortedBalloonListForPrint();
-            
+            console.log(6566, sortedList);
             if (sortedList.length === 0) {
-                // 没有待打印的气球，继续等待
+                // 没有待打印的气球，检查过滤条件
+                this.CheckAndNotifyFilters();
                 return;
             }
-            
+
             // 获取每页数量
-            const perPageInput = document.getElementById('balloon-print-per-page');
+            const perPageInput = document.getElementById("balloon-print-per-page");
             const perPage = parseInt(perPageInput?.value || 1);
-            
+
             // 检查是否超过20秒还没凑够目标数量
             const now = Date.now();
             if (this.autoPrintWaitStartTime === null) {
                 this.autoPrintWaitStartTime = now;
             }
-            
+
             const waitTime = (now - this.autoPrintWaitStartTime) / 1000; // 秒
-            
+
             // 决定打印数量
             let printCount = perPage;
             if (sortedList.length < perPage && waitTime >= 20) {
@@ -1172,130 +1314,178 @@ if (typeof BalloonManagerSystem === 'undefined') {
                 // 数量不足但未超时，继续等待
                 return;
             }
-            
+
             // 获取要打印的气球（只打印第一页，从排序后的第一个开始）
             const balloonsToPrint = sortedList.slice(0, printCount);
-            
+
             // 获取当前打印的最大序号（idx）
-            const maxIdx = Math.max(...balloonsToPrint.map(b => b.idx || 0), this.autoPrintLastIdx);
-            
+            const maxIdx = Math.max(
+                ...balloonsToPrint.map((b) => b.idx || 0),
+                this.autoPrintLastIdx
+            );
+
             // 获取表格分页大小（如果无法获取，默认使用25）
             let pageSize = 25;
             try {
-                const $table = $('#balloon-queue-table');
-                if ($table.length && $table.data('bootstrap.table')) {
-                    const tableOptions = $table.bootstrapTable('getOptions');
+                const $table = $("#balloon-queue-table");
+                if ($table.length && $table.data("bootstrap.table")) {
+                    const tableOptions = $table.bootstrapTable("getOptions");
                     pageSize = tableOptions.pageSize || 25;
                 }
             } catch (e) {
                 // 使用默认值25
             }
-            
+
             // 调用打印函数（在 balloon_print.js 中实现）
             // 打印发送和后台反馈连着执行，如果打印发送失败，不执行后台反馈
             // 传递 queueSystem 实例，用于打印完成后的状态管理
-            if (window.BalloonPrint && typeof window.BalloonPrint.printBalloons === 'function') {
+            if (
+                window.BalloonPrint &&
+                typeof window.BalloonPrint.printBalloons === "function"
+            ) {
                 // 如果数量不足，需要填充空数据到 perPage 数量
-                const balloonsToPrintWithPadding = balloonsToPrint.length < perPage 
-                    ? [...balloonsToPrint, ...Array(perPage - balloonsToPrint.length).fill(null)]
-                    : balloonsToPrint;
-                
-                window.BalloonPrint.printBalloons(balloonsToPrintWithPadding, perPage, (printError, printResult) => {
-                    // 如果打印失败，不执行状态更新，并立即取消自动打印
-                    if (printError) {
-                        // 显示合并的失败通知
-                        const errorMsg = printError.message || printError;
-                        const balloonCount = balloonsToPrint.length;
-                        alerty.alert({
-                            title: '自动打印失败<span class="en-text">Auto Print Failed</span>',
-                            message: `共 ${balloonCount} 个气球打印失败<br/><br/>错误: ${errorMsg}<br/><br/>自动打印已停止`,
-                            message_en: `${balloonCount} balloons failed to print<br/><br/>Error: ${errorMsg}<br/><br/>Auto print stopped`,
-                            width: '500px'
-                        });
-                        // 立即停止自动打印
-                        this.StopAutoPrint();
-                        // 关闭自动打印开关
-                        const switchInput = document.getElementById('balloon-auto-print-box');
-                        if (switchInput && window.csgSwitch) {
-                            // 使用正确的方法：setChecked（直接传入 input 元素）
-                            window.csgSwitch.setChecked(switchInput, false);
+                const balloonsToPrintWithPadding =
+                    balloonsToPrint.length < perPage
+                        ? [
+                            ...balloonsToPrint,
+                            ...Array(perPage - balloonsToPrint.length).fill(null),
+                        ]
+                        : balloonsToPrint;
+
+                window.BalloonPrint.printBalloons(
+                    balloonsToPrintWithPadding,
+                    perPage,
+                    (printError, printResult) => {
+                        // 如果打印失败，不执行状态更新，并立即取消自动打印
+                        if (printError) {
+                            // 显示合并的失败通知
+                            const errorMsg = printError.message || printError;
+                            const balloonCount = balloonsToPrint.length;
+                            alerty.alert({
+                                title:
+                                    '自动打印失败<span class="en-text">Auto Print Failed</span>',
+                                message: `共 ${balloonCount} 个气球打印失败<br/><br/>错误: ${errorMsg}<br/><br/>自动打印已停止`,
+                                message_en: `${balloonCount} balloons failed to print<br/><br/>Error: ${errorMsg}<br/><br/>Auto print stopped`,
+                                width: "500px",
+                            });
+                            // 立即停止自动打印
+                            this.StopAutoPrint();
+                            // 关闭自动打印开关
+                            const switchInput = document.getElementById(
+                                "balloon-auto-print-box"
+                            );
+                            if (switchInput && window.csgSwitch) {
+                                // 使用正确的方法：setChecked（直接传入 input 元素）
+                                window.csgSwitch.setChecked(switchInput, false);
+                            }
+                            // 重置等待时间
+                            this.autoPrintWaitStartTime = null;
+                            return;
                         }
-                        // 重置等待时间
-                        this.autoPrintWaitStartTime = null;
-                        return;
-                    }
-                    
-                    // 打印成功后，先更新状态，然后根据序号决定是否刷新数据
-                    // 更新气球状态为 10（已通知）
-                    const solutionIds = balloonsToPrint.map(b => b.solution_id).filter(id => id);
-                    const updatedBalloons = this.balloonList.filter(item => 
-                        solutionIds.includes(item.solution_id)
-                    );
-                    
-                    // 更新状态（异步）
-                    const updatePromise = updatedBalloons.length > 0 
-                        ? this.UpdateBalloonsStatus(updatedBalloons, 10)
-                        : Promise.resolve();
-                    
-                    updatePromise.then(() => {
-                        // 更新已打印的最大序号
-                        this.autoPrintLastIdx = maxIdx;
-                        
-                        // 只在序号超过分页大小时才刷新数据
-                        if (maxIdx > pageSize) {
-                            // 状态更新完成后，重新加载数据并排序
-                            return this.LoadData();
-                        } else {
-                            // 不需要刷新，直接返回 resolved promise
-                            return Promise.resolve();
-                        }
-                    }).then(() => {
-                        // 数据加载完成（如果需要刷新的话），继续打印下一页
-                        // 重置等待时间（因为已经打印了一页）
-                        this.autoPrintWaitStartTime = null;
-                        // 继续打印（会从排序后的第一个开始）
-                        this.DoAutoPrint();
-                    }).catch((updateError) => {
-                        // 更新状态或加载数据失败，显示错误通知
-                        const balloonCount = balloonsToPrint.length;
-                        alerty.alert({
-                            title: '部分失败<span class="en-text">Partial Failure</span>',
-                            message: `共 ${balloonCount} 个气球打印成功，但更新状态或加载数据失败: ${updateError.message || updateError}<br/>请手动检查`,
-                            message_en: `${balloonCount} balloons printed successfully, but status update or data load failed: ${updateError.message || updateError}<br/>Please check manually`,
-                            width: '500px'
-                        });
-                        // 重置等待时间
-                        this.autoPrintWaitStartTime = null;
-                        // 即使失败，也继续尝试打印（不中断自动打印流程）
-                        this.DoAutoPrint();
-                    });
-                }, this); // 传递 queueSystem 实例
+
+                        // 打印成功后，先更新状态，然后根据序号决定是否刷新数据
+                        // 更新气球状态为 10（已通知）
+                        const solutionIds = balloonsToPrint
+                            .map((b) => b.solution_id)
+                            .filter((id) => id);
+                        const updatedBalloons = this.balloonList.filter((item) =>
+                            solutionIds.includes(item.solution_id)
+                        );
+
+                        // 更新状态（异步）
+                        const updatePromise =
+                            updatedBalloons.length > 0
+                                ? this.UpdateBalloonsStatus(updatedBalloons, 10)
+                                : Promise.resolve();
+
+                        updatePromise
+                            .then(() => {
+                                // 更新已打印的最大序号
+                                this.autoPrintLastIdx = maxIdx;
+
+                                // 记录第一页打印完成的时间
+                                this.autoPrintPageFinishTime = Date.now();
+
+                                // 不再立即刷新，而是等待 CheckAndRefreshForAutoPrint 决定
+                                // 重置等待时间
+                                this.autoPrintWaitStartTime = null;
+
+                                // 检查是否需要刷新（取两者中较大的间隔）
+                                this.CheckAndRefreshForAutoPrint();
+                            })
+                            .catch((updateError) => {
+                                // 更新状态或加载数据失败，显示错误通知
+                                const balloonCount = balloonsToPrint.length;
+                                alerty.alert({
+                                    title: '部分失败<span class="en-text">Partial Failure</span>',
+                                    message: `共 ${balloonCount} 个气球打印成功，但更新状态或加载数据失败: ${updateError.message || updateError
+                                        }<br/>请手动检查`,
+                                    message_en: `${balloonCount} balloons printed successfully, but status update or data load failed: ${updateError.message || updateError
+                                        }<br/>Please check manually`,
+                                    width: "500px",
+                                });
+                                // 重置等待时间
+                                this.autoPrintWaitStartTime = null;
+                                // 即使失败，也继续尝试打印（不中断自动打印流程）
+                                this.DoAutoPrint();
+                            });
+                    },
+                    this
+                ); // 传递 queueSystem 实例
             } else {
                 // 重置等待时间
                 this.autoPrintWaitStartTime = null;
             }
         }
-        
+
         /**
          * 获取排序后的气球列表（用于自动打印）
          * 排序规则：状态优先（bst=0在前），状态相同按时间排序
-         * 注意：会遵循当前的筛选条件（题号、房间、学校等）
+         * 注意：从当前表格显示的数据中提取，确保和用户视图一致
          */
         GetSortedBalloonListForPrint() {
-            // 先获取筛选后的列表（遵循用户设置的筛选条件）
-            const filteredList = this.GetFilteredBalloonList();
-            
-            // 从筛选后的列表中，只获取 bst=0 的气球
-            const bstZeroList = filteredList.filter(item => item.bst === 0);
-            
+            const table = $("#balloon-queue-table");
+
+            // 如果表格未初始化，返回空数组（等待一轮）
+            if (!table.length || !table.data("bootstrap.table")) {
+                return [];
+            }
+
+            // 直接从 bootstrap-table 获取当前显示的数据（包括所有分页）
+            let tableData = [];
+            try {
+                // 获取所有数据（不考虑分页），这样能打印所有符合筛选条件的数据
+                tableData = table.bootstrapTable("getData", { useCurrentPage: false });
+            } catch (e) {
+                // 如果 getData 不支持参数，使用默认方法
+                tableData = table.bootstrapTable("getData");
+            }
+
+            // 从表格数据中，只获取 bst=0 的气球（缺失 bst 的也视为 0）
+            const bstZeroList = tableData.filter((item) => {
+                const bst = item.bst;
+                // bst === 0 或缺失/空值都视为 0
+                return (
+                    bst === 0 ||
+                    bst === undefined ||
+                    bst === null ||
+                    bst === "" ||
+                    String(bst).trim() === ""
+                );
+            });
+
             // 排序：按时间升序（早的在前）
             return bstZeroList.sort((a, b) => {
                 const timeA = new Date(a.in_date).getTime();
                 const timeB = new Date(b.in_date).getTime();
+                // 处理无效时间
+                if (isNaN(timeA) || isNaN(timeB)) {
+                    return 0;
+                }
                 return timeA - timeB;
             });
         }
-        
+
         /**
          * 打印单个气球的小票
          * @param {Object} row - 表格行数据
@@ -1303,99 +1493,109 @@ if (typeof BalloonManagerSystem === 'undefined') {
         PrintSingleBalloon(row) {
             if (!row) {
                 alerty.error({
-                    message: '无法获取气球信息',
-                    message_en: 'Unable to get balloon information'
+                    message: "无法获取气球信息",
+                    message_en: "Unable to get balloon information",
                 });
                 return;
             }
-            
+
             // 检查打印功能是否可用
-            if (!window.BalloonPrint || typeof window.BalloonPrint.printBalloons !== 'function') {
+            if (
+                !window.BalloonPrint ||
+                typeof window.BalloonPrint.printBalloons !== "function"
+            ) {
                 alerty.error({
-                    message: '打印功能未初始化，请刷新页面重试',
-                    message_en: 'Print function not initialized, please refresh the page and try again'
+                    message: "打印功能未初始化，请刷新页面重试",
+                    message_en:
+                        "Print function not initialized, please refresh the page and try again",
                 });
                 return;
             }
-            
+
             // 从 row 构建打印所需的气球对象
             // 打印函数需要的字段：team_id, team (包含 room), problem_alphabet, is_global_fb, is_regular_fb
             const balloon = {
-                team_id: row.team_id || '',
-                team: row.team || { room: row.room || '' },
-                problem_alphabet: row.problem_alphabet || '',
+                team_id: row.team_id || "",
+                team: row.team || { room: row.room || "" },
+                problem_alphabet: row.problem_alphabet || "",
                 is_global_fb: row.is_global_fb || false,
                 is_regular_fb: row.is_regular_fb || false,
                 solution_id: row.solution_id,
-                bst: row.bst
+                bst: row.bst,
             };
-            
+
             // 调用打印函数
             window.BalloonPrint.printBalloons([balloon], 1, () => {
                 // 打印成功后的回调
                 // 如果当前状态是 0（未处理），自动更新为 10（已通知）
                 if (row.bst === 0) {
                     // ChangeBalloonStatus 内部会显示成功/失败消息，这里只显示打印成功消息
-                    this.ChangeBalloonStatus(row, 10, null, '');
+                    this.ChangeBalloonStatus(row, 10, null, "");
                 } else {
                     alerty.success({
-                        message: '小票打印成功',
-                        message_en: 'Ticket printed successfully'
+                        message: "小票打印成功",
+                        message_en: "Ticket printed successfully",
                     });
                 }
             });
         }
-        
+
         /**
          * 更新气球状态（批量）
          */
         async UpdateBalloonsStatus(balloons, newStatus) {
             for (const balloon of balloons) {
                 try {
-                    await this.ChangeBalloonStatus(balloon, newStatus, null, '');
+                    await this.ChangeBalloonStatus(balloon, newStatus, null, "");
+                    // ChangeBalloonStatus 已经更新了：
+                    // 1. row 对象
+                    // 2. balloonMap
+                    // 3. 表格行（updateByUniqueId）
+                    // 4. 统计（CalculateBalloonStats + UpdateGlobalStats）
                 } catch (error) {
                     // 更新气球状态失败，静默处理
                 }
             }
-            
-            // 刷新数据
-            await this.RefreshData();
+
+            // 只需要更新统计（如果批量更新时统计没更新）
+            this.UpdateQueueStats();
+            // 不再需要全量刷新，因为 ChangeBalloonStatus 已经用 updateByUniqueId 更新了
         }
-        
+
         /**
          * 初始化标签页事件
          */
         InitTabs() {
-            const tabQueue = document.getElementById('tab-queue');
-            const tabMy = document.getElementById('tab-my-balloons');
-            
+            const tabQueue = document.getElementById("tab-queue");
+            const tabMy = document.getElementById("tab-my-balloons");
+
             // 设置初始标签页状态
-            if (tabQueue && tabQueue.classList.contains('active')) {
-                this.currentTab = 'queue';
-            } else if (tabMy && tabMy.classList.contains('active')) {
-                this.currentTab = 'my_balloons';
+            if (tabQueue && tabQueue.classList.contains("active")) {
+                this.currentTab = "queue";
+            } else if (tabMy && tabMy.classList.contains("active")) {
+                this.currentTab = "my_balloons";
             }
-            
+
             // 监听标签页切换事件
             if (tabQueue) {
-                tabQueue.addEventListener('shown.bs.tab', () => {
-                    this.SwitchTab('queue');
+                tabQueue.addEventListener("shown.bs.tab", () => {
+                    this.SwitchTab("queue");
                 });
             }
-            
+
             if (tabMy) {
-                tabMy.addEventListener('shown.bs.tab', () => {
-                    this.SwitchTab('my_balloons');
+                tabMy.addEventListener("shown.bs.tab", () => {
+                    this.SwitchTab("my_balloons");
                 });
             }
         }
-        
+
         /**
          * 从 localStorage 加载筛选条件
          */
         LoadFiltersFromStorage() {
             if (!this.contestId) return this.getDefaultFilters();
-            
+
             const baseKey = `${this.contestId}_balloon_filter`;
             const savedStatus = csg.store(`${baseKey}_status`);
             const savedSender = csg.store(`${baseKey}_balloon_sender`);
@@ -1403,23 +1603,23 @@ if (typeof BalloonManagerSystem === 'undefined') {
             const savedSchools = csg.store(`${baseKey}_schools`);
             const savedProblems = csg.store(`${baseKey}_problems`);
             const savedSearchText = csg.store(`${baseKey}_searchText`);
-            
+
             return {
                 status: Array.isArray(savedStatus) ? savedStatus : [],
                 balloon_sender: savedSender || null,
                 rooms: Array.isArray(savedRooms) ? savedRooms : [],
                 schools: Array.isArray(savedSchools) ? savedSchools : [],
                 problems: Array.isArray(savedProblems) ? savedProblems : [],
-                searchText: typeof savedSearchText === 'string' ? savedSearchText : ''
+                searchText: typeof savedSearchText === "string" ? savedSearchText : "",
             };
         }
-        
+
         /**
          * 保存筛选条件到 localStorage
          */
         SaveFiltersToStorage() {
             if (!this.contestId || !this.filters) return;
-            
+
             const baseKey = `${this.contestId}_balloon_filter`;
             csg.store(`${baseKey}_status`, this.filters.status);
             csg.store(`${baseKey}_balloon_sender`, this.filters.balloon_sender);
@@ -1428,7 +1628,7 @@ if (typeof BalloonManagerSystem === 'undefined') {
             csg.store(`${baseKey}_problems`, this.filters.problems);
             csg.store(`${baseKey}_searchText`, this.filters.searchText);
         }
-        
+
         /**
          * 获取默认筛选条件
          */
@@ -1439,71 +1639,71 @@ if (typeof BalloonManagerSystem === 'undefined') {
                 rooms: [],
                 schools: [],
                 problems: [],
-                searchText: ''
+                searchText: "",
             };
         }
-        
+
         /**
          * 初始化筛选器事件
          */
         InitFilters() {
             // 注意：multiple-select 的事件绑定需要在插件初始化时通过回调函数设置
             // 原生 change 事件可能不会正确触发，所以我们在 UpdateFilters 中初始化时绑定
-            
+
             // 绑定搜索框的输入事件
-            const searchInput = document.getElementById('filter-search');
+            const searchInput = document.getElementById("filter-search");
             if (searchInput) {
                 // 使用 input 事件支持实时搜索，debounce 避免频繁触发
                 let searchTimeout = null;
-                searchInput.addEventListener('input', (e) => {
+                searchInput.addEventListener("input", (e) => {
                     clearTimeout(searchTimeout);
                     searchTimeout = setTimeout(() => {
                         this.OnSearchChange(e.target.value);
                     }, 300); // 300ms 延迟
                 });
             }
-            
+
             // 绑定清空按钮事件
-            const clearButton = document.getElementById('balloon-filter-clear');
+            const clearButton = document.getElementById("balloon-filter-clear");
             if (clearButton) {
-                clearButton.addEventListener('click', () => {
+                clearButton.addEventListener("click", () => {
                     this.ClearAllFilters();
                 });
             }
         }
-        
+
         /**
          * 重写 ShowLoading 方法
          */
         ShowLoading() {
             if (this.externalMode) return;
-            const loadingEl = document.getElementById('balloon-queue-loading');
+            const loadingEl = document.getElementById("balloon-queue-loading");
             if (loadingEl) {
-                loadingEl.style.display = 'block';
+                loadingEl.style.display = "block";
             }
         }
-        
+
         /**
          * 重写 HideLoading 方法
          */
         HideLoading() {
             if (this.externalMode) return;
-            const loadingEl = document.getElementById('balloon-queue-loading');
+            const loadingEl = document.getElementById("balloon-queue-loading");
             if (loadingEl) {
-                loadingEl.style.display = 'none';
+                loadingEl.style.display = "none";
             }
         }
-        
+
         /**
          * 切换标签页
          */
         SwitchTab(tab) {
             this.currentTab = tab;
-            
+
             // 重新渲染列表
             this.RenderQueueList();
         }
-        
+
         /**
          * 重写 OriInit 方法（数据加载完成后调用）
          */
@@ -1517,17 +1717,17 @@ if (typeof BalloonManagerSystem === 'undefined') {
             this.HideLoading();
             this.isInitialLoad = false;
         }
-        
+
         /**
          * 重写 ProcessData 方法，处理队列数据
          */
         ProcessData(flg_real_rank = false) {
             // 调用父类方法处理数据（会过滤AC、构建balloonMap等）
             super.ProcessData(flg_real_rank);
-            
+
             // 构建气球列表
             this.BuildBalloonList();
-            
+
             // 检查全局变量，如果启用自动打印排序，则按 bst、in_date 排序（都是 asc）
             if (window.AUTO_PRINT_SORT_ENABLED) {
                 this.SortBalloonListForAutoPrint();
@@ -1535,20 +1735,20 @@ if (typeof BalloonManagerSystem === 'undefined') {
                 // 如果只是自动打印开启但未启用排序，使用原来的排序逻辑
                 this.SortBalloonListForAutoPrint();
             }
-            
+
             // 提取rooms和senders
             this.ExtractRoomsAndSenders();
-            
+
             // 更新筛选器
             this.UpdateFilters();
-            
+
             // 渲染队列列表
             this.RenderQueueList();
-            
+
             // 更新统计
             this.UpdateQueueStats();
         }
-        
+
         /**
          * 为自动打印排序气球列表
          * 排序规则：bst 优先（asc），相同 bst 按 in_date 排序（asc）
@@ -1557,17 +1757,17 @@ if (typeof BalloonManagerSystem === 'undefined') {
             if (!this.balloonList || this.balloonList.length === 0) {
                 return;
             }
-            
+
             this.balloonList.sort((a, b) => {
                 // 确保 bst 是数字类型
                 const bstA = Number(a.bst) || 0;
                 const bstB = Number(b.bst) || 0;
-                
+
                 // 第一优先级：bst（升序）
                 if (bstA !== bstB) {
                     return bstA - bstB;
                 }
-                
+
                 // 第二优先级：in_date（升序，早的在前）
                 const timeA = new Date(a.in_date).getTime();
                 const timeB = new Date(b.in_date).getTime();
@@ -1577,7 +1777,7 @@ if (typeof BalloonManagerSystem === 'undefined') {
                 return timeA - timeB;
             });
         }
-        
+
         /**
          * 重排序气球列表（用于打印完成后更新排序）
          */
@@ -1588,7 +1788,7 @@ if (typeof BalloonManagerSystem === 'undefined') {
                 this.RenderQueueList();
             }
         }
-        
+
         /**
          * 构建气球列表（包含所有需要的字段，避免在渲染时重复计算）
          */
@@ -1611,46 +1811,52 @@ if (typeof BalloonManagerSystem === 'undefined') {
         }
         BuildBalloonList() {
             this.balloonList = [];
-            
-            if (!this.data || !this.data.solution || !this.data.team || !this.data.problem) return;
-            
+
+            if (
+                !this.data ||
+                !this.data.solution ||
+                !this.data.team ||
+                !this.data.problem
+            )
+                return;
+
             // 构建team和problem映射（数据已经是dict格式，由父类ConvertListToDict转换）
             const teamMap = {};
-            this.data.team.forEach(team => {
+            this.data.team.forEach((team) => {
                 // 数据已经是dict格式，使用team_id作为key
                 teamMap[team.team_id] = team;
             });
-            
+
             const problemMap = {};
-            this.data.problem.forEach(prob => {
+            this.data.problem.forEach((prob) => {
                 problemMap[prob.problem_id] = prob;
             });
-            
+
             // 遍历所有AC提交（父类ProcessData已经过滤为AC），构建气球列表
-            this.data.solution.forEach(solution => {
+            this.data.solution.forEach((solution) => {
                 // 数据已经是dict格式
                 const teamId = solution.team_id;
                 const problemId = solution.problem_id;
                 const key = `${teamId}_${problemId}`;
-                
+
                 // 获取气球状态（确保是数字类型）
                 const balloon = this.balloonMap.get(key);
-                const bst = balloon ? (Number(balloon.bst) || 0) : 0;
-                const pst = balloon ? (Number(balloon.pst) || 0) : 0;
-                const balloonSender = balloon ? (balloon.balloon_sender || '') : '';
-                
+                const bst = balloon ? Number(balloon.bst) || 0 : 0;
+                const pst = balloon ? Number(balloon.pst) || 0 : 0;
+                const balloonSender = balloon ? balloon.balloon_sender || "" : "";
+
                 // 获取队伍和题目信息
                 const team = teamMap[teamId];
                 const problem = problemMap[problemId];
-                
+
                 if (!team || !problem) return;
-                
+
                 // 计算首答信息（map_fb 已在父类 ProcessData 中填充）
                 const regularFB = this.map_fb?.regular?.[problemId];
                 const globalFB = this.map_fb?.global?.[problemId];
                 const isRegularFB = regularFB && regularFB.team_id === teamId;
                 const isGlobalFB = globalFB && globalFB.team_id === teamId;
-                
+
                 // 构建气球项（包含所有需要的字段）
                 const balloonItem = {
                     solution_id: solution.solution_id,
@@ -1666,16 +1872,16 @@ if (typeof BalloonManagerSystem === 'undefined') {
                     // 预计算的字段，避免在渲染时重复计算
                     problem_num: problem.num,
                     problem_alphabet: RankToolGetProblemAlphabetIdx(problem.num),
-                    school: team.school || '',
+                    school: team.school || "",
                     team_name: team.name || teamId,
                     is_regular_fb: isRegularFB,
-                    is_global_fb: isGlobalFB
+                    is_global_fb: isGlobalFB,
                 };
-                
+
                 this.balloonList.push(balloonItem);
             });
         }
-        
+
         /**
          * 提取rooms、senders、schools和problems列表
          */
@@ -1684,61 +1890,64 @@ if (typeof BalloonManagerSystem === 'undefined') {
             this.senders = [];
             this.schools = [];
             this.problems = [];
-            
+
             // 从team中提取rooms（数据已经是dict格式）
             const roomSet = new Set();
-            this.balloonList.forEach(item => {
+            this.balloonList.forEach((item) => {
                 const room = item.team.room; // room字段（dict格式）
                 if (room && room.trim()) {
-                    const rooms = room.split(',').map(r => r.trim()).filter(r => r);
-                    rooms.forEach(r => roomSet.add(r));
+                    const rooms = room
+                        .split(",")
+                        .map((r) => r.trim())
+                        .filter((r) => r);
+                    rooms.forEach((r) => roomSet.add(r));
                 }
             });
             this.rooms = Array.from(roomSet).sort();
-            
+
             // 从balloonList中提取senders
             const senderSet = new Set();
-            this.balloonList.forEach(item => {
+            this.balloonList.forEach((item) => {
                 if (item.balloon_sender && item.balloon_sender.trim()) {
                     senderSet.add(item.balloon_sender);
                 }
             });
             this.senders = Array.from(senderSet).sort();
-            
+
             // 从team中提取schools
             const schoolSet = new Set();
-            this.balloonList.forEach(item => {
+            this.balloonList.forEach((item) => {
                 const school = item.team.school; // school字段
                 if (school && school.trim()) {
                     schoolSet.add(school.trim());
                 }
             });
             this.schools = Array.from(schoolSet).sort();
-            
+
             // 从problem中提取problems（题号）
             const problemSet = new Set();
-            this.balloonList.forEach(item => {
+            this.balloonList.forEach((item) => {
                 if (item.problem_alphabet) {
                     problemSet.add(item.problem_alphabet);
                 }
             });
             this.problems = Array.from(problemSet).sort();
         }
-        
+
         /**
          * 更新筛选器
          */
         UpdateFilters() {
             // 更新sender筛选器
             if (this.isBalloonManager) {
-                const senderSelect = document.getElementById('filter-sender');
+                const senderSelect = document.getElementById("filter-sender");
                 if (senderSelect) {
                     // 保存当前选中的值（安全获取）
                     const $senderSelect = $(senderSelect);
                     let currentSender = [];
                     try {
-                        if ($senderSelect.data('multipleSelect')) {
-                            currentSender = $senderSelect.multipleSelect('getSelects') || [];
+                        if ($senderSelect.data("multipleSelect")) {
+                            currentSender = $senderSelect.multipleSelect("getSelects") || [];
                         } else {
                             // 如果未初始化，直接从原生 select 获取
                             currentSender = senderSelect.value ? [senderSelect.value] : [];
@@ -1747,59 +1956,62 @@ if (typeof BalloonManagerSystem === 'undefined') {
                         // 如果获取失败，使用空数组
                         currentSender = [];
                     }
-                    
-                    senderSelect.innerHTML = '<option value="">全部<en-text>All</en-text></option>';
-                    this.senders.forEach(sender => {
-                        const option = document.createElement('option');
+
+                    senderSelect.innerHTML =
+                        '<option value="">全部<en-text>All</en-text></option>';
+                    this.senders.forEach((sender) => {
+                        const option = document.createElement("option");
                         option.value = sender;
                         option.textContent = sender;
                         senderSelect.appendChild(option);
                     });
-                    
-                    // 如果已经初始化，需要重新初始化以刷新选项
-                    if ($senderSelect.data('multipleSelect')) {
+
+                    // 如果已经初始化，使用 refresh() 方法更新选项
+                    if ($senderSelect.data("multipleSelect")) {
                         try {
-                            // 保存当前配置
-                            const currentOptions = $senderSelect.multipleSelect('getOptions');
-                            // 添加事件回调
-                            currentOptions.onClick = () => {
-                                this.OnFilterChange();
-                            };
-                            // 销毁实例
-                            $senderSelect.multipleSelect('destroy');
-                            // 确保清除数据（防止重复初始化）
-                            $senderSelect.removeData('multipleSelect');
-                            // 重新初始化（会从更新后的 DOM 读取选项）
-                            $senderSelect.multipleSelect(currentOptions);
-                            // 绑定原生 change 事件作为备用
-                            $senderSelect.off('change').on('change', () => {
-                                this.OnFilterChange();
-                            });
-                            // 恢复选中值（优先使用保存的值，否则使用当前值）
+                            // 保存当前选中值
                             const savedSender = this.filters.balloon_sender;
-                            if (savedSender && this.senders.includes(savedSender)) {
-                                $senderSelect.multipleSelect('setSelects', [savedSender]);
-                            } else if (currentSender.length > 0 && currentSender[0] !== '' && this.senders.includes(currentSender[0])) {
-                                $senderSelect.multipleSelect('setSelects', currentSender);
+                            const senderToRestore =
+                                savedSender && this.senders.includes(savedSender)
+                                    ? [savedSender]
+                                    : currentSender.length > 0 &&
+                                        currentSender[0] !== "" &&
+                                        this.senders.includes(currentSender[0])
+                                        ? currentSender
+                                        : [];
+
+                            // 使用 refresh() 方法刷新选项（会从更新后的 DOM 读取选项）
+                            $senderSelect.multipleSelect("refresh");
+
+                            // 恢复选中值
+                            if (senderToRestore.length > 0) {
+                                $senderSelect.multipleSelect("setSelects", senderToRestore);
                             }
                         } catch (e) {
-                            // 如果失败，尝试重新初始化（使用默认配置）
+                            // 如果 refresh 失败，回退到 destroy + 重建
+                            console.warning("刷新 MultipleSelect 失败");
                             try {
-                                if ($senderSelect.data('multipleSelect')) {
-                                    $senderSelect.multipleSelect('destroy');
-                                    $senderSelect.removeData('multipleSelect');
-                                }
-                                $senderSelect.multipleSelect({
-                                    filter: true,
-                                    filterPlaceholder: '搜索...',
-                                    maxHeight: 800,
-                                    onClick: () => {
-                                        this.OnFilterChange();
-                                    }
-                                });
-                                $senderSelect.off('change').on('change', () => {
+                                const currentOptions =
+                                    $senderSelect.multipleSelect("getOptions");
+                                currentOptions.onClick = () => {
+                                    this.OnFilterChange();
+                                };
+                                $senderSelect.multipleSelect("destroy");
+                                $senderSelect.removeData("multipleSelect");
+                                $senderSelect.multipleSelect(currentOptions);
+                                $senderSelect.off("change").on("change", () => {
                                     this.OnFilterChange();
                                 });
+                                const savedSender = this.filters.balloon_sender;
+                                if (savedSender && this.senders.includes(savedSender)) {
+                                    $senderSelect.multipleSelect("setSelects", [savedSender]);
+                                } else if (
+                                    currentSender.length > 0 &&
+                                    currentSender[0] !== "" &&
+                                    this.senders.includes(currentSender[0])
+                                ) {
+                                    $senderSelect.multipleSelect("setSelects", currentSender);
+                                }
                             } catch (e2) {
                                 // 重新初始化失败，静默处理
                             }
@@ -1813,9 +2025,9 @@ if (typeof BalloonManagerSystem === 'undefined') {
                     }
                 }
             }
-            
+
             // 更新room筛选器（使用multiple-select）
-            const roomSelect = document.getElementById('filter-rooms');
+            const roomSelect = document.getElementById("filter-rooms");
             if (roomSelect) {
                 // balloonSender 且 teamRoom 为空时，显示筛选器
                 // balloonManager 总是显示筛选器
@@ -1824,74 +2036,68 @@ if (typeof BalloonManagerSystem === 'undefined') {
                     const $roomSelect = $(roomSelect);
                     let currentRooms = [];
                     try {
-                        if ($roomSelect.data('multipleSelect')) {
-                            currentRooms = $roomSelect.multipleSelect('getSelects') || [];
+                        if ($roomSelect.data("multipleSelect")) {
+                            currentRooms = $roomSelect.multipleSelect("getSelects") || [];
                         } else {
                             // 如果未初始化，直接从原生 select 获取
-                            currentRooms = Array.from(roomSelect.selectedOptions).map(opt => opt.value).filter(v => v);
+                            currentRooms = Array.from(roomSelect.selectedOptions)
+                                .map((opt) => opt.value)
+                                .filter((v) => v);
                         }
                     } catch (e) {
                         // 如果获取失败，使用空数组
                         currentRooms = [];
                     }
-                    
-                    let html = '';
+
+                    let html = "";
                     if (this.rooms.length === 0) {
-                        html = '<option value="">无房间/区域<en-text>No rooms</en-text></option>';
+                        html =
+                            '<option value="">无房间/区域<en-text>No rooms</en-text></option>';
                     } else {
-                        this.rooms.forEach(room => {
+                        this.rooms.forEach((room) => {
                             html += `<option value="${room}">${room}</option>`;
                         });
                     }
                     roomSelect.innerHTML = html;
-                    
-                    // 如果已经初始化，需要重新初始化以刷新选项
-                    if ($roomSelect.data('multipleSelect')) {
+
+                    // 如果已经初始化，使用 refresh() 方法更新选项
+                    if ($roomSelect.data("multipleSelect")) {
                         try {
-                            // 保存当前配置
-                            const currentOptions = $roomSelect.multipleSelect('getOptions');
-                            // 添加事件回调
-                            currentOptions.onClick = () => {
-                                this.OnRoomFilterChange();
-                            };
                             // 保存要恢复的选中值（优先使用保存的值，否则使用当前值）
                             const savedRooms = this.filters.rooms || [];
-                            const roomsToRestore = savedRooms.length > 0 
-                                ? savedRooms.filter(r => this.rooms.includes(r))
-                                : currentRooms.filter(r => this.rooms.includes(r));
-                            
-                            // 销毁实例
-                            $roomSelect.multipleSelect('destroy');
-                            // 确保清除数据（防止重复初始化）
-                            $roomSelect.removeData('multipleSelect');
-                            // 重新初始化（会从更新后的 DOM 读取选项）
-                            $roomSelect.multipleSelect(currentOptions);
-                            // 绑定原生 change 事件作为备用
-                            $roomSelect.off('change').on('change', () => {
-                                this.OnRoomFilterChange();
-                            });
+                            const roomsToRestore =
+                                savedRooms.length > 0
+                                    ? savedRooms.filter((r) => this.rooms.includes(r))
+                                    : currentRooms.filter((r) => this.rooms.includes(r));
+
+                            // 使用 refresh() 方法刷新选项（会从更新后的 DOM 读取选项）
+                            $roomSelect.multipleSelect("refresh");
+
                             // 恢复选中值（只恢复仍然存在的选项）
                             if (roomsToRestore.length > 0) {
-                                $roomSelect.multipleSelect('setSelects', roomsToRestore);
+                                $roomSelect.multipleSelect("setSelects", roomsToRestore);
                             }
                         } catch (e) {
-                            // 如果失败，尝试重新初始化（使用默认配置）
+                            // 如果 refresh 失败，回退到 destroy + 重建
                             try {
-                                if ($roomSelect.data('multipleSelect')) {
-                                    $roomSelect.multipleSelect('destroy');
-                                    $roomSelect.removeData('multipleSelect');
-                                }
-                                $roomSelect.multipleSelect({
-                                    filter: true,
-                                    filterPlaceholder: '搜索...',
-                                    maxHeight: 800,
-                                    onClick: () => {
-                                        this.OnRoomFilterChange();
-                                    }
-                                });
-                                $roomSelect.off('change').on('change', () => {
+                                const currentOptions = $roomSelect.multipleSelect("getOptions");
+                                currentOptions.onClick = () => {
+                                    this.OnRoomFilterChange();
+                                };
+                                const savedRooms = this.filters.rooms || [];
+                                const roomsToRestore =
+                                    savedRooms.length > 0
+                                        ? savedRooms.filter((r) => this.rooms.includes(r))
+                                        : currentRooms.filter((r) => this.rooms.includes(r));
+                                $roomSelect.multipleSelect("destroy");
+                                $roomSelect.removeData("multipleSelect");
+                                $roomSelect.multipleSelect(currentOptions);
+                                $roomSelect.off("change").on("change", () => {
                                     this.OnRoomFilterChange();
                                 });
+                                if (roomsToRestore.length > 0) {
+                                    $roomSelect.multipleSelect("setSelects", roomsToRestore);
+                                }
                             } catch (e2) {
                                 // 重新初始化失败，静默处理
                             }
@@ -1900,92 +2106,86 @@ if (typeof BalloonManagerSystem === 'undefined') {
                         // 如果未初始化，直接设置选中值（从 localStorage 恢复）
                         const savedRooms = this.filters.rooms || [];
                         if (savedRooms.length > 0) {
-                            Array.from(roomSelect.options).forEach(opt => {
+                            Array.from(roomSelect.options).forEach((opt) => {
                                 opt.selected = savedRooms.includes(opt.value);
                             });
                         }
                     }
-                    
+
                     // 更新按钮文本
                     this.UpdateRoomFilterText();
                 }
             }
-            
+
             // 更新school筛选器
-            const schoolSelect = document.getElementById('filter-schools');
+            const schoolSelect = document.getElementById("filter-schools");
             if (schoolSelect) {
                 // 保存当前选中的值（安全获取）
                 const $schoolSelect = $(schoolSelect);
                 let currentSchools = [];
                 try {
-                    if ($schoolSelect.data('multipleSelect')) {
-                        currentSchools = $schoolSelect.multipleSelect('getSelects') || [];
+                    if ($schoolSelect.data("multipleSelect")) {
+                        currentSchools = $schoolSelect.multipleSelect("getSelects") || [];
                     } else {
                         // 如果未初始化，直接从原生 select 获取
-                        currentSchools = Array.from(schoolSelect.selectedOptions).map(opt => opt.value).filter(v => v);
+                        currentSchools = Array.from(schoolSelect.selectedOptions)
+                            .map((opt) => opt.value)
+                            .filter((v) => v);
                     }
                 } catch (e) {
                     // 如果获取失败，使用空数组
                     currentSchools = [];
                 }
-                
-                let html = '';
+
+                let html = "";
                 if (this.schools.length === 0) {
-                    html = '<option value="">无学校<en-text>No schools</en-text></option>';
+                    html =
+                        '<option value="">无学校<en-text>No schools</en-text></option>';
                 } else {
-                    this.schools.forEach(school => {
+                    this.schools.forEach((school) => {
                         html += `<option value="${school}">${school}</option>`;
                     });
                 }
                 schoolSelect.innerHTML = html;
-                
-                // 如果已经初始化，需要重新初始化以刷新选项
-                if ($schoolSelect.data('multipleSelect')) {
+
+                // 如果已经初始化，使用 refresh() 方法更新选项
+                if ($schoolSelect.data("multipleSelect")) {
                     try {
-                        // 保存当前配置
-                        const currentOptions = $schoolSelect.multipleSelect('getOptions');
-                        // 添加事件回调
-                        currentOptions.onClick = () => {
-                            this.OnSchoolFilterChange();
-                        };
                         // 保存要恢复的选中值（优先使用保存的值，否则使用当前值）
                         const savedSchools = this.filters.schools || [];
-                        const schoolsToRestore = savedSchools.length > 0 
-                            ? savedSchools.filter(s => this.schools.includes(s))
-                            : currentSchools.filter(s => this.schools.includes(s));
-                        
-                        // 销毁实例
-                        $schoolSelect.multipleSelect('destroy');
-                        // 确保清除数据（防止重复初始化）
-                        $schoolSelect.removeData('multipleSelect');
-                        // 重新初始化（会从更新后的 DOM 读取选项）
-                        $schoolSelect.multipleSelect(currentOptions);
-                        // 绑定原生 change 事件作为备用
-                        $schoolSelect.off('change').on('change', () => {
-                            this.OnSchoolFilterChange();
-                        });
+                        const schoolsToRestore =
+                            savedSchools.length > 0
+                                ? savedSchools.filter((s) => this.schools.includes(s))
+                                : currentSchools.filter((s) => this.schools.includes(s));
+
+                        // 使用 refresh() 方法刷新选项（会从更新后的 DOM 读取选项）
+                        $schoolSelect.multipleSelect("refresh");
+
                         // 恢复选中值（只恢复仍然存在的选项）
                         if (schoolsToRestore.length > 0) {
-                            $schoolSelect.multipleSelect('setSelects', schoolsToRestore);
+                            $schoolSelect.multipleSelect("setSelects", schoolsToRestore);
                         }
                     } catch (e) {
-                        // 如果失败，尝试重新初始化（使用默认配置）
+                        // 如果 refresh 失败，回退到 destroy + 重建
                         try {
-                            if ($schoolSelect.data('multipleSelect')) {
-                                $schoolSelect.multipleSelect('destroy');
-                                $schoolSelect.removeData('multipleSelect');
-                            }
-                            $schoolSelect.multipleSelect({
-                    filter: true,
-                                filterPlaceholder: '搜索...',
-                                maxHeight: 800,
-                                onClick: () => {
-                                    this.OnSchoolFilterChange();
-                                }
-                            });
-                            $schoolSelect.off('change').on('change', () => {
+                            const currentOptions = $schoolSelect.multipleSelect("getOptions");
+                            currentOptions.onClick = () => {
+                                this.OnSchoolFilterChange();
+                            };
+                            const savedSchools = this.filters.schools || [];
+                            const schoolsToRestore =
+                                savedSchools.length > 0
+                                    ? savedSchools.filter((s) => this.schools.includes(s))
+                                    : currentSchools.filter((s) => this.schools.includes(s));
+                            $schoolSelect.multipleSelect("destroy");
+                            $schoolSelect.removeData("multipleSelect");
+                            $schoolSelect.multipleSelect(currentOptions);
+                            $schoolSelect.off("change").on("change", () => {
                                 this.OnSchoolFilterChange();
                             });
+                            if (schoolsToRestore.length > 0) {
+                                $schoolSelect.multipleSelect("setSelects", schoolsToRestore);
+                            }
                         } catch (e2) {
                             // 重新初始化失败，静默处理
                         }
@@ -1994,88 +2194,83 @@ if (typeof BalloonManagerSystem === 'undefined') {
                     // 如果未初始化，直接设置选中值（从 localStorage 恢复）
                     const savedSchools = this.filters.schools || [];
                     if (savedSchools.length > 0) {
-                        Array.from(schoolSelect.options).forEach(opt => {
+                        Array.from(schoolSelect.options).forEach((opt) => {
                             opt.selected = savedSchools.includes(opt.value);
                         });
                     }
                 }
             }
-            
+
             // 更新problem筛选器
-            const problemSelect = document.getElementById('filter-problems');
+            const problemSelect = document.getElementById("filter-problems");
             if (problemSelect) {
                 // 保存当前选中的值（安全获取）
                 const $problemSelect = $(problemSelect);
                 let currentProblems = [];
                 try {
-                    if ($problemSelect.data('multipleSelect')) {
-                        currentProblems = $problemSelect.multipleSelect('getSelects') || [];
+                    if ($problemSelect.data("multipleSelect")) {
+                        currentProblems = $problemSelect.multipleSelect("getSelects") || [];
                     } else {
                         // 如果未初始化，直接从原生 select 获取
-                        currentProblems = Array.from(problemSelect.selectedOptions).map(opt => opt.value).filter(v => v);
+                        currentProblems = Array.from(problemSelect.selectedOptions)
+                            .map((opt) => opt.value)
+                            .filter((v) => v);
                     }
                 } catch (e) {
                     // 如果获取失败，使用空数组
                     currentProblems = [];
                 }
-                
-                let html = '';
+
+                let html = "";
                 if (this.problems.length === 0) {
-                    html = '<option value="">无题号<en-text>No problems</en-text></option>';
+                    html =
+                        '<option value="">无题号<en-text>No problems</en-text></option>';
                 } else {
-                    this.problems.forEach(problem => {
+                    this.problems.forEach((problem) => {
                         html += `<option value="${problem}">${problem}</option>`;
                     });
                 }
                 problemSelect.innerHTML = html;
-                
-                // 如果已经初始化，需要重新初始化以刷新选项
-                if ($problemSelect.data('multipleSelect')) {
+
+                // 如果已经初始化，使用 refresh() 方法更新选项
+                if ($problemSelect.data("multipleSelect")) {
                     try {
-                        // 保存当前配置
-                        const currentOptions = $problemSelect.multipleSelect('getOptions');
-                        // 添加事件回调
-                        currentOptions.onClick = () => {
-                            this.OnProblemFilterChange();
-                        };
                         // 保存要恢复的选中值（优先使用保存的值，否则使用当前值）
                         const savedProblems = this.filters.problems || [];
-                        const problemsToRestore = savedProblems.length > 0 
-                            ? savedProblems.filter(p => this.problems.includes(p))
-                            : currentProblems.filter(p => this.problems.includes(p));
-                        
-                        // 销毁实例
-                        $problemSelect.multipleSelect('destroy');
-                        // 确保清除数据（防止重复初始化）
-                        $problemSelect.removeData('multipleSelect');
-                        // 重新初始化（会从更新后的 DOM 读取选项）
-                        $problemSelect.multipleSelect(currentOptions);
-                        // 绑定原生 change 事件作为备用
-                        $problemSelect.off('change').on('change', () => {
-                            this.OnProblemFilterChange();
-                        });
+                        const problemsToRestore =
+                            savedProblems.length > 0
+                                ? savedProblems.filter((p) => this.problems.includes(p))
+                                : currentProblems.filter((p) => this.problems.includes(p));
+
+                        // 使用 refresh() 方法刷新选项（会从更新后的 DOM 读取选项）
+                        $problemSelect.multipleSelect("refresh");
+
                         // 恢复选中值（只恢复仍然存在的选项）
                         if (problemsToRestore.length > 0) {
-                            $problemSelect.multipleSelect('setSelects', problemsToRestore);
+                            $problemSelect.multipleSelect("setSelects", problemsToRestore);
                         }
                     } catch (e) {
-                        // 如果失败，尝试重新初始化（使用默认配置）
+                        // 如果 refresh 失败，回退到 destroy + 重建
                         try {
-                            if ($problemSelect.data('multipleSelect')) {
-                                $problemSelect.multipleSelect('destroy');
-                                $problemSelect.removeData('multipleSelect');
-                            }
-                            $problemSelect.multipleSelect({
-                                filter: true,
-                                filterPlaceholder: '搜索...',
-                                maxHeight: 800,
-                                onClick: () => {
-                                    this.OnProblemFilterChange();
-                                }
-                            });
-                            $problemSelect.off('change').on('change', () => {
+                            const currentOptions =
+                                $problemSelect.multipleSelect("getOptions");
+                            currentOptions.onClick = () => {
+                                this.OnProblemFilterChange();
+                            };
+                            const savedProblems = this.filters.problems || [];
+                            const problemsToRestore =
+                                savedProblems.length > 0
+                                    ? savedProblems.filter((p) => this.problems.includes(p))
+                                    : currentProblems.filter((p) => this.problems.includes(p));
+                            $problemSelect.multipleSelect("destroy");
+                            $problemSelect.removeData("multipleSelect");
+                            $problemSelect.multipleSelect(currentOptions);
+                            $problemSelect.off("change").on("change", () => {
                                 this.OnProblemFilterChange();
                             });
+                            if (problemsToRestore.length > 0) {
+                                $problemSelect.multipleSelect("setSelects", problemsToRestore);
+                            }
                         } catch (e2) {
                             // 重新初始化失败，静默处理
                         }
@@ -2084,403 +2279,432 @@ if (typeof BalloonManagerSystem === 'undefined') {
                     // 如果未初始化，直接设置选中值（从 localStorage 恢复）
                     const savedProblems = this.filters.problems || [];
                     if (savedProblems.length > 0) {
-                        Array.from(problemSelect.options).forEach(opt => {
+                        Array.from(problemSelect.options).forEach((opt) => {
                             opt.selected = savedProblems.includes(opt.value);
                         });
                     }
                 }
             }
-            
+
             // 初始化所有 multiple-select（排除已经初始化过的元素）
             // 注意：balloon-print-page-size 现在使用普通 select，不在此范围内
             const self = this;
-            $('.multiple-select').each(function() {
+            $(".multiple-select").each(function () {
                 const $el = $(this);
-                const elId = $el.attr('id');
-                
+                const elId = $el.attr("id");
+
                 // 检查是否已经初始化过（通过检查是否有 multipleSelect 数据）
                 // 如果已经初始化，先销毁再重新初始化（防止重复实例化）
-                if ($el.data('multipleSelect')) {
+                if ($el.data("multipleSelect")) {
                     try {
-                        $el.multipleSelect('destroy');
-                        $el.removeData('multipleSelect');
+                        $el.multipleSelect("destroy");
+                        $el.removeData("multipleSelect");
                     } catch (e) {
                         // 即使销毁失败，也清除数据，强制重新初始化
-                        $el.removeData('multipleSelect');
+                        $el.removeData("multipleSelect");
                     }
                 }
-                
+
                 // 现在可以安全地初始化
-                if (!$el.data('multipleSelect')) {
+                if (!$el.data("multipleSelect")) {
                     // 根据不同的筛选器设置不同的回调
                     let onClickCallback = null;
                     let savedValues = [];
-                    
-                    if (elId === 'filter-sender') {
-                        onClickCallback = function() {
+
+                    if (elId === "filter-sender") {
+                        onClickCallback = function () {
                             self.OnFilterChange();
                         };
-                        savedValues = self.filters.balloon_sender ? [self.filters.balloon_sender] : [];
-                    } else if (elId === 'filter-rooms') {
-                        onClickCallback = function() {
+                        savedValues = self.filters.balloon_sender
+                            ? [self.filters.balloon_sender]
+                            : [];
+                    } else if (elId === "filter-rooms") {
+                        onClickCallback = function () {
                             self.OnRoomFilterChange();
                         };
                         savedValues = self.filters.rooms || [];
-                    } else if (elId === 'filter-schools') {
-                        onClickCallback = function() {
+                    } else if (elId === "filter-schools") {
+                        onClickCallback = function () {
                             self.OnSchoolFilterChange();
                         };
                         savedValues = self.filters.schools || [];
-                    } else if (elId === 'filter-problems') {
-                        onClickCallback = function() {
+                    } else if (elId === "filter-problems") {
+                        onClickCallback = function () {
                             self.OnProblemFilterChange();
                         };
                         savedValues = self.filters.problems || [];
                     }
-                    
+
                     $el.multipleSelect({
                         filter: true,
-                        filterPlaceholder: '搜索...',
+                        filterPlaceholder: "搜索...",
                         maxHeight: 800,
-                        onClick: onClickCallback || undefined
+                        onClick: onClickCallback || undefined,
                     });
-                    
+
                     // 恢复保存的选中值
                     if (savedValues.length > 0) {
                         try {
-                            $el.multipleSelect('setSelects', savedValues);
+                            $el.multipleSelect("setSelects", savedValues);
                         } catch (e) {
                             // 恢复选中值失败，静默处理
                         }
                     }
-                    
+
                     // 如果使用 onClick 回调，也需要监听原生 change 事件作为备用
                     if (onClickCallback) {
-                        $el.on('change', onClickCallback);
+                        $el.on("change", onClickCallback);
                     }
                 }
             });
-            
+
             // 恢复搜索框的值
-            const searchInput = document.getElementById('filter-search');
+            const searchInput = document.getElementById("filter-search");
             if (searchInput && this.filters.searchText) {
                 searchInput.value = this.filters.searchText;
             }
         }
-        
+
         /**
          * 更新room筛选器按钮文本
          */
         UpdateRoomFilterText() {
-            const roomText = document.getElementById('filter-rooms-text');
+            const roomText = document.getElementById("filter-rooms-text");
             if (!roomText) return;
-            
+
             if (this.filters.rooms.length === 0) {
-                roomText.innerHTML = '全部<en-text>All</en-text>';
+                roomText.innerHTML = "全部<en-text>All</en-text>";
             } else if (this.filters.rooms.length === 1) {
                 roomText.textContent = this.filters.rooms[0];
             } else {
                 roomText.innerHTML = `已选 ${this.filters.rooms.length} 个<en-text>Selected ${this.filters.rooms.length}</en-text>`;
             }
         }
-        
+
         /**
          * Room筛选变更事件
          */
         OnRoomFilterChange() {
-            const roomSelect = document.getElementById('filter-rooms');
+            const roomSelect = document.getElementById("filter-rooms");
             if (roomSelect) {
                 // 从原生 select 元素获取选中的值（multiple-select 会更新原生 select 的 selectedOptions）
                 this.filters.rooms = Array.from(roomSelect.selectedOptions)
-                    .map(option => option.value)
-                    .filter(value => value !== ''); // 排除空值
+                    .map((option) => option.value)
+                    .filter((value) => value !== ""); // 排除空值
             }
-            
+
             // 保存到 localStorage
             this.SaveFiltersToStorage();
-            
+
             // 更新按钮文本
             this.UpdateRoomFilterText();
-            
+
             // 重新渲染列表
             this.RenderQueueList();
         }
-        
+
         /**
          * School筛选变更事件
          */
         OnSchoolFilterChange() {
-            const schoolSelect = document.getElementById('filter-schools');
+            const schoolSelect = document.getElementById("filter-schools");
             if (schoolSelect) {
                 // 从原生 select 元素获取选中的值
                 this.filters.schools = Array.from(schoolSelect.selectedOptions)
-                    .map(option => option.value)
-                    .filter(value => value !== ''); // 排除空值
+                    .map((option) => option.value)
+                    .filter((value) => value !== ""); // 排除空值
             }
-            
+
             // 保存到 localStorage
             this.SaveFiltersToStorage();
-            
+
             // 重新渲染列表
             this.RenderQueueList();
         }
-        
+
         /**
          * Problem筛选变更事件
          */
         OnProblemFilterChange() {
-            const problemSelect = document.getElementById('filter-problems');
+            const problemSelect = document.getElementById("filter-problems");
             if (problemSelect) {
                 // 从原生 select 元素获取选中的值
                 this.filters.problems = Array.from(problemSelect.selectedOptions)
-                    .map(option => option.value)
-                    .filter(value => value !== ''); // 排除空值
+                    .map((option) => option.value)
+                    .filter((value) => value !== ""); // 排除空值
             }
-            
+
             // 保存到 localStorage
             this.SaveFiltersToStorage();
-            
+
             // 重新渲染列表
             this.RenderQueueList();
         }
-        
+
         /**
          * 搜索文本变更事件
          */
         OnSearchChange(searchText) {
-            this.filters.searchText = (searchText || '').trim();
-            
+            this.filters.searchText = (searchText || "").trim();
+
             // 保存到 localStorage
             this.SaveFiltersToStorage();
-            
+
             // 重新渲染列表
             this.RenderQueueList();
         }
-        
+
         /**
          * 筛选变更事件
          */
         OnFilterChange() {
             // 更新筛选状态
             if (this.isBalloonManager) {
-                const senderSelect = document.getElementById('filter-sender');
+                const senderSelect = document.getElementById("filter-sender");
                 if (senderSelect) {
                     this.filters.balloon_sender = senderSelect.value || null;
                 }
             }
-            
+
             // 保存到 localStorage
             this.SaveFiltersToStorage();
-            
+
             // 重新渲染列表
             this.RenderQueueList();
         }
-        
+
         /**
          * 获取筛选后的气球列表
          */
         GetFilteredBalloonList() {
             let filtered = [...this.balloonList];
-            
+
             // balloonSender模式：根据标签页筛选
             if (this.isBalloonSender) {
-                if (this.currentTab === 'queue') {
+                if (this.currentTab === "queue") {
                     // 气球队列：只显示bst=0的
-                    filtered = filtered.filter(item => item.bst === 0);
-                } else if (this.currentTab === 'my_balloons') {
+                    filtered = filtered.filter((item) => item.bst === 0);
+                } else if (this.currentTab === "my_balloons") {
                     // 我的气球：显示bst!=0且balloon_sender是自己的
-                    filtered = filtered.filter(item => 
-                        item.bst !== 0 && item.balloon_sender === this.currentUser
+                    filtered = filtered.filter(
+                        (item) => item.bst !== 0 && item.balloon_sender === this.currentUser
                     );
                 }
-                
+
                 // room筛选（固定或自由）
                 if (this.teamRoom) {
                     // 固定筛选：只显示team_room中的
-                    const allowedRooms = this.teamRoom.split(',').map(r => r.trim()).filter(r => r);
-                    filtered = filtered.filter(item => {
-                        const teamRooms = (item.team.room || '').split(',').map(r => r.trim()).filter(r => r);
-                        return teamRooms.some(r => allowedRooms.includes(r));
+                    const allowedRooms = this.teamRoom
+                        .split(",")
+                        .map((r) => r.trim())
+                        .filter((r) => r);
+                    filtered = filtered.filter((item) => {
+                        const teamRooms = (item.team.room || "")
+                            .split(",")
+                            .map((r) => r.trim())
+                            .filter((r) => r);
+                        return teamRooms.some((r) => allowedRooms.includes(r));
                     });
                 } else if (this.filters.rooms.length > 0) {
                     // 自由筛选
-                    filtered = filtered.filter(item => {
-                        const teamRooms = (item.team.room || '').split(',').map(r => r.trim()).filter(r => r);
-                        return teamRooms.some(r => this.filters.rooms.includes(r));
+                    filtered = filtered.filter((item) => {
+                        const teamRooms = (item.team.room || "")
+                            .split(",")
+                            .map((r) => r.trim())
+                            .filter((r) => r);
+                        return teamRooms.some((r) => this.filters.rooms.includes(r));
                     });
                 }
-                
+
                 // 学校筛选（balloonSender模式也支持）
                 if (this.filters.schools.length > 0) {
-                    filtered = filtered.filter(item => {
-                        const school = (item.team.school || '').trim();
+                    filtered = filtered.filter((item) => {
+                        const school = (item.team.school || "").trim();
                         return school && this.filters.schools.includes(school);
                     });
                 }
-                
+
                 // 题号筛选（balloonSender模式也支持）
                 if (this.filters.problems.length > 0) {
-                    filtered = filtered.filter(item => {
-                        return item.problem_alphabet && this.filters.problems.includes(item.problem_alphabet);
+                    filtered = filtered.filter((item) => {
+                        return (
+                            item.problem_alphabet &&
+                            this.filters.problems.includes(item.problem_alphabet)
+                        );
                     });
                 }
-                
+
                 // 搜索文本筛选（balloonSender模式也支持）
                 if (this.filters.searchText) {
                     const searchLower = this.filters.searchText.toLowerCase();
-                    filtered = filtered.filter(item => {
-                        const teamId = String(item.team_id || '').toLowerCase();
-                        const teamName = (item.team_name || '').toLowerCase();
-                        return teamId.includes(searchLower) || teamName.includes(searchLower);
+                    filtered = filtered.filter((item) => {
+                        const teamId = String(item.team_id || "").toLowerCase();
+                        const teamName = (item.team_name || "").toLowerCase();
+                        return (
+                            teamId.includes(searchLower) || teamName.includes(searchLower)
+                        );
                     });
                 }
             } else {
                 // balloonManager模式：应用所有筛选
                 if (this.filters.status.length > 0) {
-                    filtered = filtered.filter(item => this.filters.status.includes(item.bst));
+                    filtered = filtered.filter((item) =>
+                        this.filters.status.includes(item.bst)
+                    );
                 }
-                
+
                 if (this.filters.balloon_sender !== null) {
-                    filtered = filtered.filter(item => item.balloon_sender === this.filters.balloon_sender);
+                    filtered = filtered.filter(
+                        (item) => item.balloon_sender === this.filters.balloon_sender
+                    );
                 }
-                
+
                 if (this.filters.rooms.length > 0) {
-                    filtered = filtered.filter(item => {
-                        const teamRooms = (item.team.room || '').split(',').map(r => r.trim()).filter(r => r);
-                        return teamRooms.some(r => this.filters.rooms.includes(r));
+                    filtered = filtered.filter((item) => {
+                        const teamRooms = (item.team.room || "")
+                            .split(",")
+                            .map((r) => r.trim())
+                            .filter((r) => r);
+                        return teamRooms.some((r) => this.filters.rooms.includes(r));
                     });
                 }
-                
+
                 // 学校筛选
                 if (this.filters.schools.length > 0) {
-                    filtered = filtered.filter(item => {
-                        const school = (item.team.school || '').trim();
+                    filtered = filtered.filter((item) => {
+                        const school = (item.team.school || "").trim();
                         return school && this.filters.schools.includes(school);
                     });
                 }
-                
+
                 // 题号筛选
                 if (this.filters.problems.length > 0) {
-                    filtered = filtered.filter(item => {
-                        return item.problem_alphabet && this.filters.problems.includes(item.problem_alphabet);
+                    filtered = filtered.filter((item) => {
+                        return (
+                            item.problem_alphabet &&
+                            this.filters.problems.includes(item.problem_alphabet)
+                        );
                     });
                 }
-                
+
                 // 搜索文本筛选（队伍ID、队名模糊匹配）
                 if (this.filters.searchText) {
                     const searchLower = this.filters.searchText.toLowerCase();
-                    filtered = filtered.filter(item => {
-                        const teamId = String(item.team_id || '').toLowerCase();
-                        const teamName = (item.team_name || '').toLowerCase();
-                        return teamId.includes(searchLower) || teamName.includes(searchLower);
+                    filtered = filtered.filter((item) => {
+                        const teamId = String(item.team_id || "").toLowerCase();
+                        const teamName = (item.team_name || "").toLowerCase();
+                        return (
+                            teamId.includes(searchLower) || teamName.includes(searchLower)
+                        );
                     });
                 }
             }
-            
+
             return filtered;
         }
-        
+
         /**
          * 渲染队列列表（使用bootstrap-table）
          */
         RenderQueueList() {
-            const table = $('#balloon-queue-table');
+            const table = $("#balloon-queue-table");
             if (!table.length) return;
-            
+
             // 获取筛选后的数据（数据已经在 BuildBalloonList 中计算好所有字段）
             const tableData = this.GetFilteredBalloonList();
-            
+
             // 如果表格已经初始化，直接加载数据
-            if (table.data('bootstrap.table')) {
-                table.bootstrapTable('load', tableData);
+            if (table.data("bootstrap.table")) {
+                table.bootstrapTable("load", tableData);
             } else {
                 // 首次初始化表格（列定义在模板的thead中）
                 table.bootstrapTable({
                     data: tableData,
-                    uniqueId: 'solution_id'  // 设置唯一ID，用于 updateByUniqueId
+                    uniqueId: "solution_id", // 设置唯一ID，用于 updateByUniqueId
                 });
             }
-            
+
             // 绑定表格点击事件（统一管理所有列的点击）
             this.BindTableClickEvents();
         }
-        
+
         /**
          * 绑定表格点击事件（统一管理所有列的点击）
          */
         BindTableClickEvents() {
-            const table = $('#balloon-queue-table');
-            
+            const table = $("#balloon-queue-table");
+
             // 防止重复绑定
-            table.off('click-cell.bs.table');
-            table.off('dbl-click-cell.bs.table');
-            
-            table.on('click-cell.bs.table', (e, field, td, row) => {
-                if (field === 'team_id') {
+            table.off("click-cell.bs.table");
+            table.off("dbl-click-cell.bs.table");
+
+            table.on("click-cell.bs.table", (e, field, td, row) => {
+                if (field === "team_id") {
                     // 点击队伍ID：显示队伍详情
                     this.ShowTeamDetails(row);
-                } else if (field === 'bst') {
+                } else if (field === "bst") {
                     // 点击状态列
-            if (this.isBalloonManager) {
+                    if (this.isBalloonManager) {
                         // 管理员模式：弹出模态框编辑
                         this.ShowManagerModal(row);
-            } else {
+                    } else {
                         // 配送员模式：显示状态解释
                         this.ShowStatusExplanation(row);
                     }
                 }
             });
-            
+
             // 双击事件处理
-            table.on('dbl-click-cell.bs.table', (e, field, td, row) => {
-                if (field === 'bst') {
+            table.on("dbl-click-cell.bs.table", (e, field, td, row) => {
+                if (field === "bst") {
                     // 配送员模式：双击状态列转变状态
                     if (!this.isBalloonManager) {
                         this.HandleStatusChange(row);
                     }
-                } else if (field === 'idx') {
+                } else if (field === "idx") {
                     // 双击序号列：预览打印
                     this.PreviewSingleBalloon(row);
-                } else if (field === 'problem') {
+                } else if (field === "problem") {
                     // 双击题号列：实际打印并更新状态
                     this.PrintSingleBalloonWithStatusUpdate(row);
                 }
             });
         }
-        
+
         /**
          * 显示状态解释（配送员模式）
          */
         ShowStatusExplanation(row) {
-            const statusInfo = this.balloonStatusMap[row.bst] || this.balloonStatusMap[0];
+            const statusInfo =
+                this.balloonStatusMap[row.bst] || this.balloonStatusMap[0];
             const problemAlphabet = row.problem_alphabet;
             const teamId = row.team_id;
-            
+
             // 根据当前状态和标签页，显示可以转变的状态
-            let nextStatusText = '';
-            if (this.currentTab === 'queue') {
-                nextStatusText = '双击可抢取此气球任务（状态变为：已分配）';
+            let nextStatusText = "";
+            if (this.currentTab === "queue") {
+                nextStatusText = "双击可抢取此气球任务（状态变为：已分配）";
             } else {
                 if (row.bst === 20) {
-                    nextStatusText = '双击可发出此气球（状态变为：已发放）';
+                    nextStatusText = "双击可发出此气球（状态变为：已发放）";
                 } else if (row.bst === 30) {
-                    nextStatusText = '双击可撤回此气球（状态变为：已分配）';
+                    nextStatusText = "双击可撤回此气球（状态变为：已分配）";
                 } else if (row.bst !== 0) {
-                    nextStatusText = '双击可退回此气球（状态变为：未发气球）';
+                    nextStatusText = "双击可退回此气球（状态变为：未发气球）";
                 }
             }
-            
+
             alerty.info({
                 message: `队伍 ${teamId} 的题目 ${problemAlphabet}\n当前状态：${statusInfo.cn}\n${nextStatusText}`,
-                message_en: `Team ${teamId} Problem ${problemAlphabet}\nCurrent Status: ${statusInfo.en}\nDouble-click to change status`
+                message_en: `Team ${teamId} Problem ${problemAlphabet}\nCurrent Status: ${statusInfo.en}\nDouble-click to change status`,
             });
         }
-        
+
         /**
          * 处理状态转变（配送员模式）
          */
         HandleStatusChange(row) {
-            if (this.currentTab === 'queue') {
+            if (this.currentTab === "queue") {
                 // 气球队列：抢
                 this.HandleGrab(row);
             } else {
@@ -2494,7 +2718,7 @@ if (typeof BalloonManagerSystem === 'undefined') {
                 }
             }
         }
-        
+
         /**
          * 生成队伍信息HTML（水平布局：label在左，内容在右，每条一行）
          * @param {Object} team - 队伍数据对象
@@ -2506,95 +2730,126 @@ if (typeof BalloonManagerSystem === 'undefined') {
             const teamIdHtml = RankToolEscapeHtml(String(teamId));
             const teamName = RankToolEscapeHtml(team.name || teamId);
             const teamNameEn = team.name_en ? RankToolEscapeHtml(team.name_en) : null;
-            const schoolName = RankToolEscapeHtml(team.school || '-');
-            const tmember = RankToolEscapeHtml(team.tmember || '-');
-            const room = RankToolEscapeHtml(team.room || '-');
+            const schoolName = RankToolEscapeHtml(team.school || "-");
+            const tmember = RankToolEscapeHtml(team.tmember || "-");
+            const room = RankToolEscapeHtml(team.room || "-");
             const coach = team.coach ? RankToolEscapeHtml(team.coach) : null;
-            
+
             // 水平布局：label在左，内容在右，每条一行
             let html = '<div class="team-info-template">';
-            
+
             // 队伍ID - 非常突出
-            html += '<div class="team-info-item team-info-highlight"><i class="bi bi-hash text-primary"></i><span class="label-text">队伍ID <span class="en-text">Team ID</span></span><span class="main-text">' + teamIdHtml + '</span></div>';
-            
+            html +=
+                '<div class="team-info-item team-info-highlight"><i class="bi bi-hash text-primary"></i><span class="label-text">队伍ID <span class="en-text">Team ID</span></span><span class="main-text">' +
+                teamIdHtml +
+                "</span></div>";
+
             // 区域 - 非常突出
-            if (room && room !== '-') {
-                html += '<div class="team-info-item team-info-highlight"><i class="bi bi-geo-alt text-warning"></i><span class="label-text">房间/区域 <span class="en-text">Room</span></span><span class="main-text">' + room + '</span></div>';
+            if (room && room !== "-") {
+                html +=
+                    '<div class="team-info-item team-info-highlight"><i class="bi bi-geo-alt text-warning"></i><span class="label-text">房间/区域 <span class="en-text">Room</span></span><span class="main-text">' +
+                    room +
+                    "</span></div>";
             }
-            
+
             // 题号（如果有）
             if (problemAlphabet) {
-                html += '<div class="team-info-item"><i class="bi bi-file-earmark-text text-info"></i><span class="label-text">题号 <span class="en-text">Problem</span></span><span class="main-text"><span class="badge bg-primary">' + problemAlphabet + '</span></span></div>';
+                html +=
+                    '<div class="team-info-item"><i class="bi bi-file-earmark-text text-info"></i><span class="label-text">题号 <span class="en-text">Problem</span></span><span class="main-text"><span class="badge bg-primary">' +
+                    problemAlphabet +
+                    "</span></span></div>";
             }
-            
+
             // 队名
-            if (teamName && teamName !== '-') {
-                html += '<div class="team-info-item"><i class="bi bi-flag-fill text-success"></i><span class="label-text">队名 <span class="en-text">Team Name</span></span><span class="main-text">' + teamName;
+            if (teamName && teamName !== "-") {
+                html +=
+                    '<div class="team-info-item"><i class="bi bi-flag-fill text-success"></i><span class="label-text">队名 <span class="en-text">Team Name</span></span><span class="main-text">' +
+                    teamName;
                 if (teamNameEn) {
-                    html += ' <span class="sub-text">(' + teamNameEn + ')</span>';
+                    html += ' <span class="sub-text">(' + teamNameEn + ")</span>";
                 }
-                html += '</span></div>';
+                html += "</span></div>";
             }
-            
+
             // 学校
-            if (schoolName && schoolName !== '-') {
-                html += '<div class="team-info-item"><i class="bi bi-building text-info"></i><span class="label-text">学校 <span class="en-text">School</span></span><span class="main-text">' + schoolName + '</span></div>';
+            if (schoolName && schoolName !== "-") {
+                html +=
+                    '<div class="team-info-item"><i class="bi bi-building text-info"></i><span class="label-text">学校 <span class="en-text">School</span></span><span class="main-text">' +
+                    schoolName +
+                    "</span></div>";
             }
-            
+
             // 选手
-            if (tmember && tmember !== '-') {
-                html += '<div class="team-info-item"><i class="bi bi-people text-secondary"></i><span class="label-text">选手 <span class="en-text">Members</span></span><span class="main-text">' + tmember + '</span></div>';
+            if (tmember && tmember !== "-") {
+                html +=
+                    '<div class="team-info-item"><i class="bi bi-people text-secondary"></i><span class="label-text">选手 <span class="en-text">Members</span></span><span class="main-text">' +
+                    tmember +
+                    "</span></div>";
             }
-            
+
             // 教练（如果有）
             if (coach) {
-                html += '<div class="team-info-item"><i class="bi bi-person-badge text-secondary"></i><span class="label-text">教练 <span class="en-text">Coach</span></span><span class="main-text">' + coach + '</span></div>';
+                html +=
+                    '<div class="team-info-item"><i class="bi bi-person-badge text-secondary"></i><span class="label-text">教练 <span class="en-text">Coach</span></span><span class="main-text">' +
+                    coach +
+                    "</span></div>";
             }
-            
-            html += '</div>';
+
+            html += "</div>";
             return html;
         }
-        
+
         /**
          * 预览单个气球小票
          */
         PreviewSingleBalloon(row) {
             if (!row) return;
-            
+
             // 调用打印模块的预览功能
-            if (window.BalloonPrint && typeof window.BalloonPrint.previewBalloon === 'function') {
+            if (
+                window.BalloonPrint &&
+                typeof window.BalloonPrint.previewBalloon === "function"
+            ) {
                 window.BalloonPrint.previewBalloon(row);
             } else {
                 alerty.info({
-                    message: '预览功能未初始化',
-                    message_en: 'Preview function not initialized'
+                    message: "预览功能未初始化",
+                    message_en: "Preview function not initialized",
                 });
             }
         }
-        
+
         /**
          * 打印单个气球并更新状态
          */
         PrintSingleBalloonWithStatusUpdate(row) {
             if (!row) return;
-            
+
             // 调用打印模块的打印并更新状态功能
-            if (window.BalloonPrint && typeof window.BalloonPrint.printSingleBalloonWithStatusUpdate === 'function') {
+            if (
+                window.BalloonPrint &&
+                typeof window.BalloonPrint.printSingleBalloonWithStatusUpdate ===
+                "function"
+            ) {
                 window.BalloonPrint.printSingleBalloonWithStatusUpdate(row, this);
             } else {
                 alerty.info({
-                    message: '打印功能未初始化',
-                    message_en: 'Print function not initialized'
+                    message: "打印功能未初始化",
+                    message_en: "Print function not initialized",
                 });
             }
         }
-        
+
         /**
          * 显示队伍详细信息
          */
         ShowTeamDetails(row) {
-            const teamInfoHTML = this.GenerateTeamInfoHTML(row.team, row.team_id, row.problem_alphabet);
-            
+            const teamInfoHTML = this.GenerateTeamInfoHTML(
+                row.team,
+                row.team_id,
+                row.problem_alphabet
+            );
+
             const content = `
                 <div class="card border">
                     <div class="card-body" style="padding: 0.75rem;">
@@ -2602,15 +2857,15 @@ if (typeof BalloonManagerSystem === 'undefined') {
                     </div>
                 </div>
             `;
-            
+
             alerty.notify({
                 title: '队伍信息<span class="en-text">Team Information</span>',
                 message: content,
-                message_en: '',
-                width: 400
+                message_en: "",
+                width: 400,
             });
         }
-        
+
         /**
          * 显示管理员模态框（编辑气球状态和选择配送员）
          */
@@ -2619,53 +2874,57 @@ if (typeof BalloonManagerSystem === 'undefined') {
             const teamId = RankToolEscapeHtml(String(row.team_id));
             const schoolName = RankToolEscapeHtml(row.school);
             const currentStatus = row.bst;
-            const currentSender = row.balloon_sender || '';
-            
+            const currentSender = row.balloon_sender || "";
+
             // 获取balloon_sender列表
-            let senderOptions = '<option value="">（留空）<en-text>(Empty)</en-text></option>';
+            let senderOptions =
+                '<option value="">（留空）<en-text>(Empty)</en-text></option>';
             try {
-                const contestId = this.config.cid_list || '';
+                const contestId = this.config.cid_list || "";
                 const result = await $.ajax({
                     url: `/cpcsys/admin/team_list_ajax?cid=${contestId}&ttype=1`,
-                    method: 'GET',
-                    dataType: 'json'
+                    method: "GET",
+                    dataType: "json",
                 });
                 if (result.code === 1 && result.data && result.data.team_list) {
-                    result.data.team_list.forEach(sender => {
-                        const selected = sender.team_id === currentSender ? 'selected' : '';
+                    result.data.team_list.forEach((sender) => {
+                        const selected = sender.team_id === currentSender ? "selected" : "";
                         const name = RankToolEscapeHtml(sender.name || sender.team_id);
-                        const room = RankToolEscapeHtml(sender.room || '');
-                        const displayText = `${sender.team_id} - ${name}${room ? ` (${room})` : ''}`;
-                        senderOptions += `<option value="${RankToolEscapeHtml(sender.team_id)}" ${selected}>${displayText}</option>`;
+                        const room = RankToolEscapeHtml(sender.room || "");
+                        const displayText = `${sender.team_id} - ${name}${room ? ` (${room})` : ""
+                            }`;
+                        senderOptions += `<option value="${RankToolEscapeHtml(
+                            sender.team_id
+                        )}" ${selected}>${displayText}</option>`;
                     });
                 }
             } catch (error) {
                 // 加载配送员列表失败，静默处理
             }
-            
+
             // 生成状态按钮（四个按钮，点击直接提交）
-            let statusButtonsHTML = '';
+            let statusButtonsHTML = "";
             const btnClassMap = {
-                0: 'btn-danger',   // 未处理 - 红色
-                10: 'btn-warning', // 已通知 - 黄色
-                20: 'btn-info',    // 已分配 - 青色
-                30: 'btn-success'  // 已发放 - 绿色
+                0: "btn-danger", // 未处理 - 红色
+                10: "btn-warning", // 已通知 - 黄色
+                20: "btn-info", // 已分配 - 青色
+                30: "btn-success", // 已发放 - 绿色
             };
             const iconMap = {
-                0: 'bi-x-circle-fill',
-                10: 'bi-printer-fill',
-                20: 'bi-person-check-fill',
-                30: 'bi-check-circle-fill'
+                0: "bi-x-circle-fill",
+                10: "bi-printer-fill",
+                20: "bi-person-check-fill",
+                30: "bi-check-circle-fill",
             };
-            
-            Object.keys(this.balloonStatusMap).forEach(status => {
+
+            Object.keys(this.balloonStatusMap).forEach((status) => {
                 const statusNum = parseInt(status);
                 const info = this.balloonStatusMap[statusNum];
-                const btnClass = btnClassMap[statusNum] || 'btn-secondary';
-                const icon = iconMap[statusNum] || 'bi-question-circle-fill';
-                const isActive = currentStatus === statusNum ? 'active' : '';
+                const btnClass = btnClassMap[statusNum] || "btn-secondary";
+                const icon = iconMap[statusNum] || "bi-question-circle-fill";
+                const isActive = currentStatus === statusNum ? "active" : "";
                 const bilingualText = `<span><i class="bi ${icon}"></i>${info.cn}</span><span class="en-text">${info.en}</span>`;
-                
+
                 statusButtonsHTML += `
                     <button type="button" title="点击设为此状态 / Click to set this status"
                             class="btn btn-sm ${btnClass} status-btn ${isActive}" 
@@ -2675,10 +2934,14 @@ if (typeof BalloonManagerSystem === 'undefined') {
                     </button>
                 `;
             });
-            
+
             // 使用统一的队伍信息生成函数
-            const teamInfoHTML = this.GenerateTeamInfoHTML(row.team, row.team_id, problemAlphabet);
-            
+            const teamInfoHTML = this.GenerateTeamInfoHTML(
+                row.team,
+                row.team_id,
+                problemAlphabet
+            );
+
             // 创建模态框HTML（符合系统UI风格）
             const modalHtml = `
                 <div class="modal fade" id="balloon-manager-modal" tabindex="-1" aria-labelledby="balloonManagerModalLabel" aria-hidden="true">
@@ -2735,153 +2998,207 @@ if (typeof BalloonManagerSystem === 'undefined') {
                     </div>
                 </div>
             `;
-            
+
             // 移除旧的模态框（如果存在）
-            const oldModal = document.getElementById('balloon-manager-modal');
+            const oldModal = document.getElementById("balloon-manager-modal");
             if (oldModal) {
                 oldModal.remove();
             }
-            
+
             // 添加新模态框到body
-            document.body.insertAdjacentHTML('beforeend', modalHtml);
-            
+            document.body.insertAdjacentHTML("beforeend", modalHtml);
+
             // 初始化Bootstrap模态框
-            const modalElement = document.getElementById('balloon-manager-modal');
+            const modalElement = document.getElementById("balloon-manager-modal");
             const modal = new bootstrap.Modal(modalElement);
-            
+
             // 绑定状态按钮事件（点击直接提交）
-            const statusButtons = modalElement.querySelectorAll('.status-btn');
-            statusButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const newStatus = parseInt(btn.getAttribute('data-status'));
-                const newSender = document.getElementById('modal-balloon-sender').value.trim() || null;
-                
+            const statusButtons = modalElement.querySelectorAll(".status-btn");
+            const handleStatusChange = (newStatus) => {
+                const newSender =
+                    document.getElementById("modal-balloon-sender").value.trim() || null;
+
                 // 只有管理员将状态设为20时，op才是'set_sender'，其他情况留空
-                const op = (newStatus == 20) ? 'set_sender' : '';
-                
+                const op = newStatus == 20 ? "set_sender" : "";
+
                 // 调用API更新状态
-                    this.ChangeBalloonStatus(row, newStatus, newSender, op);
-                
+                this.ChangeBalloonStatus(row, newStatus, newSender, op);
+
                 // 关闭模态框
                 modal.hide();
+            };
+
+            statusButtons.forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    const newStatus = parseInt(btn.getAttribute("data-status"));
+                    handleStatusChange(newStatus);
                 });
             });
-            
-            // 模态框关闭时移除DOM
-            modalElement.addEventListener('hidden.bs.modal', () => {
+
+            // 快捷键映射：N->0(未处理), P->10(已通知), A->20(已分配), D->30(已发放)
+            const keyStatusMap = {
+                n: 0, // 未处理
+                p: 10, // 已通知
+                a: 20, // 已分配
+                d: 30, // 已发放
+            };
+
+            // 快捷键处理函数
+            const handleKeydown = (e) => {
+                // 检查模态框是否存在且显示
+                if (!modalElement || !document.body.contains(modalElement)) {
+                    return;
+                }
+
+                // 检查模态框是否显示（Bootstrap 5 模态框显示时会有 show class）
+                if (!modalElement.classList.contains("show")) {
+                    return;
+                }
+
+                // 如果焦点在输入框、文本框或下拉框中，不处理快捷键
+                const activeElement = document.activeElement;
+                if (
+                    activeElement &&
+                    (activeElement.tagName === "INPUT" ||
+                        activeElement.tagName === "TEXTAREA" ||
+                        activeElement.tagName === "SELECT" ||
+                        activeElement.isContentEditable)
+                ) {
+                    return;
+                }
+
+                // 检查按键是否匹配（不区分大小写）
+                const key = e.key.toLowerCase();
+                if (keyStatusMap.hasOwnProperty(key)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const newStatus = keyStatusMap[key];
+                    handleStatusChange(newStatus);
+                }
+            };
+
+            // 绑定快捷键事件（在模态框打开时）
+            document.addEventListener("keydown", handleKeydown);
+
+            // 模态框关闭时移除快捷键事件和DOM
+            modalElement.addEventListener("hidden.bs.modal", () => {
+                // 移除快捷键事件
+                document.removeEventListener("keydown", handleKeydown);
+                // 移除DOM
                 modalElement.remove();
             });
-            
+
             // 显示模态框
             modal.show();
         }
-        
+
         /**
          * 处理"抢"操作
          */
         HandleGrab(row) {
             const message = `确定要抢队伍 ${row.team_id} 的题目 ${row.problem_alphabet} 的气球任务吗？\nAre you sure you want to grab the balloon task for team ${row.team_id} problem ${row.problem_alphabet}?`;
-            
+
             alerty.confirm({
                 message: message,
-                message_en: '',
+                message_en: "",
                 callback: () => {
-                    this.ChangeBalloonStatus(row, 20, null, 'grab');
-                }
+                    this.ChangeBalloonStatus(row, 20, null, "grab");
+                },
             });
         }
-        
+
         /**
          * 处理"退回"操作
          */
         HandleReturn(row) {
             if (row.bst === 0 || row.bst === 30) return;
-            
+
             const message = `确定要将队伍 ${row.team_id} 的题目 ${row.problem_alphabet} 的气球退回吗？\nAre you sure you want to return the balloon for team ${row.team_id} problem ${row.problem_alphabet}?`;
-            
+
             alerty.confirm({
                 message: message,
-                message_en: '',
+                message_en: "",
                 callback: () => {
-                    this.ChangeBalloonStatus(row, 0, null, '');
-                }
+                    this.ChangeBalloonStatus(row, 0, null, "");
+                },
             });
         }
-        
+
         /**
          * 处理"撤回"操作
          */
         HandleWithdraw(row) {
             if (row.bst !== 30) return;
-            
+
             const message = `确定要撤回队伍 ${row.team_id} 的题目 ${row.problem_alphabet} 的气球吗？\nAre you sure you want to withdraw the balloon for team ${row.team_id} problem ${row.problem_alphabet}?`;
-            
+
             alerty.confirm({
                 message: message,
-                message_en: '',
+                message_en: "",
                 callback: () => {
-                    this.ChangeBalloonStatus(row, 20, row.balloon_sender, '');
-                }
+                    this.ChangeBalloonStatus(row, 20, row.balloon_sender, "");
+                },
             });
         }
-        
+
         /**
          * 处理"发出"操作
          */
         HandleDeliver(row) {
             if (row.bst !== 20) return;
-            
+
             const message = `确定要发出队伍 ${row.team_id} 的题目 ${row.problem_alphabet} 的气球吗？\nAre you sure you want to deliver the balloon for team ${row.team_id} problem ${row.problem_alphabet}?`;
-            
+
             alerty.confirm({
                 message: message,
-                message_en: '',
+                message_en: "",
                 callback: () => {
-                    this.ChangeBalloonStatus(row, 30, row.balloon_sender, '');
-                }
+                    this.ChangeBalloonStatus(row, 30, row.balloon_sender, "");
+                },
             });
         }
-        
+
         /**
          * 调用API改变气球状态
          */
         ChangeBalloonStatus(row, bst, balloonSender, op) {
-            const contestId = this.config.cid_list || '';
+            const contestId = this.config.cid_list || "";
             const params = {
                 cid: contestId,
                 solution_id: row.solution_id,
-                pst: row.is_global_fb ? 20 : (row.is_regular_fb ? 10 : 0),
+                pst: row.is_global_fb ? 20 : row.is_regular_fb ? 10 : 0,
                 bst: bst,
-                op: op
+                op: op,
             };
-            
+
             if (balloonSender) {
                 params.balloon_sender = balloonSender;
             }
-            
+
             const self = this;
-            const table = $('#balloon-queue-table');
-            
+            const table = $("#balloon-queue-table");
+
             $.ajax({
-                    url: this.changeStatusUrl,
-                    method: 'POST',
-                    data: params,
-                dataType: 'json',
-                success: function(rep) {
+                url: this.changeStatusUrl,
+                method: "POST",
+                data: params,
+                dataType: "json",
+                success: function (rep) {
                     if (rep.code === 1) {
-                        const statusInfo = self.balloonStatusMap[rep.data.bst] || self.balloonStatusMap[0];
+                        const statusInfo =
+                            self.balloonStatusMap[rep.data.bst] || self.balloonStatusMap[0];
                         alerty.success(
                             `队伍：${rep.data.team_id}  题目: ${row.problem_alphabet} \n成功更新为 ${statusInfo.cn}`,
                             `Team ${rep.data.team_id}   Problem ${row.problem_alphabet} \nUpdated to ${statusInfo.en} successfully`
                         );
-                        
+
                         // 更新表格中这一行的数据，不需要刷新整个表格
                         row.bst = parseInt(rep.data.bst);
                         row.pst = parseInt(rep.data.pst);
                         if (rep.data.balloon_sender !== undefined) {
-                            row.balloon_sender = rep.data.balloon_sender || '';
+                            row.balloon_sender = rep.data.balloon_sender || "";
                         }
-                        
+
                         // 更新balloonMap（用于统计）
                         const key = `${row.team_id}_${row.problem_id}`;
                         if (self.balloonMap) {
@@ -2891,8 +3208,8 @@ if (typeof BalloonManagerSystem === 'undefined') {
                                 balloon.pst = row.pst;
                                 if (rep.data.balloon_sender !== undefined) {
                                     balloon.balloon_sender = row.balloon_sender;
-                    }
-                } else {
+                                }
+                            } else {
                                 // 如果balloonMap中没有记录，创建一个新记录
                                 self.balloonMap.set(key, {
                                     team_id: row.team_id,
@@ -2900,70 +3217,73 @@ if (typeof BalloonManagerSystem === 'undefined') {
                                     ac_time: rep.data.ac_time || 0,
                                     pst: row.pst,
                                     bst: row.bst,
-                                    balloon_sender: row.balloon_sender
+                                    balloon_sender: row.balloon_sender,
                                 });
                             }
                         }
-                        
+
                         // 更新表格行
-                        table.bootstrapTable('updateByUniqueId', {
+                        table.bootstrapTable("updateByUniqueId", {
                             id: row.solution_id,
-                            row: row
+                            row: row,
                         });
-                        
+
                         // 更新统计框
                         self.CalculateBalloonStats();
                         self.UpdateGlobalStats();
-                } else {
+                    } else {
+                        console.log(2121, rep.msg);
                         alerty.alert({
-                            message: rep.msg || '操作失败',
-                            message_en: ''
+                            message: rep.msg || "操作失败",
+                            message_en: "",
                         });
                     }
                 },
-                error: function(xhr, status, error) {
+                error: function (xhr, status, error) {
                     alerty.alert({
-                        message: '操作失败，请重试',
-                        message_en: 'Operation failed, please try again'
+                        message: "操作失败，请重试",
+                        message_en: "Operation failed, please try again",
                     });
-                }
+                },
             });
         }
-        
+
         /**
          * 更新队列统计（更新DOM，不重新生成HTML）
          */
         UpdateQueueStats() {
             // 使用父类的统计方法（统计所有AC，而不是只统计balloonList）
             this.CalculateBalloonStats();
-            
+
             // 更新DOM中的统计数值（不重新生成HTML）
-            const statValue0 = document.getElementById('balloon-stat-value-0');
-            const statValue10 = document.getElementById('balloon-stat-value-10');
-            const statValue20 = document.getElementById('balloon-stat-value-20');
-            const statValue30 = document.getElementById('balloon-stat-value-30');
-            
+            const statValue0 = document.getElementById("balloon-stat-value-0");
+            const statValue10 = document.getElementById("balloon-stat-value-10");
+            const statValue20 = document.getElementById("balloon-stat-value-20");
+            const statValue30 = document.getElementById("balloon-stat-value-30");
+
             if (statValue0) statValue0.textContent = this.balloonStats[0] || 0;
             if (statValue10) statValue10.textContent = this.balloonStats[10] || 0;
             if (statValue20) statValue20.textContent = this.balloonStats[20] || 0;
             if (statValue30) statValue30.textContent = this.balloonStats[30] || 0;
-            
+
             // 绑定点击事件（只需要绑定一次，但每次更新时检查）
             this.BindGlobalStatsClickEvents();
-            
+
             // 更新选中状态（支持多选）
-            const statItems = document.querySelectorAll('#balloon-queue-stats .balloon-stat-item');
-            statItems.forEach(statItem => {
-                const status = parseInt(statItem.getAttribute('data-status'));
+            const statItems = document.querySelectorAll(
+                "#balloon-queue-stats .balloon-stat-item"
+            );
+            statItems.forEach((statItem) => {
+                const status = parseInt(statItem.getAttribute("data-status"));
                 const isSelected = this.filters.status.includes(status);
                 if (isSelected) {
-                    statItem.classList.add('active', 'stat-selected');
+                    statItem.classList.add("active", "stat-selected");
                 } else {
-                    statItem.classList.remove('active', 'stat-selected');
+                    statItem.classList.remove("active", "stat-selected");
                 }
             });
         }
-        
+
         /**
          * 统计项点击事件
          */
@@ -2977,93 +3297,101 @@ if (typeof BalloonManagerSystem === 'undefined') {
                 // 未选中，添加
                 this.filters.status.push(status);
             }
-            
+
             // 保存到 localStorage
             this.SaveFiltersToStorage();
-            
+
             // 更新统计显示
             this.UpdateQueueStats();
-            
+
             // 重新渲染列表
             this.RenderQueueList();
         }
-        
+
         /**
          * 清理所有筛选条件
          */
         ClearAllFilters() {
             this.filters = this.getDefaultFilters();
-            
+
             // 清空所有筛选器UI
-            const senderSelect = document.getElementById('filter-sender');
+            const senderSelect = document.getElementById("filter-sender");
             if (senderSelect) {
-                senderSelect.value = '';
+                senderSelect.value = "";
                 const $senderSelect = $(senderSelect);
-                if ($senderSelect.data('multipleSelect')) {
-                    $senderSelect.multipleSelect('setSelects', []);
+                if ($senderSelect.data("multipleSelect")) {
+                    $senderSelect.multipleSelect("setSelects", []);
                 }
             }
-            
-            const roomSelect = document.getElementById('filter-rooms');
+
+            const roomSelect = document.getElementById("filter-rooms");
             if (roomSelect) {
                 const $roomSelect = $(roomSelect);
-                if ($roomSelect.data('multipleSelect')) {
-                    $roomSelect.multipleSelect('setSelects', []);
+                if ($roomSelect.data("multipleSelect")) {
+                    $roomSelect.multipleSelect("setSelects", []);
                 } else {
-                    Array.from(roomSelect.options).forEach(opt => opt.selected = false);
+                    Array.from(roomSelect.options).forEach(
+                        (opt) => (opt.selected = false)
+                    );
                 }
             }
-            
-            const schoolSelect = document.getElementById('filter-schools');
+
+            const schoolSelect = document.getElementById("filter-schools");
             if (schoolSelect) {
                 const $schoolSelect = $(schoolSelect);
-                if ($schoolSelect.data('multipleSelect')) {
-                    $schoolSelect.multipleSelect('setSelects', []);
+                if ($schoolSelect.data("multipleSelect")) {
+                    $schoolSelect.multipleSelect("setSelects", []);
                 } else {
-                    Array.from(schoolSelect.options).forEach(opt => opt.selected = false);
+                    Array.from(schoolSelect.options).forEach(
+                        (opt) => (opt.selected = false)
+                    );
                 }
             }
-            
-            const problemSelect = document.getElementById('filter-problems');
+
+            const problemSelect = document.getElementById("filter-problems");
             if (problemSelect) {
                 const $problemSelect = $(problemSelect);
-                if ($problemSelect.data('multipleSelect')) {
-                    $problemSelect.multipleSelect('setSelects', []);
+                if ($problemSelect.data("multipleSelect")) {
+                    $problemSelect.multipleSelect("setSelects", []);
                 } else {
-                    Array.from(problemSelect.options).forEach(opt => opt.selected = false);
+                    Array.from(problemSelect.options).forEach(
+                        (opt) => (opt.selected = false)
+                    );
                 }
             }
-            
-            const searchInput = document.getElementById('filter-search');
+
+            const searchInput = document.getElementById("filter-search");
             if (searchInput) {
-                searchInput.value = '';
+                searchInput.value = "";
             }
-            
+
             // 保存到 localStorage（清空状态）
             this.SaveFiltersToStorage();
-            
+
             // 更新统计显示
             this.UpdateQueueStats();
-            
+
             // 重新渲染列表
             this.RenderQueueList();
         }
-        
+
         /**
          * 重写 UpdateGlobalStats，使用队列统计
          */
         UpdateGlobalStats() {
             // 检查是否有全局统计容器（balloon全览页面）
-            const globalStatsContainer = document.getElementById('balloon-global-stats');
+            const globalStatsContainer = document.getElementById(
+                "balloon-global-stats"
+            );
             if (globalStatsContainer) {
                 // 如果有全局统计容器，使用父类的统计方法（统计所有AC）
                 super.UpdateGlobalStats();
             }
-            
+
             // 更新队列统计（队列页面自己的统计）
             this.UpdateQueueStats();
         }
-        
+
         /**
          * 重写 RefreshData 方法，跳过父类中需要容器的部分（external mode）
          */
@@ -3079,7 +3407,7 @@ if (typeof BalloonManagerSystem === 'undefined') {
             }
         }
     }
-    
+
     // 导出到全局
     window.BalloonManagerSystem = BalloonManagerSystem;
     window.BalloonQueueSystem = BalloonQueueSystem;
@@ -3091,21 +3419,23 @@ if (typeof BalloonManagerSystem === 'undefined') {
 // 根据封榜情况处理行样式
 function RowFormatterBalloonQueue(row, index) {
     let ret = {};
-    if(row.flg_frozen) {
+    if (row.flg_frozen) {
         // ret.css = {'color': 'white'};
-        ret.classes = "bg-info-subtle"
+        ret.classes = "bg-info-subtle";
     }
     return ret;
 }
 
 // 气球队列 - 队伍ID formatter（可点击显示详情）
 function FormatterBalloonTeamId(value, row, index, field) {
-    return `<a href="#" class="text-primary">${RankToolEscapeHtml(String(value))}</a>`;
+    return `<a href="#" class="text-primary">${RankToolEscapeHtml(
+        String(value)
+    )}</a>`;
 }
 
 // 气球队列 - 题号 formatter（醒目显示，双击可打印小票）
 function FormatterBalloonProblem(value, row, index, field) {
-    const alphabet = row.problem_alphabet || '';
+    const alphabet = row.problem_alphabet || "";
     return `<span class="badge bg-primary fs-5 fw-bold" 
              style="cursor: pointer;" 
              title="双击打印小票 / Double-click to print ticket">
@@ -3115,13 +3445,15 @@ function FormatterBalloonProblem(value, row, index, field) {
 
 // 气球队列 - 首答 formatter（图标显示）
 function FormatterBalloonFirstBlood(value, row, index, field) {
-    let html = '';
+    let html = "";
     if (row.is_global_fb) {
-        html += '<i class="bi bi-star-fill text-warning" title="全场首答 / Global First Blood"></i> ';
+        html +=
+            '<i class="bi bi-star-fill text-warning" title="全场首答 / Global First Blood"></i> ';
         row.pst = 20;
     }
     if (row.is_regular_fb) {
-        html += '<i class="bi bi-check-circle-fill text-info" title="正式队首答 / Regular First Blood"></i>';
+        html +=
+            '<i class="bi bi-check-circle-fill text-info" title="正式队首答 / Regular First Blood"></i>';
         row.pst = 10;
     }
     if (!html) {
@@ -3133,36 +3465,37 @@ function FormatterBalloonFirstBlood(value, row, index, field) {
 // 气球队列 - 状态 formatter（中英双语风格，参考系统统一样式）
 function FormatterBalloonStatus(value, row, index, field) {
     if (!window.balloonQueueSystem) return value;
-    
+
     const statusMap = window.balloonQueueSystem.balloonStatusMap || {};
-    const statusInfo = statusMap[row.bst] || statusMap[0] || { cn: '未知', en: 'Unknown', color: '#6c757d' };
-    
+    const statusInfo = statusMap[row.bst] ||
+        statusMap[0] || { cn: "未知", en: "Unknown", color: "#6c757d" };
+
     // 图标映射（参考系统统一风格）
     const iconMap = {
-        0: 'bi bi-x-circle-fill',      // 未发气球 - 红色叉号
-        10: 'bi bi-printer-fill',       // 已通知 - 打印机
-        20: 'bi bi-person-check-fill',  // 已分配 - 人员确认
-        30: 'bi bi-check-circle-fill'    // 已发放 - 绿色对勾
+        0: "bi bi-x-circle-fill", // 未发气球 - 红色叉号
+        10: "bi bi-printer-fill", // 已通知 - 打印机
+        20: "bi bi-person-check-fill", // 已分配 - 人员确认
+        30: "bi bi-check-circle-fill", // 已发放 - 绿色对勾
     };
-    const icon = iconMap[row.bst] || 'bi bi-question-circle-fill';
-    
+    const icon = iconMap[row.bst] || "bi bi-question-circle-fill";
+
     // 按钮样式类映射（参考系统统一风格）
     const btnClassMap = {
-        0: 'btn-danger',   // 未处理 - 红色
-        10: 'btn-warning', // 已通知 - 黄色
-        20: 'btn-info',    // 已分配 - 青色
-        30: 'btn-success'  // 已发放 - 绿色
+        0: "btn-danger", // 未处理 - 红色
+        10: "btn-warning", // 已通知 - 黄色
+        20: "btn-info", // 已分配 - 青色
+        30: "btn-success", // 已发放 - 绿色
     };
-    const btnClass = btnClassMap[row.bst ?? 0] || 'btn-secondary';
-    
+    const btnClass = btnClassMap[row.bst ?? 0] || "btn-secondary";
+
     // 统一使用 click-cell 事件管理，不需要 onclick
-    const titleText = window.balloonQueueSystem?.isBalloonManager 
+    const titleText = window.balloonQueueSystem?.isBalloonManager
         ? `点击管理气球状态 / Click to manage balloon status`
         : `单击查看详情，双击转变状态 / Click for details, double-click to change status`;
-    
+
     // 中英双语显示（参考系统统一风格：中文主文本，英文用en-text包裹）
     const bilingualText = `<span><i class="${icon}"></i>${statusInfo.cn}</span><span class="en-text">${statusInfo.en}</span>`;
-    
+
     return `<button type="button" class="btn btn-sm ${btnClass}" 
              style="cursor: pointer; min-width: 80px;" 
              title="${titleText}">
@@ -3172,15 +3505,14 @@ function FormatterBalloonStatus(value, row, index, field) {
 
 // 气球队列 - 配送员 formatter
 function FormatterBalloonSender(value, row, index, field) {
-    return RankToolEscapeHtml(row.balloon_sender || '-');
+    return RankToolEscapeHtml(row.balloon_sender || "-");
 }
 
 // 气球队列 - 房间 formatter
 function FormatterBalloonRoom(value, row, index, field) {
-    const room = row.team?.room || '';
-    if (!room || room.trim() === '') {
+    const room = row.team?.room || "";
+    if (!room || room.trim() === "") {
         return '<span class="text-muted">—</span>';
     }
     return RankToolEscapeHtml(room);
 }
-

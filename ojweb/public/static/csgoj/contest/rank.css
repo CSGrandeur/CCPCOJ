@@ -345,6 +345,7 @@
     border-radius: 6px;
     border: 1px solid #dee2e6;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 100001;
 }
 
 .toolbar-group {
@@ -1560,16 +1561,18 @@
     visibility: visible;
 }
 
-/* 加载覆盖层 - 只覆盖rank-system容器 */
+/* 加载覆盖层 - 使用 fixed 定位确保在全局定位上下文中，避免被 controls-toolbar 遮挡 */
 .rank-system .loading-overlay {
-    position: absolute;
-    
-    inset: 0;
+    position: fixed; /* 改为 fixed，确保在全局定位上下文中 */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     background: rgba(255,255,255,0.7);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 130;
+    z-index: 100010; /* 提高到比 controls-toolbar (100001) 更高 */
     backdrop-filter: blur(6px); 
 }
 
@@ -1587,6 +1590,7 @@
     font-size: 18px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.15);
     animation: fadeIn 0.25s ease;
+    z-index: 100011; /* 确保在 loading-overlay 之上 */
 }
 
 .rank-system .loading-spinner::before {
@@ -1619,7 +1623,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1055; /* Bootstrap 5 modal的z-index */
+    z-index: 100003; /* Bootstrap 5 modal的z-index */
 }
 
 .modal-content {
@@ -2481,6 +2485,77 @@
 }
 
 /* 倒计时覆盖层 */
+/* 全屏时间遮罩层 */
+.time-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 999999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.time-overlay-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.time-overlay-text {
+    font-size: min(25vw, 30vh);
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 
+        0 0 20px rgba(255, 255, 255, 0.6),
+        0 0 40px rgba(255, 255, 255, 0.4),
+        0 0 60px rgba(255, 255, 255, 0.2),
+        0 4px 8px rgba(0, 0, 0, 0.3);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.08em;
+    /* 多系统等宽字体族：优先使用各系统最好看的字体 */
+    /* macOS: SF Mono (SFMono-Regular), Menlo */
+    /* Windows: Consolas */
+    /* Linux: Liberation Mono */
+    /* 回退: Courier New, Monaco, monospace */
+    font-family: 
+        var(--bs-font-monospace, 
+            'SF Mono', 
+            'SFMono-Regular', 
+            ui-monospace, 
+            'Cascadia Code', 
+            'Source Code Pro', 
+            Menlo, 
+            Consolas, 
+            'Liberation Mono', 
+            Monaco, 
+            'Courier New', 
+            monospace);
+    line-height: 1;
+    text-align: center;
+    user-select: none;
+    /* 优化渲染性能 */
+    will-change: contents;
+    transform: translateZ(0);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .time-overlay-text {
+        font-size: min(20vw, 25vh);
+        letter-spacing: 0.06em;
+    }
+}
+
 .countdown-overlay {
     position: fixed;
     top: 20px;

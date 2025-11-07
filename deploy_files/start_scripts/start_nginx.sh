@@ -22,8 +22,9 @@ start_nginx() {
         echo "✅ Nginx 容器已存在"
     else
         # 端口映射配置
-        if [ -z "$NGINX_PORT_RANGS" ]; then
-            NGINX_PORT_RANGS="-p $PORT_OJ:$PORT_OJ -p $PORT_MYADMIN:$PORT_MYADMIN"
+        # 如果 NGINX_PORT_RANGES 为空或未设置，使用默认端口映射
+        if [ -z "${NGINX_PORT_RANGES:-}" ]; then
+            NGINX_PORT_RANGES="-p $PORT_OJ:$PORT_OJ -p $PORT_MYADMIN:$PORT_MYADMIN"
         fi
         
         # 开发模式挂载
@@ -97,17 +98,47 @@ start_nginx() {
         mkdir -p "$PATH_DATA/var/www"
         
         # 启动 Nginx 容器（官方镜像，docker 会自动 pull）
+        # 使用数组构建命令，确保参数正确传递
+        local docker_run_args=(
+            "run"
+            "--name" "nginx-server"
+        )
+        echo $LINK_LOCAL
+        # 添加 LINK_LOCAL 参数（可能包含多个参数，需要展开）
+        if [ -n "${LINK_LOCAL:-}" ]; then
+            # 将 LINK_LOCAL 按空格分割并添加到数组
+            read -ra link_local_args <<< "$LINK_LOCAL"
+            docker_run_args+=("${link_local_args[@]}")
+        fi
+        
+        # 添加端口映射（如果 NGINX_PORT_RANGES 不为空）
+        if [ -n "${NGINX_PORT_RANGES:-}" ]; then
+            # 将 NGINX_PORT_RANGES 按空格分割并添加到数组
+            read -ra port_range_args <<< "$NGINX_PORT_RANGES"
+            docker_run_args+=("${port_range_args[@]}")
+        fi
+        
+        # 添加卷挂载和其他参数
+        docker_run_args+=(
+            "-v" "$PATH_DATA/var/www:/var/www"
+        )
+        if [ -n "${PUBLIC_MOUNT:-}" ]; then
+            read -ra public_mount_args <<< "$PUBLIC_MOUNT"
+            docker_run_args+=("${public_mount_args[@]}")
+        fi
+        docker_run_args+=(
+            "-v" "$PATH_DATA/dataspace:$PATH_DATA/dataspace"
+            "-v" "$PATH_DATA/var/log/nginx:/var/log/nginx"
+            "-v" "$PATH_DATA/nginx/nginx_conf.d:/etc/nginx/conf.d"
+            "-v" "$PATH_DATA/nginx/attach:/etc/nginx/attach"
+            "--restart=unless-stopped"
+            "-d"
+            "$NGINX_IMAGE"
+        )
+        
+        # 执行命令并捕获输出
         local docker_run_output
-        docker_run_output=$(docker run --name nginx-server $LINK_LOCAL \
-            $NGINX_PORT_RANGS \
-            -v "$PATH_DATA/var/www:/var/www" \
-            $PUBLIC_MOUNT \
-            -v "$PATH_DATA/dataspace:$PATH_DATA/dataspace" \
-            -v "$PATH_DATA/var/log/nginx:/var/log/nginx" \
-            -v "$PATH_DATA/nginx/nginx_conf.d:/etc/nginx/conf.d" \
-            -v "$PATH_DATA/nginx/attach:/etc/nginx/attach" \
-            --restart=unless-stopped \
-            -d "$NGINX_IMAGE" 2>&1)
+        docker_run_output=$(docker "${docker_run_args[@]}" 2>&1)
         local docker_run_exit_code=$?
         
         # 等待一下，然后检查容器是否真的在运行

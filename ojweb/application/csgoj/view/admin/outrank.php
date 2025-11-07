@@ -178,7 +178,7 @@
         
         <div class="form-group">
             <label class="form-label">外榜接口地址 <span class="en-text">Outrank API URL</span></label>
-            <input type="text" class="form-control" id="api_url" placeholder="https://example.com/ojtool/outrank/receive_data">
+            <input type="text" class="form-control" id="api_url" placeholder="https://example.com/outrank/index/receive_data">
         </div>
 
         <div class="form-group">
@@ -207,7 +207,7 @@
 
         <div class="form-group" id="jsonp_chunk_size_group" style="display: none;">
             <label class="form-label">JSONP分包大小 <span class="en-text">JSONP Chunk Size</span></label>
-            <div class="d-flex flex-column gap-2">
+            <div class="d-flex flex-wrap align-items-center gap-3">
                 <label class="d-flex align-items-center gap-2">
                     <input type="radio" name="jsonp_chunk_size" value="1000" class="form-check-input">
                     <span>1KB</span>
@@ -268,6 +268,9 @@
             <button type="button" class="btn btn-info" id="btn_import_config">
                 <span><i class="bi bi-upload"></i> 导入配置</span> <span class="en-text">Import Config</span>
             </button>
+            <button type="button" class="btn btn-success" id="btn_export_config">
+                <span><i class="bi bi-download"></i> 导出配置</span> <span class="en-text">Export Config</span>
+            </button>
             <input type="file" id="config_file_input" accept=".json" style="display: none;">
             <div class="ms-auto d-flex align-items-center">
                 <span class="status-indicator inactive" id="status_indicator"></span>
@@ -283,7 +286,7 @@
             <div class="d-flex align-items-center gap-2">
                 <small class="text-muted" id="log_count">0 条 <span class="en-text">0 entries</span></small>
                 <button type="button" class="btn btn-sm btn-outline-primary" id="btn_download_log">
-                    <i class="bi bi-download"></i> 下载日志 <span class="en-text">Download Log</span>
+                    <span><i class="bi bi-download"></i> 下载日志</span> <span class="en-text">Download Log</span>
                 </button>
             </div>
         </div>
@@ -333,6 +336,7 @@ $(document).ready(function() {
         $('#config_file_input').click();
     });
     $('#config_file_input').on('change', importConfig);
+    $('#btn_export_config').on('click', exportConfig);
     
     // 页面加载时从IDB加载最近100条日志
     loadLogsFromIDB();
@@ -806,7 +810,7 @@ function generatePushSuccessMessage(data, originalSize, compressedSize, result) 
 
 // POST方式推送
 function pushDataPost(apiUrl, uuid, token, data, useZip) {
-    const urlWithParams = apiUrl + '?token=' + encodeURIComponent(token) + '&outrank_uuid=' + encodeURIComponent(uuid);
+    // 不再将敏感信息放在 URL 中，而是放在 POST body 中
     
     // 计算原始数据大小
     const jsonStr = JSON.stringify(data, null, 2);
@@ -824,14 +828,16 @@ function pushDataPost(apiUrl, uuid, token, data, useZip) {
             // 计算压缩后大小
             const compressedSize = zipBlob.size;
             
-            // 使用 FormData 发送 zip 文件
+            // 使用 FormData 发送 zip 文件，将敏感信息放在 FormData 中
             const formData = new FormData();
             formData.append('data', zipBlob, 'rank.zip');
+            formData.append('token', token);
+            formData.append('outrank_uuid', uuid);
             
             addLog('info', '数据压缩完成，正在推送 (Data compressed, pushing...)');
             
             $.ajax({
-                url: urlWithParams,
+                url: apiUrl, // 不再在 URL 中包含敏感信息
                 method: 'POST',
                 data: formData,
                 processData: false,
@@ -870,7 +876,7 @@ function pushDataPost(apiUrl, uuid, token, data, useZip) {
 
 // POST方式推送（未压缩）
 function pushDataPostUncompressed(apiUrl, uuid, token, data, originalSize) {
-    const urlWithParams = apiUrl + '?token=' + encodeURIComponent(token) + '&outrank_uuid=' + encodeURIComponent(uuid);
+    // 不再将敏感信息放在 URL 中，而是放在 POST body 中
     
     // 如果没有传入原始大小，计算一下
     if (originalSize === null || originalSize === undefined) {
@@ -878,10 +884,17 @@ function pushDataPostUncompressed(apiUrl, uuid, token, data, originalSize) {
         originalSize = new Blob([jsonStr]).size;
     }
     
-    const body = JSON.stringify(data);
+    // 将敏感信息和数据一起放在 JSON body 中
+    const requestBody = {
+        token: token,
+        outrank_uuid: uuid,
+        data: data
+    };
+    
+    const body = JSON.stringify(requestBody);
     
     $.ajax({
-        url: urlWithParams,
+        url: apiUrl, // 不再在 URL 中包含敏感信息
         method: 'POST',
         data: body,
         contentType: 'application/json',
@@ -1402,7 +1415,7 @@ async function downloadAllLogs() {
         
         const btn = $('#btn_download_log');
         btn.prop('disabled', false);
-        btn.html('<i class="bi bi-download"></i> 下载日志 <span class="en-text">Download Log</span>');
+        btn.html('<span><i class="bi bi-download"></i> 下载日志</span> <span class="en-text">Download Log</span>');
     }
 }
 
@@ -1516,6 +1529,59 @@ async function clearLog() {
     }
 }
 
+// 导出配置
+function exportConfig() {
+    const apiUrl = $('#api_url').val().trim();
+    const uuid = $('#outrank_uuid').val().trim();
+    const token = $('#outrank_token').val().trim();
+    const method = $('input[name="push_method"]:checked').val();
+    const useZip = $('#use_zip').is(':checked');
+    const pushRealRank = $('#push_real_rank').is(':checked');
+    const jsonpChunkSize = $('input[name="jsonp_chunk_size"]:checked').val();
+    
+    // 验证必要字段
+    if (!uuid || !token) {
+        alerty.error({
+            message: '请先填写UUID和Token',
+            message_en: 'Please fill in UUID and Token first'
+        });
+        return;
+    }
+    
+    // 生成配置JSON（与外榜模块格式一致）
+    const config = {
+        api_url: apiUrl || '',
+        outrank_uuid: uuid,
+        outrank_token: token,
+        push_method: method || 'post',
+        use_zip: useZip,
+        use_gzip: useZip, // 兼容旧版本
+        push_real_rank: pushRealRank,
+        jsonp_chunk_size: jsonpChunkSize || 'auto',
+        version: '1.0',
+        export_time: new Date().toISOString()
+    };
+    
+    // 下载JSON文件
+    const jsonStr = JSON.stringify(config, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `outrank_config_${uuid.substring(0, 8)}_${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    alerty.success({
+        message: '配置已导出',
+        message_en: 'Configuration exported'
+    });
+    
+    addLog('success', '配置已导出 (Config exported)');
+}
+
 // 导入配置
 function importConfig(event) {
     const file = event.target.files[0];
@@ -1526,53 +1592,178 @@ function importConfig(event) {
     const reader = new FileReader();
     reader.onload = function(e) {
         try {
-            const config = JSON.parse(e.target.result);
+            // 处理可能的 BOM 和空白字符
+            let jsonText = e.target.result;
             
-            // 验证配置格式
-            if (!config.outrank_uuid || !config.outrank_token) {
-                alert('配置格式错误：缺少必要字段 (Invalid config: missing required fields)');
+            // 移除 BOM (UTF-8 BOM: EF BB BF)
+            if (jsonText.charCodeAt(0) === 0xFEFF) {
+                jsonText = jsonText.slice(1);
+            }
+            
+            // 移除首尾空白字符
+            jsonText = jsonText.trim();
+            
+            // 检查是否为空
+            if (!jsonText) {
+                addLog('info', '配置文件为空，请手动填写 (Config file is empty, please fill manually)');
+                alerty.info({
+                    message: '配置文件为空，请手动填写',
+                    message_en: 'Config file is empty, please fill manually'
+                });
+                event.target.value = '';
                 return;
             }
             
-            // 加载配置到表单
-            if (config.api_url) {
+            // 解析 JSON
+            let config;
+            try {
+                config = JSON.parse(jsonText);
+            } catch (parseError) {
+                // JSON 解析错误，提供更详细的错误信息
+                console.error('JSON parse error:', parseError);
+                console.error('JSON text:', jsonText);
+                addLog('error', `JSON解析失败: ${parseError.message} (JSON parse failed: ${parseError.message})`);
+                alerty.error({
+                    message: `配置导入失败：JSON格式错误\n错误信息: ${parseError.message}\n请检查文件格式是否正确`,
+                    message_en: `Config import failed: Invalid JSON format\nError: ${parseError.message}\nPlease check if the file format is correct`
+                });
+                event.target.value = '';
+                return;
+            }
+            
+            // 确保 config 是对象
+            if (typeof config !== 'object' || config === null || Array.isArray(config)) {
+                addLog('error', '配置文件格式错误：根元素必须是对象 (Config format error: root element must be an object)');
+                alerty.error({
+                    message: '配置文件格式错误：根元素必须是对象',
+                    message_en: 'Config format error: root element must be an object'
+                });
+                event.target.value = '';
+                return;
+            }
+            
+            // 不验证必要字段，即使配置为空也继续导入，缺失的字段让用户手填
+            // 只加载存在的字段，缺失的字段保持表单当前值或使用默认值
+            
+            let importedCount = 0; // 记录成功导入的字段数
+            const missingFields = []; // 记录缺失的字段
+            
+            // api_url: 如果存在且不为空，则导入
+            if (config.api_url !== undefined && config.api_url !== null && config.api_url !== '') {
                 $('#api_url').val(config.api_url);
+                importedCount++;
+            } else {
+                missingFields.push('api_url');
             }
-            if (config.outrank_uuid) {
+            
+            // outrank_uuid: 如果存在且不为空，则导入
+            if (config.outrank_uuid !== undefined && config.outrank_uuid !== null && config.outrank_uuid !== '') {
                 $('#outrank_uuid').val(config.outrank_uuid);
+                importedCount++;
+            } else {
+                missingFields.push('outrank_uuid');
             }
-            if (config.outrank_token) {
+            
+            // outrank_token: 如果存在且不为空，则导入
+            if (config.outrank_token !== undefined && config.outrank_token !== null && config.outrank_token !== '') {
                 $('#outrank_token').val(config.outrank_token);
+                importedCount++;
+            } else {
+                missingFields.push('outrank_token');
             }
-            if (config.push_method) {
+            
+            // push_method: 如果存在且有效，则导入；否则使用默认值 'post'
+            if (config.push_method && ['post', 'jsonp'].includes(config.push_method)) {
                 $(`input[name="push_method"][value="${config.push_method}"]`).prop('checked', true);
+                importedCount++;
+            } else {
+                $(`input[name="push_method"][value="post"]`).prop('checked', true);
             }
+            
+            // use_zip: 如果存在，则导入；否则使用默认值 true
+            // 优先使用 use_zip，如果没有则使用 use_gzip（兼容旧版本）
             if (config.use_zip !== undefined) {
-                $('#use_zip').prop('checked', config.use_zip === true || config.use_zip === 'true');
+                const useZip = config.use_zip === true || config.use_zip === 'true' || config.use_zip === 1;
+                $('#use_zip').prop('checked', useZip);
+                importedCount++;
             } else if (config.use_gzip !== undefined) {
                 // 兼容旧配置（use_gzip）
-                $('#use_zip').prop('checked', config.use_gzip === true || config.use_gzip === 'true');
+                const useZip = config.use_gzip === true || config.use_gzip === 'true' || config.use_gzip === 1;
+                $('#use_zip').prop('checked', useZip);
+                importedCount++;
+            } else {
+                $('#use_zip').prop('checked', true); // 默认值
             }
+            
+            // push_real_rank: 如果存在，则导入；否则使用默认值 false
             if (config.push_real_rank !== undefined) {
-                $('#push_real_rank').prop('checked', config.push_real_rank === true || config.push_real_rank === 'true');
+                const pushRealRank = config.push_real_rank === true || config.push_real_rank === 'true' || config.push_real_rank === 1;
+                $('#push_real_rank').prop('checked', pushRealRank);
+                importedCount++;
+            } else {
+                $('#push_real_rank').prop('checked', false); // 默认值
             }
-            // 加载JSONP分包大小配置（如果存在，否则使用默认值'auto'）
-            const jsonpChunkSize = config.jsonp_chunk_size || 'auto';
-            $(`input[name="jsonp_chunk_size"][value="${jsonpChunkSize}"]`).prop('checked', true);
+            
+            // jsonp_chunk_size: 如果存在且有效，则导入；否则使用默认值 'auto'
+            if (config.jsonp_chunk_size !== undefined && config.jsonp_chunk_size !== null) {
+                const chunkSize = String(config.jsonp_chunk_size);
+                if (chunkSize === 'auto' || ['1000', '2000', '3000', '4000', '5000', '6000'].includes(chunkSize)) {
+                    $(`input[name="jsonp_chunk_size"][value="${chunkSize}"]`).prop('checked', true);
+                    importedCount++;
+                } else {
+                    $(`input[name="jsonp_chunk_size"][value="auto"]`).prop('checked', true);
+                }
+            } else {
+                $(`input[name="jsonp_chunk_size"][value="auto"]`).prop('checked', true);
+            }
             
             // 更新UI显示
-            toggleJsonpChunkSizeGroup();
-            updateJsonpMaxSizeHint();
+            // 显示/隐藏JSONP分包大小选项（根据push_method）
+            const isJsonp = $('input[name="push_method"]:checked').val() === 'jsonp';
+            $('#jsonp_chunk_size_group').toggle(isJsonp);
             
-            // 保存到localStorage
-            saveConfig();
+            // 更新JSONP最大分包大小提示（如果函数存在）
+            if (typeof updateJsonpMaxSizeHint === 'function') {
+                updateJsonpMaxSizeHint();
+            }
             
-            // 显示成功消息
-            addLog('success', '配置导入成功 (Config imported successfully)');
-            alert('配置导入成功！(Config imported successfully!)');
+            // 保存到localStorage（如果函数存在）
+            if (typeof saveConfig === 'function') {
+                saveConfig();
+            }
+            
+            // 显示导入结果
+            if (importedCount > 0) {
+                let message = `配置导入成功，已导入 ${importedCount} 个字段`;
+                let messageEn = `Config imported successfully, ${importedCount} fields imported`;
+                
+                if (missingFields.length > 0) {
+                    const missingFieldsText = missingFields.join('、');
+                    message += `。缺失字段：${missingFieldsText}，请手动填写`;
+                    messageEn += `. Missing fields: ${missingFields.join(', ')}, please fill manually`;
+                }
+                
+                addLog('success', `配置导入成功，已导入 ${importedCount} 个字段 (Config imported successfully, ${importedCount} fields imported)`);
+                alerty.success({
+                    message: message,
+                    message_en: messageEn
+                });
+            } else {
+                // 配置为空或所有字段都缺失
+                addLog('info', '配置文件为空或所有字段缺失，请手动填写 (Config file is empty or all fields are missing, please fill manually)');
+                alerty.info({
+                    message: '配置文件为空或所有字段缺失，请手动填写',
+                    message_en: 'Config file is empty or all fields are missing, please fill manually'
+                });
+            }
         } catch (error) {
+            // 其他未预期的错误
+            console.error('Import config error:', error);
             addLog('error', `配置导入失败: ${error.message} (Config import failed: ${error.message})`);
-            alert('配置导入失败：JSON格式错误 (Config import failed: Invalid JSON format)');
+            alerty.error({
+                message: `配置导入失败：${error.message}`,
+                message_en: `Config import failed: ${error.message}`
+            });
         }
         
         // 清空文件选择器
@@ -1581,11 +1772,15 @@ function importConfig(event) {
     
     reader.onerror = function() {
         addLog('error', '文件读取失败 (File read failed)');
-        alert('文件读取失败 (File read failed)');
+        alerty.error({
+            message: '文件读取失败',
+            message_en: 'File read failed'
+        });
         event.target.value = '';
     };
     
-    reader.readAsText(file);
+    // 使用 UTF-8 编码读取文件
+    reader.readAsText(file, 'UTF-8');
 }
 
 // HTML转义

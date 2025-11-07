@@ -12,21 +12,17 @@ var LodopNotification = {
     init: function() {
         if (this.container) return;
         
-        // 创建固定顶部通知容器（不占用DOM空间）
         this.container = document.createElement('div');
-        this.container.id = 'lodop-notification-container';
-        this.container.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; z-index: 9999; pointer-events: none; display: flex; justify-content: center; padding-top: 1rem;';
+        this.container.className = 'position-fixed top-0 start-0 end-0 pt-3 d-flex justify-content-center';
+        this.container.style.cssText = 'z-index: 9999; pointer-events: none;';
         document.body.appendChild(this.container);
     },
 
     // 显示通知
     show: function(type, message, messageEn, options) {
         this.init();
-        
-        // 清除之前的通知
         this.hide();
         
-        // 清除测试超时
         if (this.testTimeout) {
             clearTimeout(this.testTimeout);
             this.testTimeout = null;
@@ -36,11 +32,9 @@ var LodopNotification = {
         var alertClass = 'alert-' + (type || 'warning');
         var icon = this.getIcon(type);
         
-        // 创建通知元素
         var alert = document.createElement('div');
-        alert.className = 'alert ' + alertClass + ' alert-dismissible mb-0 border-0';
-        // 设置样式，确保从一开始就在正确位置
-        alert.style.cssText = 'pointer-events: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.15); width: 100%; max-width: 800px; opacity: 0; transform: translateY(-20px); transition: opacity 0.3s ease, transform 0.3s ease;';
+        alert.className = 'alert ' + alertClass + ' alert-dismissible fade show mb-0 w-100';
+        alert.style.cssText = 'max-width: 800px; pointer-events: auto;';
         
         var content = message;
         if (messageEn) {
@@ -53,36 +47,17 @@ var LodopNotification = {
             '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
             '</div>';
         
-        // 先添加到 DOM，但保持隐藏状态
         this.container.appendChild(alert);
         this.currentAlert = alert;
         
-        // 添加关闭按钮事件监听
-        var self = this;
-        var closeBtn = alert.querySelector('.btn-close');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                self.hide();
-            });
-        }
-        
-        // 使用 requestAnimationFrame 确保 DOM 已渲染后再显示动画
-        requestAnimationFrame(function() {
-            requestAnimationFrame(function() {
-                if (self.currentAlert === alert) {
-                    alert.style.opacity = '1';
-                    alert.style.transform = 'translateY(0)';
-                    alert.classList.add('show');
-                }
-            });
-        });
-        
-        // 自动关闭（如果指定了延迟时间）
+        // 自动关闭
         if (options.autoClose !== false && (options.delay || type === 'success')) {
             var delay = options.delay || (type === 'success' ? 3000 : 5000);
+            var self = this;
             this.testTimeout = setTimeout(function() {
-                LodopNotification.hide();
+                if (self.currentAlert === alert) {
+                    self.hide();
+                }
             }, delay);
         }
     },
@@ -108,21 +83,13 @@ var LodopNotification = {
     // 隐藏通知
     hide: function() {
         if (this.currentAlert) {
-            var alert = this.currentAlert;
-            // 使用自定义的平滑淡出动画
-            alert.style.opacity = '0';
-            alert.style.transform = 'translateY(-20px)';
-            alert.classList.remove('show');
-            
-            // 动画完成后移除元素
-            setTimeout(function() {
-                if (alert && alert.parentNode) {
-                    alert.parentNode.removeChild(alert);
-                }
-                if (LodopNotification.currentAlert === alert) {
-                    LodopNotification.currentAlert = null;
-                }
-            }, 300);
+            if (typeof bootstrap !== 'undefined' && bootstrap.Alert) {
+                var bsAlert = new bootstrap.Alert(this.currentAlert);
+                bsAlert.close();
+            } else {
+                this.currentAlert.remove();
+            }
+            this.currentAlert = null;
         }
         if (this.testTimeout) {
             clearTimeout(this.testTimeout);

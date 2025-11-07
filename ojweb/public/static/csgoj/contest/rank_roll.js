@@ -1828,7 +1828,14 @@ class RankRollSystem extends RankSystem {
             // 如果位置稳定且没有frozen题目，检查获奖
             if (!hasFrozenProblems) {
                 this.currentRollStep = 'sort_award';
-                // this.JudgeAward();
+                // 修复：根据自动/手动模式决定继续方式
+                if (this.isAutoRolling) {
+                    // 自动模式：调用 TryAutoRolling 继续流程
+                    this.TryAutoRolling('RollNextStep');
+                } else {
+                    // 手动模式：直接调用 JudgeAward 维持原流程
+                    this.JudgeAward();
+                }
                 return;
             }            
             // 继续确认（检查当前位置是否有需要处理的）
@@ -1847,10 +1854,7 @@ class RankRollSystem extends RankSystem {
         if (rankGrid && rankGrid.children.length > 0) {
             // 启动动画，但不等待（后台运行），让键盘事件可以立即响应
             this.IncrementalUpdate(this.rollData).then(() => {
-                // 动画完成后，恢复z-index（在后台执行，不阻塞）
-                if (judgingRow && judgingRow.style.zIndex === '99') {
-                    judgingRow.style.zIndex = '';
-                }
+                // 不移除z-index，让上升队伍的z-index自然保留
             });
             
             // 立即检查排序后位置和frozen状态（不等待动画）

@@ -1,28 +1,24 @@
-<?php $edit_mode = isset($outrank) && $outrank; ?>
 <script type="text/javascript" src="__STATIC__/js/form_validate_tip.js"></script>
 
 <form id="outrank_edit_form" method='post' action="__OUTRANK__/index/outrank_addedit_ajax">
-    {if $edit_mode }
-        <input type="hidden" value="{$outrank['outrank_id']}" name="outrank_id">
-    {/if}
-
+    <!-- outrank_id 将通过 JS 动态添加 -->
+    
     <div class="form-group mb-3">
         <label for="title" class="bilingual-label">外榜标题：<span class="en-text">Outrank Title</span></label>
-        <input type="text" class="form-control" placeholder="Outrank Title..." name="title" id="title" {if $edit_mode}value="{$outrank['title']|htmlspecialchars}"{/if}>
+        <input type="text" class="form-control" placeholder="Outrank Title..." name="title" id="title">
     </div>
 
-    {if $edit_mode }
-    <div class="form-group mb-3">
+    <!-- UUID 字段，编辑模式时显示 -->
+    <div class="form-group mb-3" id="outrank_uuid_group" style="display: none;">
         <label for="outrank_uuid" class="bilingual-label">UUID：<span class="en-text">UUID</span></label>
-        <input type="text" class="form-control" id="outrank_uuid" name="outrank_uuid" value="{$outrank['outrank_uuid']|htmlspecialchars}" readonly>
+        <input type="text" class="form-control" id="outrank_uuid" name="outrank_uuid" readonly>
         <small class="form-text text-muted">自动生成 (Auto-generated)</small>
     </div>
-    {/if}
 
     <div class="form-group mb-3">
         <label for="token" class="bilingual-label">Token：<span class="en-text">Token</span></label>
         <div class="input-group">
-            <input type="text" class="form-control" id="token" name="token" placeholder="Token for validating push data..." value="{if $edit_mode}{$outrank['token']|htmlspecialchars}{/if}">
+            <input type="text" class="form-control" id="token" name="token" placeholder="Token for validating push data...">
             <button type="button" class="btn btn-outline-secondary" id="generate_token_btn" title="生成Token (Generate Token)">
                 <span><i class="bi bi-arrow-clockwise"></i> 生成</span> <span class="en-text">Generate</span>
             </button>
@@ -32,25 +28,25 @@
 
     <div class="form-group mb-3">
         <label for="ckind" class="bilingual-label">类型：<span class="en-text">Kind</span></label>
-        <input type="text" class="form-control" placeholder="Kind..." name="ckind" id="ckind" {if $edit_mode}value="{$outrank['ckind']|htmlspecialchars}"{/if}>
+        <input type="text" class="form-control" placeholder="Kind..." name="ckind" id="ckind">
     </div>
 
     <div class="form-group mb-3">
         <label for="description" class="bilingual-label">描述：<span class="en-text">Description</span></label>
-        <textarea class="form-control" placeholder="Description..." rows="3" name="description" id="description">{if $edit_mode}{$outrank['description']|htmlspecialchars}{/if}</textarea>
+        <textarea class="form-control" placeholder="Description..." rows="3" name="description" id="description"></textarea>
     </div>
 
     <div class="row">
         <div class="col-md-6">
             <div class="form-group mb-3">
                 <label for="start_time" class="bilingual-label">开始时间：<span class="en-text">Start Time</span></label>
-                <input type="datetime-local" class="form-control" id="start_time" name="start_time" value="<?php echo isset($outrank) && $outrank['start_time'] ? date('Y-m-d\TH:i', strtotime($outrank['start_time'])) : ''; ?>">
+                <input type="datetime-local" class="form-control" id="start_time" name="start_time">
             </div>
         </div>
         <div class="col-md-6">
             <div class="form-group mb-3">
                 <label for="end_time" class="bilingual-label">结束时间：<span class="en-text">End Time</span></label>
-                <input type="datetime-local" class="form-control" id="end_time" name="end_time" value="<?php echo isset($outrank) && $outrank['end_time'] ? date('Y-m-d\TH:i', strtotime($outrank['end_time'])) : ''; ?>">
+                <input type="datetime-local" class="form-control" id="end_time" name="end_time">
             </div>
         </div>
     </div>
@@ -203,9 +199,20 @@ function initOutrankEditForm(editMode) {
     // 绑定 modal 提交按钮（在 form 外面）
     // 注意：需要在表单验证初始化之后绑定，这样点击按钮时会触发表单的 submit 事件
     // initCommonFormValidation 会拦截 submit 事件进行验证，验证通过后执行上面的回调函数
-    $('#outrank_modal_submit_btn').off('click').on('click', function() {
+    $('#outrank_modal_submit_btn').off('click').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         // 手动触发表单的 submit 事件，让 initCommonFormValidation 进行验证
-        $('#outrank_edit_form').submit();
+        const form = document.getElementById('outrank_edit_form');
+        if (form) {
+            // 使用原生方式触发 submit 事件，确保事件监听器能捕获
+            const submitEvent = new Event('submit', {
+                bubbles: true,
+                cancelable: true
+            });
+            form.dispatchEvent(submitEvent);
+        }
+        return false;
     });
 }
 </script>

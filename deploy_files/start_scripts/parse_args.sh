@@ -44,8 +44,11 @@ OJ_OPEN_OI=0
 OJ_UPDATE_STATIC=0
 BELONG_TO=0
 
+# 参数提供标志（用于判断用户是否明确提供了某些参数）
+PROVIDED_BELONG_TO=false
+
 # 其他配置
-NGINX_PORT_RANGS=''
+NGINX_PORT_RANGES=''
 SECRET_KEY='super_secret_oj'
 DOCKER_PULL_NEW=1
 DOCKER_NET_NAME="csgoj_net"
@@ -96,7 +99,7 @@ OJ 配置:
 端口配置:
   --PORT_OJ=<端口>               OJ Web 服务端口（默认: 20080）
   --PORT_MYADMIN=<端口>          PHPMyAdmin Web 端口（默认: 20050）
-  --NGINX_PORT_RANGS=<映射>      额外的 Nginx 端口映射，如 "-p 80-89:80-89"
+  --NGINX_PORT_RANGES=<映射>      额外的 Nginx 端口映射，如 "-p 80-89:80-89"
 
 其他配置:
   --PASS_MYADMIN_PAGE=<密码>     PHPMyAdmin 页面访问密码（默认: 987654321）
@@ -192,7 +195,7 @@ parse_args() {
         PORT_MYADMIN:,
         PORT_DB:,
         BELONG_TO:,
-        NGINX_PORT_RANGS:,
+        NGINX_PORT_RANGES:,
         SECRET_KEY:,
         DOCKER_PULL_NEW:,
         DOCKER_NET_NAME:,
@@ -303,10 +306,11 @@ parse_args() {
                 ;;
             --BELONG_TO)                    # 所属 OJ 名称，用于多实例共享
                 BELONG_TO="$2"
+                PROVIDED_BELONG_TO=true
                 shift 2
                 ;;
-            --NGINX_PORT_RANGS)             # 额外的 Nginx 端口映射
-                NGINX_PORT_RANGS="$2"
+            --NGINX_PORT_RANGES)             # 额外的 Nginx 端口映射
+                NGINX_PORT_RANGES="$2"
                 shift 2
                 ;;
             --SECRET_KEY)                   # 系统加密密钥
@@ -531,12 +535,18 @@ OJ_MODE="${OJ_MODE:-cpcsys}"
 OJ_STATUS="${OJ_STATUS:-cpc}"
 OJ_OPEN_OI=${OJ_OPEN_OI:-0}
 OJ_UPDATE_STATIC=${OJ_UPDATE_STATIC:-0}
-BELONG_TO="${belong_to_value}"
+EOF
+        # 只有当用户提供了 BELONG_TO 参数时，才写入配置文件
+        if [ "$PROVIDED_BELONG_TO" = "true" ]; then
+            echo "BELONG_TO=\"${belong_to_value}\"" >> "$target_config_file"
+        fi
+        
+        cat >> "$target_config_file" <<EOF
 
 # 其他配置
 PASS_MYADMIN_PAGE="${PASS_MYADMIN_PAGE:-987654321}"
 SECRET_KEY="${SECRET_KEY:-super_secret_oj}"
-NGINX_PORT_RANGS="${NGINX_PORT_RANGS}"
+NGINX_PORT_RANGES="${NGINX_PORT_RANGES}"
 EOF
     elif [ -n "$existing_web_config" ]; then
         # 保留已有的 web 配置

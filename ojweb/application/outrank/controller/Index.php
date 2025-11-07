@@ -17,19 +17,30 @@ class Index extends Outrankbase
      */
     public function receive_data()
     {
-        // 设置跨域头
-        header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
-        header('Access-Control-Max-Age: 86400');
-        
-        // 处理OPTIONS预检请求
-        if ($this->request->isOptions()) {
-            return json(['status' => 'ok']);
-        }
+        // 注意：跨域头由 Nginx 统一设置，PHP 中不再设置，避免冲突
+        // Nginx 已经处理了 OPTIONS 预检请求，PHP 中不需要再处理
 
+        // 优先从 POST 参数中读取（FormData），如果没有则从 JSON body 中读取
         $token = input('token/s', '');
         $outrank_uuid = input('outrank_uuid/s', '');
+        
+        // 如果 POST 参数中没有，尝试从 JSON body 中读取
+        if (empty($token) || empty($outrank_uuid)) {
+            $rawData = $this->request->getContent();
+            if (!empty($rawData)) {
+                $jsonData = json_decode($rawData, true);
+                if ($jsonData !== null && is_array($jsonData)) {
+                    // 从 JSON body 中读取 token 和 outrank_uuid
+                    if (empty($token) && isset($jsonData['token'])) {
+                        $token = $jsonData['token'];
+                    }
+                    if (empty($outrank_uuid) && isset($jsonData['outrank_uuid'])) {
+                        $outrank_uuid = $jsonData['outrank_uuid'];
+                    }
+                }
+            }
+        }
+        
         $data_type = input('data_type/s', 'full'); // 'full' 全量数据, 'incremental' 增量solution
         
         if (empty($token) || empty($outrank_uuid)) {
@@ -95,9 +106,20 @@ class Index extends Outrankbase
             $rawData = $this->request->getContent();
             
             // 解析JSON数据
-            $data = json_decode($rawData, true);
-            if ($data === null) {
+            $jsonData = json_decode($rawData, true);
+            if ($jsonData === null) {
                 return json(['status' => 'error', 'message' => 'Invalid JSON data'], 400);
+            }
+            
+            // 如果 JSON 中包含 'data' 字段，则使用该字段作为数据
+            // 否则整个 JSON 对象作为数据（兼容旧格式）
+            if (isset($jsonData['data']) && is_array($jsonData['data'])) {
+                $data = $jsonData['data'];
+            } else {
+                // 移除 token 和 outrank_uuid 字段（如果存在），剩余部分作为数据
+                unset($jsonData['token']);
+                unset($jsonData['outrank_uuid']);
+                $data = $jsonData;
             }
         }
 
@@ -453,8 +475,13 @@ class Index extends Outrankbase
             }
         }
 
-        $this->assign('outrank', $outrank);
-        return $this->fetch('outrank_edit_form');
+        // 返回 JSON 数据
+        if ($outrank) {
+            $this->success('获取成功', null, $outrank);
+        } else {
+            // 新增模式，返回空数据
+            $this->success('获取成功', null, []);
+        }
     }
 
     /**
