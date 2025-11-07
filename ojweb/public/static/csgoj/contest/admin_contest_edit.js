@@ -85,7 +85,7 @@ function defaultSubmit(form) {
         : { chinese: $btn.text(), english: '' };
     // 提交中视觉反馈
     submitButton.disabled = true;
-    submitButton.innerHTML = '<span class="cn-text"><i class="bi bi-hourglass-split me-1"></i> 提交中</span><span class="en-text">Submitting</span>...';
+    submitButton.innerHTML = '<span class="cn-text"><i class="bi bi-hourglass-split me-1"></i> 提交中</span><span class="en-text">Submitting</span>';
 
     const onSuccess = function(ret) {
         if (ret && ret.code == 1) {

@@ -75,7 +75,7 @@ class Contest extends Adminbase
                 '0',
             'private'     => intval($postData['private']),
             'langmask'    => $this->CalLangMask(isset($postData['language']) ? $postData['language'] : []), //这里用input('post.language')不行，可能是ThinkPHP当前版本bug
-            'password'    => trim($postData['password']),
+            'password'    => trim($postData['password'] ?? ""),
             'description' => trim($postData['description']),
             'frozen_minute' => intval($postData['frozen_minute']),
             'frozen_after' => intval($postData['frozen_after'])

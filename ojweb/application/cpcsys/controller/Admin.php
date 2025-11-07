@@ -463,4 +463,325 @@ class Admin extends Contestbase
         DelWhatever($file_path);
         $this->success('ok');
     }
+    
+    // /**************************************************/
+    // // Client Management
+    // /**************************************************/
+    
+    // public function client_manage() {
+    //     if(!$this->isContestAdmin) {
+    //         $this->error('Permission denied to manage clients', '/', '', 1);
+    //     }
+    //     if(!in_array($this->contest['private'] % 10, [2, 5])) {
+    //         $this->error("This contest does not support client management.");
+    //     }
+    //     return $this->fetch();
+    // }
+    
+    // /**
+    //  * 读取 Python 记录文件
+    //  * @param int $contest_id 比赛ID
+    //  * @return array 客户端记录数据
+    //  */
+    // private function readClientRecord($contest_id) {
+    //     $ojPath = config('OjPath');
+    //     $recordPath = $ojPath['cpc_client_record'] . '/' . $contest_id . '/record.json';
+        
+    //     if (!file_exists($recordPath)) {
+    //         return [];
+    //     }
+        
+    //     $content = file_get_contents($recordPath);
+    //     if ($content === false) {
+    //         return [];
+    //     }
+        
+    //     $data = Json2Array($content);
+    //     return $data ? $data : [];
+    // }
+    
+    // /**
+    //  * 获取比赛客户端列表
+    //  */
+    // public function contest_client_list_ajax() {
+    //     if(!$this->isContestAdmin) {
+    //         $this->error('Permission denied');
+    //     }
+        
+    //     $clientList = db('cpc_client')
+    //         ->where('contest_id', $this->contest['contest_id'])
+    //         ->order('client_id', 'asc')
+    //         ->select();
+        
+    //     // 读取 Python 记录文件
+    //     $recordData = $this->readClientRecord($this->contest['contest_id']);
+        
+    //     // 将记录数据按 ip_bind 索引
+    //     // record.json 格式：对象 {ip_bind: {last_connect_time: '...', connect_status: '...', lock_status: '...', lock_time: '...'}, ...}
+    //     $recordMap = [];
+    //     if (is_array($recordData)) {
+    //         foreach ($recordData as $ipBind => $record) {
+    //             if (is_string($ipBind) && is_array($record)) {
+    //                 // 对象格式：key 是 ip_bind
+    //                 $recordMap[$ipBind] = $record;
+    //             } elseif (is_array($record) && isset($record['ip_bind'])) {
+    //                 // 数组格式：每个元素包含 ip_bind 字段
+    //                 $recordMap[$record['ip_bind']] = $record;
+    //             }
+    //         }
+    //     }
+        
+    //     // 合并数据
+    //     foreach ($clientList as &$client) {
+    //         // 解析 ssh_config
+    //         $sshConfig = [];
+    //         if (!empty($client['ssh_config'])) {
+    //             $sshConfig = Json2Array($client['ssh_config']);
+    //             if (!$sshConfig) {
+    //                 $sshConfig = [];
+    //             }
+    //         }
+            
+    //         // 设置 SSH 字段
+    //         $client['ssh_user'] = $sshConfig['user'] ?? '';
+    //         $client['ssh_pass'] = $sshConfig['pass'] ?? '';
+    //         $client['ssh_rsa'] = $sshConfig['rsa'] ?? '';
+    //         $client['ssh_port'] = $sshConfig['port'] ?? '22';
+            
+    //         // 合并记录数据
+    //         if (isset($client['ip_bind']) && isset($recordMap[$client['ip_bind']])) {
+    //             $record = $recordMap[$client['ip_bind']];
+    //             $client['last_connect_time'] = $record['last_connect_time'] ?? null;
+    //             $client['connect_status'] = $record['connect_status'] ?? 'unknown';
+    //             $client['lock_status'] = $record['lock_status'] ?? 'unlock';
+    //             $client['lock_time'] = $record['lock_time'] ?? null;
+    //         } else {
+    //             $client['last_connect_time'] = null;
+    //             $client['connect_status'] = 'unknown';
+    //             $client['lock_status'] = 'unlock';
+    //             $client['lock_time'] = null;
+    //         }
+    //     }
+        
+    //     return $clientList;
+    // }
+    
+    // /**
+    //  * 验证 SSH 配置
+    //  */
+    // private function validateSshConfig($sshUser, $sshPass, $sshRsa, $sshPort) {
+    //     // 如果所有字段都为空，则通过验证
+    //     if (empty($sshUser) && empty($sshPass) && empty($sshRsa) && empty($sshPort)) {
+    //         return ['valid' => true];
+    //     }
+        
+    //     // 如果 user 或 port 为空，则验证失败
+    //     if (empty($sshUser) || empty($sshPort)) {
+    //         return ['valid' => false, 'error' => 'SSH user and port are required when SSH config is provided'];
+    //     }
+        
+    //     // pass 和 rsa 至少需要有一个
+    //     if (empty($sshPass) && empty($sshRsa)) {
+    //         return ['valid' => false, 'error' => 'SSH password or RSA key is required'];
+    //     }
+        
+    //     return ['valid' => true];
+    // }
+    
+    // /**
+    //  * 保存或更新客户端
+    //  */
+    // public function contest_client_save_ajax() {
+    //     if(!$this->isContestAdmin) {
+    //         $this->error('Permission denied');
+    //     }
+        
+    //     $clientList = input('client_list');
+    //     if (!$clientList) {
+    //         $this->error('No client data provided');
+    //     }
+        
+    //     $clients = json_decode($clientList, true);
+    //     if (!$clients || !is_array($clients)) {
+    //         $this->error('Invalid client data format');
+    //     }
+        
+    //     $CpcClient = db('cpc_client');
+    //     $successCount = 0;
+    //     $errorList = [];
+        
+    //     foreach ($clients as $idx => $clientData) {
+    //         $clientId = isset($clientData['client_id']) ? intval($clientData['client_id']) : 0;
+    //         $isUpdate = $clientId > 0;
+            
+    //         // 准备数据
+    //         $clientInfo = [
+    //             'contest_id' => $this->contest['contest_id'],
+    //         ];
+            
+    //         // 新增时不需要验证 contest_id，因为会从 URL 参数获取
+            
+    //         // 处理 SSH 配置
+    //         $sshUser = trim($clientData['ssh_user'] ?? '');
+    //         $sshPass = trim($clientData['ssh_pass'] ?? '');
+    //         $sshRsa = trim($clientData['ssh_rsa'] ?? '');
+    //         $sshPort = trim($clientData['ssh_port'] ?? '22');
+            
+    //         // 验证 SSH 配置
+    //         $sshValidation = $this->validateSshConfig($sshUser, $sshPass, $sshRsa, $sshPort);
+    //         if (!$sshValidation['valid']) {
+    //             $errorList[] = "Row " . ($idx + 1) . ": " . $sshValidation['error'];
+    //             continue;
+    //         }
+            
+    //         // 构建 SSH 配置 JSON
+    //         $sshConfig = [];
+    //         if (!empty($sshUser) || !empty($sshPort)) {
+    //             $sshConfig['user'] = $sshUser;
+    //             $sshConfig['port'] = $sshPort;
+    //             if (!empty($sshPass)) {
+    //                 $sshConfig['pass'] = $sshPass;
+    //             }
+    //             if (!empty($sshRsa)) {
+    //                 $sshConfig['rsa'] = $sshRsa;
+    //             }
+    //         }
+            
+    //         if ($isUpdate) {
+    //             // 更新操作：只更新非空字段
+    //             $updateData = [];
+                
+    //             if (isset($clientData['team_id_bind']) && $clientData['team_id_bind'] !== '') {
+    //                 $updateData['team_id_bind'] = $clientData['team_id_bind'];
+    //             }
+    //             if (isset($clientData['ip_bind']) && $clientData['ip_bind'] !== '') {
+    //                 $updateData['ip_bind'] = $clientData['ip_bind'];
+    //             }
+    //             if (!empty($sshConfig) || (isset($clientData['ssh_user']) && $clientData['ssh_user'] === '')) {
+    //                 $updateData['ssh_config'] = !empty($sshConfig) ? json_encode($sshConfig, JSON_UNESCAPED_UNICODE) : null;
+    //             }
+                
+    //             if (!empty($updateData)) {
+    //                 $result = $CpcClient->where([
+    //                     'client_id' => $clientId,
+    //                     'contest_id' => $this->contest['contest_id']
+    //                 ])->update($updateData);
+    //                 if ($result !== false) {
+    //                     $successCount++;
+    //                 } else {
+    //                     $errorList[] = "Row " . ($idx + 1) . ": Update failed";
+    //                 }
+    //             } else {
+    //                 $successCount++; // 没有需要更新的字段，视为成功
+    //             }
+    //         } else {
+    //             // 新增操作：验证必填字段
+    //             if (empty($clientData['team_id_bind'])) {
+    //                 $errorList[] = "Row " . ($idx + 1) . ": team_id_bind is required for new client";
+    //                 continue;
+    //             }
+    //             if (empty($clientData['ip_bind'])) {
+    //                 $errorList[] = "Row " . ($idx + 1) . ": ip_bind is required for new client";
+    //                 continue;
+    //             }
+                
+    //             $clientInfo['team_id_bind'] = $clientData['team_id_bind'];
+    //             $clientInfo['ip_bind'] = $clientData['ip_bind'];
+    //             $clientInfo['ssh_config'] = !empty($sshConfig) ? json_encode($sshConfig, JSON_UNESCAPED_UNICODE) : null;
+                
+    //             $result = $CpcClient->insert($clientInfo);
+    //             if ($result) {
+    //                 $successCount++;
+    //             } else {
+    //                 $errorList[] = "Row " . ($idx + 1) . ": Insert failed";
+    //             }
+    //         }
+    //     }
+        
+    //     if (!empty($errorList)) {
+    //         $this->error('Some clients failed to save: ' . implode('; ', $errorList));
+    //     }
+        
+    //     $this->success('Clients saved successfully', null, ['success_count' => $successCount]);
+    // }
+    
+    // /**
+    //  * 删除客户端
+    //  */
+    // public function contest_client_del_ajax() {
+    //     if(!$this->isContestAdmin) {
+    //         $this->error('Permission denied');
+    //     }
+        
+    //     $clientId = input('client_id/d');
+    //     if (!$clientId) {
+    //         $this->error('client_id is required');
+    //     }
+        
+    //     $result = db('cpc_client')->where([
+    //         'client_id' => $clientId,
+    //         'contest_id' => $this->contest['contest_id']
+    //     ])->delete();
+        
+    //     if ($result) {
+    //         $this->success('Client deleted successfully');
+    //     } else {
+    //         $this->error('Failed to delete client');
+    //     }
+    // }
+    
+    // /**
+    //  * SSH 操作接口
+    //  * @param string $action 操作类型: check_connect, lock, unlock
+    //  */
+    // public function contest_client_ssh_ajax() {
+    //     if(!$this->isContestAdmin) {
+    //         $this->error('Permission denied');
+    //     }
+        
+    //     $action = input('action/s');
+    //     $clientIds = input('client_ids/a');
+    //     $ipBinds = input('ip_binds/a');
+        
+    //     if (empty($action)) {
+    //         $this->error('Action is required');
+    //     }
+        
+    //     if (!in_array($action, ['check_connect', 'lock', 'unlock'])) {
+    //         $this->error('Invalid action');
+    //     }
+        
+    //     // 如果提供了 client_ids，则查询对应的 ip_bind
+    //     if (!empty($clientIds) && empty($ipBinds)) {
+    //         $clients = db('cpc_client')
+    //             ->where('client_id', 'in', $clientIds)
+    //             ->where('contest_id', $this->contest['contest_id'])
+    //             ->field('ip_bind')
+    //             ->select();
+            
+    //         $ipBinds = [];
+    //         foreach ($clients as $client) {
+    //             if (!empty($client['ip_bind'])) {
+    //                 $ipBinds[] = $client['ip_bind'];
+    //             }
+    //         }
+    //     }
+        
+    //     if (empty($ipBinds)) {
+    //         $this->error('No IP addresses to process');
+    //     }
+        
+    //     // TODO: 调用 Python 脚本执行 SSH 操作
+    //     // 这里先返回成功，后续实现 Python 调用
+    //     // 预期格式：
+    //     // - check_connect: 检查连接状态，返回连接时间和状态
+    //     // - lock: 锁屏操作
+    //     // - unlock: 解锁操作
+        
+    //     $this->success('SSH operation submitted', null, [
+    //         'action' => $action,
+    //         'ip_count' => count($ipBinds),
+    //         'ip_binds' => $ipBinds
+    //     ]);
+    // }
 }

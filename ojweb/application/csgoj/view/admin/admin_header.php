@@ -29,11 +29,19 @@
             </ul>
         </li>
         {/if}
-    <li class="nav-item">
-        <a class="nav-link{if $action == 'ipcheck'} active{/if}" href="/{$module}/admin/ipcheck?cid={$contest['contest_id']}" title="IP检查 IP Check">
-            IP<span class="en-text">IPCheck</span>
-        </a>
-    </li>
+        <!-- TODO
+        <li class="nav-item dropdown{if $action == 'client_manage' || $action == 'ipcheck'} active{/if}" title="客户端与IP管理 Client & IP Management">
+            <a class="nav-link dropdown-toggle{if $action == 'client_manage' || $action == 'ipcheck'} active{/if}" href="#" id="clientIpDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                客户端<span class="en-text">Client</span>
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="clientIpDropdown">
+                {if $isContestAdmin}
+                <li><a class="dropdown-item{if $action == 'client_manage'} active{/if}" href="/{$module}/admin/client_manage?cid={$contest['contest_id']}" title="客户端管理 Client Management">客户端管理<span class="en-text">Client Manage</span></a></li>
+                {/if}
+                <li><a class="dropdown-item{if $action == 'ipcheck'} active{/if}" href="/{$module}/admin/ipcheck?cid={$contest['contest_id']}" title="IP检查 IP Check">IP检查<span class="en-text">IPCheck</span></a></li>
+            </ul>
+        </li>
+        -->
     {/if}
     {if $isContestAdmin || isset($proctorAdmin) && $proctorAdmin}
         {if $module == 'cpcsys'}

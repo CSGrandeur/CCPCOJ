@@ -188,6 +188,22 @@ CREATE TABLE IF NOT EXISTS `cpc_team` (
 -- --------------------------------------------------------
 
 --
+-- 表的结构 `cpc_client`
+--
+
+CREATE TABLE IF NOT EXISTS `cpc_client` (
+  `client_id` int NOT NULL AUTO_INCREMENT,
+  `contest_id` int NOT NULL,
+  `team_id_bind` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '绑定队伍号',
+  `ip_bind` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '绑定IP',
+  `ssh_config` json DEFAULT NULL COMMENT 'SSH配置，支持rsa和user/pass两种方式，以及ssh port存储',
+  PRIMARY KEY (`client_id`),
+  KEY `contest_id` (`contest_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- 表的结构 `custominput`
 --
 

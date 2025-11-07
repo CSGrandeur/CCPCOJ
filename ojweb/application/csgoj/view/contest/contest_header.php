@@ -129,8 +129,8 @@
                         </a>
                     </li>
                 {/if}
-                
                 <!-- 直播功能 -->
+                <!-- TODO
                 {if isset($watcherUser) && $watcherUser}
                     <li class="nav-item">
                         <a class="nav-link" href="/ojtool/contestlive/ctrl?cid={$contest['contest_id']}" target="_blank" title="直播">
@@ -138,6 +138,7 @@
                         </a>
                     </li>
                 {/if}
+                -->
             {/if}
             
             <!-- 管理员菜单 -->
