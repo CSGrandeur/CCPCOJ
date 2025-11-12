@@ -51,7 +51,7 @@
 </div>
 
 <div class="container">
-    <form id="problem_edit_form" method='post' action="__ADMIN__/problem/problem_edit_ajax">
+    <form id="problem_edit_form" class="admin-form" method='post' action="__ADMIN__/problem/problem_edit_ajax">
         <!-- Judge Type Selection - Top Priority -->
         <div class="form-group">
             <label class="bilingual-label">评测类型：<span class="en-text">Judge Type</span></label>
@@ -122,7 +122,17 @@
         {if $copy_mode}
             <input type="hidden" value="{$problem['problem_id']}" name="problem_copy_id">
         {/if}
-        <button type="submit" id="submit_button" class="btn btn-primary bilingual-button">{if $edit_mode}修改题目<span class="en-text">Modify Problem</span>{else /}添加题目<span class="en-text">Add Problem</span>{/if}</button>
+        
+        <div class="admin-form-actions">
+            <button type="submit" id="submit_button" class="btn btn-primary bilingual-button">
+                <span><i class="bi bi-check-circle"></i>
+                {if $edit_mode}
+                修改题目</span><span class="en-text">Modify Problem</span>
+                {else /}
+                添加题目</span><span class="en-text">Add Problem</span>
+                {/if}
+            </button>
+        </div>
     </form>
 </div>
 <input type="hidden" id='page_info' edit_mode="{if $edit_mode}1{else/}0{/if}" copy_mode="{if isset($copy_mode) && $copy_mode}1{else /}0{/if}">
@@ -190,7 +200,7 @@ $(document).ready(function() {
             addBtn.html(`<i class="bi bi-check-circle me-2"></i><span class="bilingual-inline">已达到最大样例数量 (${sample_num_max}) <span class="en-text">Max Samples Reached</span></span>`);
         } else {
             addBtn.prop('disabled', false);
-            addBtn.html(`<i class="bi bi-plus-circle me-2"></i><span class="bilingual-inline">添加样例 <span class="en-text">Add Sample</span></span>`);
+            addBtn.html(`<span><i class="bi bi-plus-circle me-2"></i><span class="bilingual-inline">添加样例</span> <span class="en-text">Add Sample</span></span>`);
         }
     }
     

@@ -97,6 +97,10 @@ class News extends Adminbase
 	}
 	public function news_add()
 	{
+		$this->assign([
+			'edit_mode' => false,
+			'copy_mode' => false,
+		]);
 		return $this->fetch('news_edit');
 	}
 	public function GetTagList($tags)
@@ -337,7 +341,9 @@ class News extends Adminbase
 			'news' 			=> $news,
 			'special_page'	=> true,
 			'title' 			=> $title,
-			'aimurl'		=> '/index/about'
+			'aimurl'		=> '/index/about',
+			'edit_mode' => false,
+			'copy_mode' => false,
 		]);
 		return $this->fetch('news/news_edit');
 	}
@@ -354,7 +360,9 @@ class News extends Adminbase
 			'news' 			=> $news,
 			'special_page'	=> true,
 			'title' 			=> $title,
-			'aimurl'		=> '/csgoj/faqs'
+			'aimurl'		=> '/csgoj/faqs',
+			'edit_mode' => false,
+			'copy_mode' => false,
 		]);
 		return $this->fetch('news/news_edit');
 	}

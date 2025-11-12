@@ -1,4 +1,4 @@
-﻿﻿var g_submitDelayInfo = 500; //提交后通知延迟跳转
+﻿var g_submitDelayInfo = 500; //提交后通知延迟跳转
 var g_submitDelayOper = 5; //提交后延迟下次操作
 
 function button_delay(button, delay, ori, tips, enText) {
@@ -61,6 +61,89 @@ function button_delay(button, delay, ori, tips, enText) {
         },
         1000
     );
+}
+
+/**
+ * 按钮延迟处理函数（自动保存和恢复DOM内容）
+ * @param {jQuery|HTMLElement} button - 按钮DOM对象
+ * @param {number} delay - 延迟时长（秒）
+ * @param {string} flg_status - 状态标志："before"（禁用但不倒计时）或 "start"（开始倒计时）
+ * @param {string} [tip] - 提示文本（可选，默认为"提交中"/"Submitting"）
+ */
+function button_delay_auto(button, delay, flg_status, tip) {
+    var $button = $(button);
+    
+    // 保存原始HTML内容（包括图标、双语结构等）
+    if (!$button.data('original-html')) {
+        $button.data('original-html', $button.html());
+    }
+    var originalHtml = $button.data('original-html');
+    
+    // 检查是否存在双语结构（基于原始HTML检查）
+    var tempDiv = $('<div>').html(originalHtml);
+    var hasBilingual = tempDiv.find('.en-text').length > 0;
+    
+    // 禁用按钮
+    $button.attr('disabled', true);
+    
+    // 如果tip为空，使用默认的中英双语文本
+    var defaultTip = '提交中';
+    var defaultTipEn = 'Submitting';
+    var actualTip = (tip && tip.trim() !== '') ? tip : defaultTip;
+    var actualTipEn = (tip && tip.trim() !== '') ? tip : defaultTipEn;
+    
+    // 更新按钮内容为提示文本
+    function updateButtonText(currentDelay) {
+        var delayText = actualTip + "(" + currentDelay + "s)";
+        var delayEnText = actualTipEn + "(" + currentDelay + "s)";
+        
+        if (hasBilingual) {
+            $button.html(delayText + '<span class="en-text">' + delayEnText + '</span>');
+        } else {
+            $button.text(delayText);
+        }
+    }
+    
+    if (flg_status === 'before') {
+        // before状态：只显示提示，不开始倒计时
+        // 清除可能存在的旧timer
+        var oldTimer = $button.data('delay-timer');
+        if (oldTimer) {
+            clearInterval(oldTimer);
+            $button.removeData('delay-timer');
+        }
+        updateButtonText(delay);
+    } else if (flg_status === 'start') {
+        // start状态：开始倒计时
+        // 清除可能存在的旧timer
+        var oldTimer = $button.data('delay-timer');
+        if (oldTimer) {
+            clearInterval(oldTimer);
+        }
+        
+        updateButtonText(delay);
+        
+        // 使用局部变量保存倒计时值
+        var currentDelay = delay;
+        
+        var timer = setInterval(function() {
+            currentDelay--;
+            if (currentDelay <= 0) {
+                // 倒计时结束，恢复原始HTML内容
+                $button.html(originalHtml);
+                $button.removeAttr('disabled');
+                $button.removeData('original-html');
+                $button.removeData('delay-timer');
+                clearInterval(timer);
+                return;
+            }
+            // 更新倒计时显示
+            updateButtonText(currentDelay);
+        }, 1000);
+        
+        // 将timer保存到button上，以便外部可以清除
+        $button.data('delay-timer', timer);
+    }
 }
 
 

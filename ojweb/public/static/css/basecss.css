@@ -695,3 +695,31 @@ a.text-success:active {
 		height: 34px;
 	}
 }
+
+/* ==================== 管理后台通用表单样式 ==================== */
+
+/* 管理后台表单通用样式 */
+.admin-form {
+	padding: 1.5rem 0;
+}
+
+.admin-form .form-group {
+	margin-bottom: 1.5rem;
+}
+
+.admin-form .form-group:last-of-type {
+	margin-bottom: 0;
+}
+
+/* 管理后台提交按钮区域通用样式 */
+.admin-form-actions {
+	margin-top: 1rem;
+	padding-top: 1rem;
+	border-top: 1px solid #dee2e6;
+	display: flex;
+	gap: 0.5rem;
+}
+
+.admin-form-actions .btn {
+	min-width: 120px;
+}

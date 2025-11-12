@@ -49,9 +49,9 @@
 
 <div class="container">
     {if(!isset($special_page))}
-    <form id="news_edit_form" method='post' action="__ADMIN__/news/{$action}_ajax">
+    <form id="news_edit_form" class="admin-form" method='post' action="__ADMIN__/news/{$action}_ajax">
     {else /}
-    <form id="news_edit_form" method='post' action="__ADMIN__/news/news_edit_ajax">
+    <form id="news_edit_form" class="admin-form" method='post' action="__ADMIN__/news/news_edit_ajax">
     {/if}
 
         {if !isset($special_page)}
@@ -96,7 +96,7 @@
         
         <input type="hidden" id='id_input' value="{if $edit_mode}{$news['news_id']}{/if}" name="news_id">
         
-        <div class="form-group">
+        <div class="admin-form-actions">
             <button type="submit" id="submit_button" class="btn btn-primary bilingual-button">
                 <span><i class="bi bi-check-circle"></i>
                 {if $edit_mode}

@@ -40,10 +40,6 @@ window.NewsModuleDetail = {
         const submitButton = $('#submit_button');
         
         if (submitButton.length && pageInfo.length) {
-            const submitButtonTexts = window.Bilingual ? window.Bilingual.getBilingualText(submitButton) : {chinese: '提交', english: 'Submit'};
-            const submitButtonText = submitButtonTexts.chinese;
-            const submitButtonEnText = submitButtonTexts.english;
-            
             // 使用简化的表单验证工具
             if (typeof window.FormValidationTip !== 'undefined') {
                 window.FormValidationTip.initCommonFormValidation('#news_edit_form', {
@@ -63,8 +59,9 @@ window.NewsModuleDetail = {
                     }
                 }, function(form) {
                     // 提交处理函数
-                    submitButton.attr('disabled', true);
-                    submitButton.text('Waiting...');
+                    // 使用 button_delay_auto 的 before 状态：禁用按钮，显示提示，但不倒计时
+                    button_delay_auto(submitButton, 3, 'before');
+                    
                     $(form).ajaxSubmit({
                         success: function(ret) {
                             if(ret['code'] == 1) {
@@ -73,14 +70,16 @@ window.NewsModuleDetail = {
                                 }else{
                                     alerty.success(ret['msg']);
                                 }
-                                button_delay(submitButton, 3, submitButtonText, null, submitButtonEnText);
+                                // 使用 button_delay_auto 的 start 状态：开始倒计时
+                                button_delay_auto(submitButton, 3, 'start');
                                 if(editMode != '1') {
                                     setTimeout(function(){location.href='news_edit?id='+ret['data']['id']}, 500);
                                 }
                             }
                             else {
                                 alerty.alert(ret['msg']);
-                                button_delay(submitButton, 3, submitButtonText, null, submitButtonEnText);
+                                // 使用 button_delay_auto 的 start 状态：开始倒计时
+                                button_delay_auto(submitButton, 3, 'start');
                             }
                             return false;
                         }

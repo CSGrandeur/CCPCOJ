@@ -7,7 +7,6 @@ A:系统 Ubuntu Server 24.04. 参数如下
 |C++:|g++ -std=c++17 -O2 -Wall -Wextra -DONLINE_JUDGE -static -Wl,--no-relax -Wl,--no-pie -mcmodel=medium -o Main Main.cpp|
 |Java:|javac -J-Xms1024M -J-Xmx1024M -J-Xss64M -encoding UTF-8 Main.java <br/> java -Dfile.encoding=UTF-8 -XX:+UseSerialGC -Xss64M -Xms1024M -Xmx<题目内存限制+512M> -cp . Main|
 |Python:|python3 -m py_compile Main.py <br/> python3 Main.py|
-|Go:|go build -o Main Main.go <br/> ./Main|
 
 **参数说明：**
 - `-Wall -Wextra`: 启用所有常见警告和额外警告，帮助发现潜在问题

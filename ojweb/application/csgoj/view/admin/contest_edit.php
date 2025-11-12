@@ -90,7 +90,7 @@ $cid_suffix = $module == 'admin' ? '' : '?cid=' . $contest['contest_id'];
 $action_url .= ($edit_mode && !$copy_mode ? 'contest_edit_ajax' : 'contest_add_ajax') . $cid_suffix;
 ?>
 
-<form id="contest_edit_form" method='post' action="{$action_url}">
+<form id="contest_edit_form" class="admin-form" method='post' action="{$action_url}">
     <div class="container">
         {if $module == 'admin'}
             <!-- Contest Type Selection - Top Priority -->
@@ -100,22 +100,22 @@ $action_url .= ($edit_mode && !$copy_mode ? 'contest_edit_ajax' : 'contest_add_a
                     <div class="row g-2">
                         <div class="col-3">
                             <button type="button" class="btn btn-success contest-type-btn active bilingual-button w-100" data-private="0" aria-pressed="true">
-                                <span><i class="bi bi-unlock"></i> 公开</span><span class="en-text">Public</span>
+                                <i class="bi bi-unlock">公开</i> <span class="en-text">Public</span>
                             </button>
                         </div>
                         <div class="col-3">
                             <button type="button" class="btn btn-warning contest-type-btn bilingual-button w-100" data-private="0" data-encrypted="true" aria-pressed="false">
-                                <span><i class="bi bi-shield-lock"></i> 加密</span><span class="en-text">Encrypted</span>
+                                <i class="bi bi-shield-lock">加密</i> <span class="en-text">Encrypted</span>
                             </button>
                         </div>
                         <div class="col-3">
                             <button type="button" class="btn btn-danger contest-type-btn bilingual-button w-100" data-private="1" aria-pressed="false">
-                                <span><i class="bi bi-lock"></i> 私有</span><span class="en-text">Private</span>
+                                <i class="bi bi-lock">私有</i> <span class="en-text">Private</span>
                             </button>
                         </div>
                         <div class="col-3">
                             <button type="button" class="btn btn-primary contest-type-btn bilingual-button w-100" data-private="2" aria-pressed="false">
-                                <span><i class="bi bi-award"></i> 标准</span><span class="en-text">Standard</span>
+                                <i class="bi bi-award">标准</i> <span class="en-text">Standard</span>
                             </button>
                         </div>
                     </div>
@@ -288,10 +288,11 @@ $action_url .= ($edit_mode && !$copy_mode ? 'contest_edit_ajax' : 'contest_add_a
         </div>
         
         <!-- 提交按钮 -->
-        <div class="form-group mb-3">
-            {if $edit_mode && !$copy_mode }
-            <input type="hidden" id="id_input" value="{$contest['contest_id']}" name="contest_id">
-            {/if}
+        {if $edit_mode && !$copy_mode }
+        <input type="hidden" id="id_input" value="{$contest['contest_id']}" name="contest_id">
+        {/if}
+        
+        <div class="admin-form-actions">
             <button type="submit" id="submit_button" class="btn btn-primary bilingual-button">
                 <span><i class="bi bi-check-circle"></i>
                 {if $edit_mode && !$copy_mode}

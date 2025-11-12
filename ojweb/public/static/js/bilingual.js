@@ -108,7 +108,10 @@
         
         if ($enText.length > 0) {
             // 有英文文本的情况
-            chinese = $element.clone().children().remove().end().text().trim();
+            // 克隆元素，只移除英文文本部分，保留其他子元素和文本
+            var $clone = $element.clone();
+            $clone.find('.en-text').remove();
+            chinese = $clone.text().trim();
             english = $enText.text().trim();
         } else {
             // 没有英文文本的情况
