@@ -132,7 +132,7 @@ class Problemexport extends Filebase
             'rename_url'    => '/admin/problemexport/file_rename_ajax?item=' . $this->inputInfo['item'] . '&id=' . $this->inputInfo['id'],
             'upload_url'    => '/admin/problemexport/upload_ajax',
             'method_button' => 'Do!',        //file_type 那一列的表头名字，这列当个功能button用
-            'attach_notify' => 'Files will be automatically deleted after ' . $this->ojPath['export_keep_time'] . ' days. Only "zip" allowed', // 上传按钮旁的提示信息
+            'attach_notify' => '文件会在' . $this->ojPath['export_keep_time'] . '天后自动删除。仅支持 "zip" 文件。<span class="en-text">Files will be automatically deleted after ' . $this->ojPath['export_keep_time'] . ' days. Only "zip" allowed</span>', // 上传按钮旁的提示信息
             'fire_url'      =>    '/admin/problemexport/problem_import_ajax'    //执行题目导入的链接
         ]);
         return $this->fetch();
@@ -198,6 +198,7 @@ class Problemexport extends Filebase
         $judgeDataFolderPermission = true; // judge data 文件夹权限
         $attachFolderPermission = true;     // 图片等题目描述文件 文件夹权限
         $attachFailedList = [];             // 图片等题目描述文件失败列表。失败原因是内部文件名不合法
+        $failed_id = 1;
         foreach ($problemList as $problem) {
             $problemInsert = [
                 'title'             =>  $problem['title'],
@@ -226,16 +227,21 @@ class Problemexport extends Filebase
                 }
             }
 
-            if (strlen($problemInsert['attach']) == 0)
+            if (strlen($problemInsert['attach']) == 0) {
                 $problemInsert['attach'] = $this->AttachFolderCalculation(session('user_id'));
+            }
             if ($Problem->where('attach', $problemInsert['attach'])->find()) {
                 // 20230617添加：用 attach 字段避免重复导入题目
-                $failedList[] = $problem['problem_id'] . ':' . $problem['title'] . ' # Exists';
+                $id = $problem['problem_new_id'] ?? $failed_id;
+                $failedList[] = $id . ': ' . $problem['title'] . ' # 已存在 Exists';
+                $failed_id++;
                 continue;
             }
             if (($problem_id = $Problem->insertGetId($problemInsert)) == false) {
                 //********导入失败的文件列表
-                $failedList[] = $problem['problem_id'] . ':' . $problem['title'];
+                $id = $problem['problem_new_id'] ?? $failed_id;
+                $failedList[] = $id . ': ' . $problem['title'];
+                $failed_id++;
                 continue;
             }
             //********导入成功的文件列表（judge data 可能导入失败）

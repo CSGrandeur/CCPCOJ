@@ -17,6 +17,7 @@ class Contest extends Adminbase
     //Contest
     //***************************************************************//
     public function index() {
+        $this->assign('is_admin', true);
         if($this->OJ_STATUS == 'cpc') {
             return $this->fetch();
         } else {
@@ -43,7 +44,13 @@ class Contest extends Adminbase
         if($column != null) {
             return $Contest->where($map)->column($column);
         } else {
-            return $Contest->where($map)->field('description', true)->select();
+            $contest_list = $Contest->where($map)->field('description', true)->select();
+            foreach($contest_list as &$contest) {
+                if(IsAdmin() || IsAdmin('con', $contest['contest_id'])) {
+                    $contest['is_admin'] = true;
+                }
+            }
+            return $contest_list;
         }
         
     }
@@ -68,7 +75,7 @@ class Contest extends Adminbase
                 '0',
             'private'     => intval($postData['private']),
             'langmask'    => $this->CalLangMask(isset($postData['language']) ? $postData['language'] : []), //这里用input('post.language')不行，可能是ThinkPHP当前版本bug
-            'password'    => trim($postData['password']),
+            'password'    => trim($postData['password'] ?? ""),
             'description' => trim($postData['description']),
             'frozen_minute' => intval($postData['frozen_minute']),
             'frozen_after' => intval($postData['frozen_after'])
@@ -313,7 +320,7 @@ class Contest extends Adminbase
     }
     private function CalLangMask($languages)
     {
-        $ret = LangMask($languages);
+        $ret = LangList2LangMask($languages);
         if($ret == -1) $this->error('Please select at least 1 language.');
         if($ret == -2) $this->error('Some languages are not allowed for this OJ.');
         return $ret;

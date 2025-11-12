@@ -5,30 +5,12 @@ class Index extends Homebase
 {
     public function index()
     {
-        $News = db('news');
-        $CategoryShowInIndex = config('CsgcpcConst.CATEGORY_SHOW_INDEX');
-        $categoryTitles = [];
-        foreach($CategoryShowInIndex as $category)
-        {
-            $news = $News
-                ->where([
-                    'defunct'    =>    '0',
-                    'news_id'    =>    ['gt', 1000],
-                    'category'    =>    $category
-                ])
-                ->field('news_id, title, time')
-                ->order(array('news_id' => 'desc'))
-                ->limit(5)->select();
-            $categoryTitles[$category] = $news;
-        }
-
         $ncarousel = SetCarousel();
         $showCarousel = $ncarousel['news']['defunct'] == '0';
 
         $this->assign([
             'carousel'             => $ncarousel['carousel'],
             'showCarousel'        => $showCarousel,
-            'categoryTitles'    => $categoryTitles,
         ]);
         $this->assign('now', time());
         return $this->fetch();

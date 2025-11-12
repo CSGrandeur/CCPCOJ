@@ -1,0 +1,337 @@
+/* 队伍信息面板样式 */
+.contest-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+}
+
+.team-info-toggle,
+.contest-logout-btn {
+    height: 40px;
+    width: 40px;
+    padding: 0;
+    border-radius: 0.375rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1002;
+    font-size: 1rem;
+}
+
+.team-info-toggle i,
+.contest-logout-btn i {
+    font-size: 1.2rem;
+}
+
+
+/* 面板显示动画 */
+#team_info_panel.show {
+    display: block !important;
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+
+
+.team-info-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.team-info-item:last-child {
+    margin-bottom: 0;
+}
+
+.team-info-item i {
+    width: 16px;
+    margin-right: 8px;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.team-info-item .item-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.team-info-item .item-content .main-text {
+    font-weight: 500;
+    color: #212529;
+}
+
+.team-info-item .item-content .sub-text {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-top: 2px;
+}
+
+.team-info-item .item-content .secondary-text {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-top: 2px;
+    font-style: italic;
+}
+
+
+/* 成绩信息特殊样式 */
+.team-score-section {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.team-score-content {
+    width: 100%;
+    margin-top: 8px;
+}
+
+.team-score-content .cteam_info_balloon_container {
+    margin-bottom: 8px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.team-score-content .cteam_info_score_container {
+    font-size: 0.8rem;
+    height: auto;
+    min-height: 28px;
+    padding: 6px 0;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-top: 4px;
+}
+
+.team-score-content .cteam_info_score_container > div {
+    font-size: 0.8rem;
+    gap: 0.25rem;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    padding: 2px 0;
+}
+
+.team-score-content .glyphicon {
+    font-size: 0.8rem !important;
+    margin-right: 0.25rem;
+    flex-shrink: 0;
+    color: #6c757d;
+}
+
+.team-score-content span {
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #212529;
+}
+
+/* 队伍成绩面板样式 */
+.cteam_info_balloon_container {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.cteam_info_balloon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50% 50% 50% 0;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 13px;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    margin: 3px;
+    transform: rotate(-45deg);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.cteam_info_balloon:hover {
+    transform: rotate(-45deg) scale(1.1);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+}
+
+.cteam_info_balloon::after {
+    content: attr(data-letter);
+    transform: rotate(45deg);
+    font-weight: 700;
+    font-size: 13px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+.cteam_info_solved {
+    background-color: var(--balloon-color, red);
+}
+
+.cteam_info_tried {
+    background: linear-gradient(45deg, var(--balloon-color, blue) 50%, transparent 50%);
+    border: 1px solid var(--balloon-color, blue);
+}
+
+.cteam_info_outline {
+    background-color: transparent;
+    border: 1px solid var(--balloon-color, green);
+}
+
+.cteam_info_score_container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.score-titles {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.score-values {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.score-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: #6c757d;
+    font-weight: 500;
+    flex: 1;
+    text-align: center;
+}
+
+.score-value {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #212529;
+    flex: 1;
+    text-align: center;
+}
+
+.cteam_info_frozen_mask {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(128, 128, 128, 0.2);
+    color: skyblue;
+    font-size: 18px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    z-index: 1;
+    pointer-events: none;
+    display: none;
+    backdrop-filter: blur(1px);
+    -webkit-backdrop-filter: blur(1px);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .team-info-panel {
+        width: 320px;
+        right: -10px;
+    }
+    
+    .contest-header-actions {
+        gap: 0.25rem;
+    }
+    
+    .team-info-toggle,
+    .contest-logout-btn {
+        height: 36px;
+        width: 36px;
+        font-size: 0.9rem;
+    }
+    
+    .team-info-toggle i,
+    .contest-logout-btn i {
+        font-size: 1.1rem;
+    }
+    
+    .team-score-content .cteam_info_score_container {
+        gap: 0.25rem;
+        padding: 6px;
+    }
+    
+    .team-score-content .score-titles,
+    .team-score-content .score-values {
+        gap: 0.25rem;
+    }
+    
+    .team-score-content .score-title {
+        font-size: 0.7rem;
+    }
+    
+    .team-score-content .score-value {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .team-info-panel {
+        width: 300px;
+        right: -20px;
+    }
+    
+    .team-score-content .cteam_info_score_container {
+        gap: 0.2rem;
+        padding: 4px;
+    }
+    
+    .team-score-content .score-titles,
+    .team-score-content .score-values {
+        gap: 0.2rem;
+    }
+    
+    .team-score-content .score-title {
+        font-size: 0.65rem;
+    }
+    
+    .team-score-content .score-value {
+        font-size: 0.75rem;
+    }
+}

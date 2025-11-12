@@ -13,7 +13,9 @@ return [
     'contest_ATTACH'        => '/upload/contest_attach',        // 比赛描述/注意事项的附件
     'regcontest_ATTACH'     => '/upload/regcontest_attach',     // 报名系统的注意事项附件
     'ex_question_ATTACH'    => '/upload/question_attach',       // 考试题的附件
+    'outrank_ATTACH'        => '/upload/outrank_attach',        // 外榜
     'testdata'              => '/home/judge/data',              //**判题数据管理路径，此项与以上处理方式不同。
+    'judger_config'         => '/upload/judger_config.json',    // 评测机配置文件
 
     'export_problem_temp'   => ROOT_PATH . 'PROBLEM_EXPORT/FILE_TEMP',
     'export_problem'        => ROOT_PATH . 'PROBLEM_EXPORT/EXPORT',
@@ -22,6 +24,7 @@ return [
     'export_keep_time'      => 30,
     'import_problem_temp'   => ROOT_PATH . 'PROBLEM_EXPORT/IMPORT_TEMP',
     'chunk_file_temp'       => ROOT_PATH . 'CHUNK_TEMP',
+    'cpc_client_record'     => ROOT_PATH . 'CPC_CLIENT_RECORD',
 
     'export_temp_keep_time'    => 2,    //因为一些程序错误未删除的临时文件夹，设置2天。（文件时间有可能是12小时制的问题，时间不对，避免出问题设置大于1天）
 ];

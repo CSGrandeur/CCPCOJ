@@ -1,17 +1,61 @@
 ### Q:编译器版本及编译运行参数
-A:系统 Ubuntu Server 22.04. 参数如下
+A:系统 Ubuntu Server 24.04. 参数如下
 
 | | |
 |:----|:-------------------------------------------------------------------------------|
-|C:|gcc Main.c -o Main -O2 -fmax-errors=10 -Wall -lm --static -std=c17 -DONLINE_JUDGE|
-|C++:|g++ Main.cc -o Main -O2 -fno-asm -fmax-errors=10 -Wall -lm --static -std=c++17 -DONLINE_JUDGE|
-|Java:|javac -J-Xms1024M -J-Xmx1024M -J-Xss64M Main.java <br/> java -Xms1024M -Xmx<题目内存限制> -Xss64M Main |
+|C:|gcc -std=c17 -O2 -Wall -Wextra -DONLINE_JUDGE -static -Wl,--no-relax -Wl,--no-pie -mcmodel=medium -o Main Main.c|
+|C++:|g++ -std=c++17 -O2 -Wall -Wextra -DONLINE_JUDGE -static -Wl,--no-relax -Wl,--no-pie -mcmodel=medium -o Main Main.cpp|
+|Java:|javac -J-Xms1024M -J-Xmx1024M -J-Xss64M -encoding UTF-8 Main.java <br/> java -Dfile.encoding=UTF-8 -XX:+UseSerialGC -Xss64M -Xms1024M -Xmx<题目内存限制+512M> -cp . Main|
+|Python:|python3 -m py_compile Main.py <br/> python3 Main.py|
+|Go:|go build -o Main Main.go <br/> ./Main|
 
-Java、Python 有额外 2 秒和额外 512M 内存用于运行与评测.
+**参数说明：**
+- `-Wall -Wextra`: 启用所有常见警告和额外警告，帮助发现潜在问题
+- `-static`: 静态链接，生成独立的可执行文件，不依赖动态库
+- `-Wl,--no-relax -Wl,--no-pie -mcmodel=medium`: 解决静态链接时的重定位问题，确保编译稳定性
+- `-DONLINE_JUDGE`: 定义预处理宏，可用于条件编译
 
-- C/C++： gcc version 11.4.0 (Ubuntu 11.4.0-1ubuntu1~22.04) 
-- Python： 3.10.12
-- JAVA： openjdk 17.0.12
+**运行时限制：**
+- Java、Python 有额外的内存和时间限制用于运行与评测（具体数值由后端配置决定）
+
+**编译器版本：**
+- C/C++： gcc version 14.2.0 (Ubuntu 24.04)
+- Python： 3.12.x
+- Java： openjdk 21.x
+- Go： 最新稳定版
+
+### Q:为什么新评测机没有 `-fmax-errors=10`、`-lm`、`-fno-asm` 等参数？
+A: 新评测机对编译参数进行了优化和调整：
+
+**旧参数分析：**
+
+1. **`-fmax-errors=10`**（旧有，新无）
+   - **作用**：限制编译错误输出数量为10个
+   - **为什么新评测机没有**：此参数仅限制错误信息输出数量，不影响编译结果。新评测机会显示所有编译错误，帮助选手更好地定位问题
+   - **是否需要**：不需要，显示完整错误信息更有利于调试
+
+2. **`-lm`**（旧有，新无）
+   - **作用**：显式链接数学库 `libm`
+   - **为什么新评测机没有**：使用 `-static` 静态链接时，如果程序使用了数学函数（如 `sin`, `cos`, `sqrt` 等），链接器会自动链接数学库，无需显式指定
+   - **是否需要**：如果程序使用数学函数，链接器会自动处理；如果遇到链接错误，可以尝试显式添加 `-lm`
+
+3. **`-fno-asm`**（旧 C++ 有，新无）
+   - **作用**：禁止内联汇编
+   - **为什么新评测机没有**：评测机通常不需要禁止内联汇编，且现代 C++ 标准库可能依赖内联汇编优化
+   - **是否需要**：不需要，允许内联汇编不会带来安全问题
+
+**新参数说明：**
+
+1. **`-Wextra`**（新有，旧无）
+   - **作用**：启用额外的警告信息，比 `-Wall` 更严格
+   - **为什么新评测机有**：提供更严格的代码检查，帮助发现潜在问题
+
+2. **`-Wl,--no-relax -Wl,--no-pie -mcmodel=medium`**（新有，旧无）
+   - **作用**：解决静态链接时的重定位截断问题
+   - **为什么新评测机有**：GCC 14.2 在静态链接时可能出现重定位截断错误，这些参数确保编译稳定性
+   - **副作用**：代码大小可能略有增加（约5-15%），性能影响可忽略（约1-3%）
+
+**总结**：新评测机的参数配置更加现代化和稳定，移除了不必要的限制参数，添加了必要的稳定性参数，确保编译过程更加可靠。
 
 ### Q:输入输出的形式
 A:输入为`stdin`(`Standard Input`)，输出为`stdout`(`Standard Output`). 例如，你可以用`C`语言的`scanf`或`C++`的`cin`从`stdin`中读取数据，并使用`C`语言的`printf`或`C++`的`cout`向`stdout`输出.

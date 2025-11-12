@@ -9,10 +9,12 @@
 {else /}
 <h2>Reset password of <a href="/csgoj/user/userinfo?user_id={$user_id}">{$user_id}</a></h2>
 <form id="passback_retrieve_form" method='post' action="passback_retrieve_ajax">
-    <div class="form-group">
-        <label for="user_id" class='control-label'>New Password：</label>
+    <div class="mb-3">
+        <label for="user_id" class="form-label">New Password：</label>
         <input type="password" id="reset_password" class="form-control" name="password" placeholder="At least 6 characters..." style="max-width: 200px;" required>
-        <label for="user_id" class='control-label'>Confirm：</label>
+    </div>
+    <div class="mb-3">
+        <label for="confirm_password" class="form-label">Confirm：</label>
         <input type="password" class="form-control" name="confirm_password" placeholder="Confirm Password..." style="max-width: 200px;" required>
     </div>
     <input type="hidden" name="user_id" value="{$user_id}">

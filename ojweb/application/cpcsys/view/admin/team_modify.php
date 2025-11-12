@@ -1,135 +1,136 @@
-<div class="page-header">
-    <h1>Update Team's Information</h1>
-</div>
-<div class="container marketing">
-    <form id="team_modify_form" class="form-modify" method="post" action="/{$module}/admin/team_modify_ajax">
-        <div class="form-inline">
-            <label class="description_label">Team ID ：</label>
-            <input type="text" id="team_id_input" class="form-control teaminfo_input" placeholder="Team ID" name="team_id" value="" required>
-            <label for="team_id" class="notification_label"></label>
+<!-- 修改队伍信息 Modal -->
+<div class="modal fade" id="teamModifyModal" tabindex="-1" aria-labelledby="teamModifyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title bilingual-inline" id="teamModifyModalLabel">
+                    <span class="cn-text"><i class="bi bi-pencil-square me-2"></i>
+                    修改队伍信息
+                    </span><span class="en-text">Update Team Information</span>
+                    <span class="ms-2 text-muted" id="team_modify_header_team_id" style="font-size: 0.85em; font-weight: normal;"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="team_modify_form" method="post" action="/cpcsys/admin/team_modify_ajax">
+                    <div class="row g-3">
+                        <!-- 队伍ID (隐藏) -->
+                        <input type="hidden" id="team_modify_team_id" name="team_id" value="">
+                        <input type="hidden" id="team_modify_cid" name="cid" value="">
+                        
+                        <!-- 队伍名称 -->
+                        <div class="col-md-6">
+                            <label for="team_modify_name" class="form-label bilingual-label">
+                                队伍名称：<span class="en-text">Team Name</span>
+                            </label>
+                            <input type="text" id="team_modify_name" class="form-control teaminfo_input" name="name" 
+                                   placeholder="最多100个字符" value="">
+                        </div>
+                        
+                        <!-- 队伍名称(副语言) -->
+                        <div class="col-md-6">
+                            <label for="team_modify_name_en" class="form-label bilingual-label">
+                                队伍名称(副语言)：<span class="en-text">Team Name (Secondary Language)</span>
+                            </label>
+                            <input type="text" id="team_modify_name_en" class="form-control teaminfo_input" name="name_en" 
+                                   placeholder="最多120个字符" value="">
+                        </div>
+                        
+                        <!-- 学校/组织 -->
+                        <div class="col-md-6">
+                            <label for="team_modify_school" class="form-label bilingual-label">
+                                学校/组织：<span class="en-text">School/Organization</span>
+                            </label>
+                            <input type="text" id="team_modify_school" class="form-control teaminfo_input" name="school" 
+                                   placeholder="学校或组织名称" value="">
+                        </div>
+                        
+                        <!-- 国家/地区 -->
+                        <div class="col-md-6">
+                            <label for="team_modify_region" class="form-label bilingual-label">
+                                国家/地区：<span class="en-text">Country/Region</span>
+                            </label>
+                            <div class="csg-select">
+                                <select class="csg-select-input teaminfo_input" name="region" id="team_modify_region"
+                                        data-csg-searchable="true" 
+                                        data-csg-allow-custom="true"
+                                        data-csg-placeholder="请选择国家/地区"
+                                        data-csg-placeholder-en="Please select country/region"
+                                        data-csg-custom-text="自定义输入"
+                                        data-csg-custom-text-en="Custom input">
+                                    <option value="">请选择国家/地区</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- 队员 -->
+                        <div class="col-12">
+                            <label for="team_modify_tmember" class="form-label bilingual-label">
+                                队员：<span class="en-text">Members</span>
+                            </label>
+                            <input type="text" id="team_modify_tmember" class="form-control teaminfo_input" name="tmember" 
+                                   placeholder="队员姓名，用逗号分隔" value="">
+                        </div>
+                        
+                        <!-- 教练 -->
+                        <div class="col-12">
+                            <label for="team_modify_coach" class="form-label bilingual-label">
+                                教练：<span class="en-text">Coach</span>
+                            </label>
+                            <input type="text" id="team_modify_coach" class="form-control teaminfo_input" name="coach" 
+                                   placeholder="教练姓名" value="">
+                        </div>
+                        
+                        <!-- 机房 -->
+                        <div class="col-md-6">
+                            <label for="team_modify_room" class="form-label bilingual-label">
+                                房间/区域：<span class="en-text">Room</span>
+                            </label>
+                            <input type="text" id="team_modify_room" class="form-control teaminfo_input" name="room" 
+                                   placeholder="机房编号" value="">
+                        </div>
+                        
+                        <!-- 队伍类型 -->
+                        <div class="col-md-6">
+                            <label for="team_modify_tkind" class="form-label bilingual-label">
+                                队伍类型：<span class="en-text">Team Type</span>
+                            </label>
+                            <select id="team_modify_tkind" class="form-select teaminfo_input" name="tkind">
+                                <option value="0">正式队伍 (Regular Team)</option>
+                                <option value="1">女队 (Girls Team)</option>
+                                <option value="2">打星队伍 (Star Team)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- 新密码 -->
+                        <div class="col-12">
+                            <label for="team_modify_password" class="form-label bilingual-label">
+                                新密码：<span class="en-text">New Password</span>
+                            </label>
+                            <input type="text" id="team_modify_password" class="form-control teaminfo_input" 
+                                   placeholder="留空表示不修改密码，至少6个字符" name="password">
+                            <div class="form-text">
+                                <span class="bilingual-inline">
+                                    <span>留空表示不修改密码</span>
+                                    <span class="en-text">Leave blank to keep current password</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <span class="cn-text"><i class="bi bi-x-circle me-1"></i>
+                    取消</span><span class="en-text">Cancel</span>
+                </button>
+                <button type="submit" class="btn btn-primary bilingual-button" id="team_modify_submit_button">
+                    <span class="cn-text"><i class="bi bi-check-circle me-2"></i>
+                    提交修改</span><span class="en-text">Submit Changes</span>
+                </button>
+            </div>
         </div>
-        <div class="form-inline">
-            <label class="description_label">Team Name ：</label>
-            <input type="text" class="form-control teaminfo_input" name="name" placeholder="No more than 30 characters" value="">
-            <label for="name" class="notification_label"></label>
-        </div>
-        <div class="form-inline">
-            <label class="description_label">Member ：</label>
-            <input type="text" class="form-control teaminfo_input" name="tmember" placeholder="Member" value="" >
-            <label for="tmember" class="notification_label"></label>
-        </div>
-        <div class="form-inline">
-            <label class="description_label">Coach ：</label>
-            <input type="text" class="form-control teaminfo_input" name="coach" placeholder="Coach" value="" >
-            <label for="coach" class="notification_label"></label>
-        </div>
-        <div class="form-inline">
-            <label class="description_label">School ：</label>
-            <input type="text" class="form-control teaminfo_input" name="school" placeholder="School" value="">
-            <label for="school" class="notification_label"></label>
-        </div>
-        <div class="form-inline">
-            <label class="description_label">Room ：</label>
-            <input type="text" class="form-control teaminfo_input" name="room" placeholder="Room" value="">
-            <label for="room" class="notification_label"></label>
-        </div>
-        <div class="form-inline">
-            <label class="description_label">Tkind ：</label>
-            <input type="text" class="form-control teaminfo_input" name="tkind" placeholder="Tkind(0common,1girls,2star)" value="">
-            <label for="tkind" class="notification_label"></label>
-        </div>
-        <div class="form-inline">
-            <label class="description_label">New Password ：</label>
-            <input type="text" id="modify_password" class="form-control teaminfo_input" placeholder="Let it blank or at least 6 characters" name="password" >
-            <label for="password" class="notification_label"></label>
-        </div>
-        <input type='hidden' id="cid_input" name='cid' value="{$contest['contest_id']}" >
-        <button class="btn btn-primary" id="submit_button" type="submit">Submit</button>
-    </form>
+    </div>
 </div>
 
-<style type="text/css">
-    #team_modify_form{
-        /*width: 500px;*/
-    }
-    #team_modify_form .description_label{
-        width: 150px;
-        text-align: right;
-    }
-    #team_modify_form .notification_label{
-        width: 300px;
-        text-align: left;
-    }
-    #team_modify_form input{
-        width: 360px;
-    }
-    #team_modify_form > div{
-        margin-top: 10px;
-    }
-    #team_modify_form > button {
-        margin-left: 155px;
-        margin-top: 20px;
-    }
-</style>
-<script type="text/javascript">
-    $(document).ready(function(){
-        let team_id_input = $('#team_id_input');
-        team_id_input.blur(function(){
-            if(team_id_input.val().trim() != '') {
-                $.get(
-                    '__CPC__/admin/teaminfo_ajax',
-                    {
-                        'team_id': team_id_input.val().trim(),
-                        'cid': $('#cid_input').val()
-                    },
-                    function(ret){
-                        if(ret['code'] == 1)
-                        {
-                            $('.teaminfo_input').each(function(){
-                                $(this).val(ret['data']['teaminfo'][$(this).attr('name')]);
-                            });
-                        }
-                        else
-                        {
-                            alertify.error(ret['msg']);
-                        }
-                        return false;
-                    }
-                );
-            }
-        });
-        $('#team_modify_form').validate({
-            rules:{
-                team_id: {
-                    required: true,
-                    minlength: 3,
-                    maxlength: 30
-                }
-            },
-            submitHandler: function(form)
-            {
-                $('#submit_button').attr('disabled', true);
-                $(form).ajaxSubmit(
-                {
-                    success: function(ret)
-                    {
-                        button_delay($('#submit_button'), 1, 'Submit');
-                        if(ret["code"] == 1)
-                        {
-                            alertify.success(ret['msg']);
-                        }
-                        else
-                        {
-                            alertify.alert(ret['msg']);
-                            var ts = Date.parse(new Date())/1000;
-                            $('#vcode').find('img').attr('src', "/captcha?id="+ts);
-                        }
-                        return false;
-                    }
-                });
-                return false;
-            }
-        });
-
-    });
-</script>
+{include file="../../csgoj/view/public/base_select" /}

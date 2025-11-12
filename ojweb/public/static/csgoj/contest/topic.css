@@ -1,0 +1,169 @@
+/**
+ * Topic模块统一CSS样式文件
+ * 包含提问添加、详情、列表、菜单等所有样式
+ */
+
+/* ==================== 通用样式 ==================== */
+.md_display_div {
+    max-width: 100% !important; /*覆盖全局样式*/
+}
+
+
+/* 按钮样式 */
+.btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+/* 徽章样式 */
+.badge {
+    font-size: 0.75em;
+    font-weight: 500;
+}
+
+/* 表单样式优化 */
+.form-control:focus,
+.form-select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* ==================== 提问列表页面样式 ==================== */
+
+
+/* 过滤输入框样式 */
+#topic_id_input {
+    max-width: 100px;
+}
+
+#user_id_input {
+    max-width: 120px;
+}
+
+#title_input {
+    max-width: 200px;
+}
+
+/* ==================== 提问添加页面样式 ==================== */
+
+/* 题目选择框 */
+#topic-apid {
+    width: 200px;
+}
+
+/* 标题输入框 */
+#title {
+    max-width: 900px;
+}
+
+/* 内容输入框 */
+textarea[name="topic_content"] {
+    max-width: 900px;
+}
+
+/* ==================== 提问详情页面样式 ==================== */
+
+/* 主题内容样式 */
+.topic_content_div {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* 回复内容样式 */
+.reply-content {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #555;
+}
+
+/* 回复项样式 */
+.reply_display_div {
+    transition: background-color 0.2s ease;
+}
+
+.reply_display_div:hover {
+    background-color: rgba(0, 123, 255, 0.02);
+}
+
+.reply_display_div:last-child {
+    border-bottom: none !important;
+}
+
+/* Hash图片样式 */
+.hash-img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    transition: opacity 0.2s ease;
+}
+
+.hash-img:hover {
+    opacity: 0.8;
+}
+
+/* Hash图片占位符样式 */
+.hash-img-placeholder {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.hash-img-placeholder:hover {
+    background-color: #e9ecef !important;
+}
+
+/* 回复表单样式 */
+#topic_reply_content {
+    width: 100%;
+}
+
+/* 快速回复选择框 */
+#reply-select {
+    width: 280px;
+}
+
+/* ==================== 状态按钮样式 ==================== */
+
+/* 状态变更按钮 */
+.topic_change_status {
+    transition: all 0.2s ease;
+}
+
+.topic_change_status:hover {
+    transform: translateY(-1px);
+}
+
+/* ==================== 响应式设计 ==================== */
+
+@media (max-width: 768px) {
+    .d-flex.gap-2.align-items-center.flex-wrap {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+    
+    .d-flex.gap-2.align-items-center.flex-wrap > * {
+        margin-bottom: 0.5rem;
+    }
+    
+    #reply-select {
+        width: 100% !important;
+    }
+    
+    /* 移动端表单元素全宽 */
+    #topic-apid,
+    #title,
+    textarea[name="topic_content"],
+    #topic_id_input,
+    #user_id_input,
+    #title_input {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+}
+

@@ -94,4 +94,4 @@ $('#testdata_table').on('load-success.bs.table', function(){
 });
 </script>
 {/if}
-{include file="../../csgoj/view/public/refresh_in_table" /}
+{js href="__JS__/refresh_in_table.js" /}

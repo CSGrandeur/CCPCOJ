@@ -1,0 +1,163 @@
+/* 现代化进度条样式 */
+.progress {
+    position: relative;
+    width: 100%;
+    height: 20px;
+    background-color: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.bar {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    width: 0%;
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+.bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.percent {
+    color: #495057;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+/* 图片预览样式 */
+.img-rounded {
+    max-width: 512px;
+    max-height: 512px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+}
+
+.img-rounded:hover {
+    transform: scale(1.02);
+}
+
+/* 文件操作按钮样式优化 */
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* 表格悬停效果 */
+.table-hover tbody tr:hover {
+    background-color: rgba(0,123,255,0.05);
+}
+
+/* 通知样式优化 */
+.alert {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* 确保在 iframe 中表格宽度正确，但不设置高度限制 */
+#upload_table {
+    width: 100% !important;
+    min-width: 100% !important;
+}
+
+.bootstrap-table {
+    width: 100% !important;
+}
+
+.fixed-table-container {
+    width: 100% !important;
+    /* 确保不限制高度 */
+    max-height: none !important;
+    height: auto !important;
+}
+
+.fixed-table-body {
+    /* 确保表格主体不限制高度 */
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+}
+/* 确保表格在 modal 中正确显示 */
+.modal-body table,
+.modal-body #upload_table,
+.modal .table,
+.modal #upload_table {
+    width: 100% !important;
+    min-width: 100% !important;
+}
+
+.modal .fixed-table-container {
+    width: 100% !important;
+}
+
+/* 搜索框样式优化 - 与按钮高度一致 */
+.bootstrap-table .search {
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    height: 38px; /* 与 btn 高度一致 */
+    margin-left: 0.5rem;
+}
+
+.bootstrap-table .search:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+    outline: none;
+}
+
+/* 分页控件样式优化 */
+.bootstrap-table .pagination {
+    margin: 0.5rem 0;
+}
+
+.bootstrap-table .page-link {
+    border-radius: 6px;
+    margin: 0 2px;
+    border: 1px solid #dee2e6;
+    color: #495057;
+}
+
+.bootstrap-table .page-link:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.bootstrap-table .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+/* 表头双语样式 */
+.bilingual-label {
+    display: block;
+    line-height: 1.2;
+}
+
+.bilingual-label .en-text {
+    display: block;
+    font-size: 0.75rem;
+    color: #6c757d;
+    font-weight: normal;
+}

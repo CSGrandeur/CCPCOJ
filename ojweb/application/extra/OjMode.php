@@ -9,12 +9,12 @@
 return [
     'OJ_MODE_ALLOW_MODULE' => [
         'online'    => [
-            'cpc' => ['index', 'admin', 'cr', 'csgoj', 'cpcsys', 'user', 'tt', 'ojtool'],
-            'exp' => ['index', 'admin', 'csgoj', 'user', 'expsys', 'ojtool'],
+            'cpc' => ['index', 'admin', 'cr', 'csgoj', 'cpcsys', 'user', 'tt', 'ojtool', 'outrank'],
+            'exp' => ['index', 'admin', 'csgoj', 'user', 'expsys', 'ojtool', 'outrank'],
         ],
         'cpcsys'    => [
-            'cpc' => ['cpcsys', 'admin', 'user', 'ojtool'],
-            'exp' => ['expsys', 'admin', 'user', 'ojtool'],
+            'cpc' => ['cpcsys', 'admin', 'user', 'ojtool', 'outrank'],
+            'exp' => ['expsys', 'admin', 'user', 'ojtool', 'outrank'],
         ]
     ],
 ];

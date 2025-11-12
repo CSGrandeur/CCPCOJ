@@ -1,0 +1,87 @@
+# CSGOJ judge2 评测机基础镜像
+FROM ubuntu:24.04
+
+# 设置环境变量
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    LANG=zh_CN.UTF-8 \
+    LANGUAGE=zh_CN:zh \
+    LC_ALL=zh_CN.UTF-8
+
+# 替换为国内镜像源
+RUN sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list.d/ubuntu.sources && \
+    sed -i 's/security.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list.d/ubuntu.sources
+
+# 安装基础编译工具和系统工具（变化频率低，单独一层便于缓存）
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    python3.12 \
+    python3-pip \
+    python3.12-dev \
+    python3-venv \
+    gcc-14 \
+    g++-14 \
+    gdb \
+    make \
+    cmake \
+    git \
+    curl \
+    wget \
+    tar \
+    gzip \
+    unzip \
+    vim \
+    nano \
+    htop \
+    procps \
+    net-tools \
+    iputils-ping \
+    && \
+    # 设置 Python 3.12 为默认版本，确保构建稳定性
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 100 && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.12 100 && \
+    # 设置 gcc-14 和 g++-14 为默认版本，确保构建稳定性
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 100 && \
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 100 && \
+    rm -rf /var/lib/apt/lists/*
+
+# 配置 pip 使用国内镜像源（变化频率低，单独一层）
+RUN pip3 config set global.index-url https://mirrors.aliyun.com/pypi/simple/
+
+# 安装 Python 依赖（变化频率可能较高，单独一层便于更新）
+RUN pip3 install --no-cache-dir --break-system-packages \
+    tqdm \
+    requests
+
+# 安装编程语言运行时支持（变化频率低，单独一层便于缓存）
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    openjdk-21-jdk \
+    nodejs \
+    npm \
+    golang-go \
+    php8.3 \
+    php8.3-cli \
+    libseccomp-dev \
+    python3-seccomp \
+    && \
+    # 设置 Java 21 为默认版本，确保构建稳定性
+    update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-21-openjdk-amd64/bin/java 100 && \
+    update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/java-21-openjdk-amd64/bin/javac 100 && \
+    # 设置 PHP 8.3 为默认版本
+    update-alternatives --install /usr/bin/php php /usr/bin/php8.3 100 && \
+    rm -rf /var/lib/apt/lists/*
+
+# 安装和配置语言包（变化频率低，单独一层）
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    locales \
+    locales-all \
+    && rm -rf /var/lib/apt/lists/* && \
+    locale-gen zh_CN.UTF-8 && \
+    update-locale LANG=zh_CN.UTF-8
+
+# 设置工作目录
+WORKDIR /usr/local/bin
+
+CMD ["/bin/bash"]

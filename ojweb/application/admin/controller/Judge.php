@@ -14,7 +14,7 @@ class Judge extends Filebase
         $this->AdminInit();
         $this->FilebaseInit();
 
-        $this->filenameRe = "/^(spj.cc|tpj.cc|([0-9a-zA-Z-_\\. \\(\\)]+\\.(zip|in|out)))$/i";
+        $this->filenameRe = "/^(tpj.cc|([0-9a-zA-Z-_\\. \\(\\)]+\\.(zip|in|out)))$/i";
         $this->filenameReMsg = "";
         $this->maxFileSize = config('CsgojConfig.OJ_UPLOAD_TESTDATA_MAXSIZE');
         $this->assign('maxfilesize', $this->maxFileSize);
@@ -28,6 +28,7 @@ class Judge extends Filebase
         $this->FileAuthentication();
         $this->GetPath();
     }
+
     public function judgedata_manager()
     {
         $this->assign([
@@ -39,10 +40,9 @@ class Judge extends Filebase
             'rename_url'        => '/admin/judge/file_rename_ajax?item=' . $this->inputInfo['item'] . '&id=' . $this->inputInfo['id'],
             'upload_url'        => '/admin/judge/upload_ajax',
             'method_button'     => 'File Type',
-            'attach_notify'     => "<code>.in</code>, <code>.out</code> and <code>spj.cc/tpj.cc</code>. <br/>
-            OJ原生special judge上传<code>spj.cc</code>，<strong class='text-danger'>若基于 testlib 请上传<code>tpj.cc</code></strong><br/>
-            上传zip将自动解压，不合法文件会自动删除。<br/>
-            Uploaded zip file will be automatically decompressed.<br/>If invalid files exists in the zip, they'll be automatically deleted without notification.<br/><strong>System will only recursively search folder with the same name of the zip file, e.g. a \"test\" folder in a \"test.zip\" file.</strong>"
+            "attach_notify"     => '<strong class="text-danger">.in、.out 以及只支持基于 testlib 的 <code>tpj.cc</code></strong><span class="en-text"><code>.in</code>, <code>.out</code> and only "tpj.cc" files based on testlib are supported.</span>
+            上传zip将自动解压，不合法文件会自动删除。<span class="en-text">Uploaded zip file will be automatically decompressed. If invalid files exists in the zip, they"ll be automatically deleted without notification.</span>
+            系统只递归搜索与zip文件同名的文件夹，例如 "test" 文件夹在 "test.zip" 文件中。<span class="en-text">System will only recursively search folder with the same name of the zip file, e.g. a "test" folder in a "test.zip" file.</span>'
         ]);
         return $this->fetch();
     }
@@ -83,19 +83,12 @@ class Judge extends Filebase
         $fileExt = strtolower(GetExtension($fileName));
         if (strlen($fileExt) == 0) {
             rename($filePath . ".FILE_NO_EXT", $filePath);
-            if ($fileName == 'spj' || $fileName == 'tpj') {
-                exec("chmod +x " . $filePath);
-            }
+            // 不再处理 spj 和 tpj 可执行文件
         } else if ($fileExt == 'zip') {
             $this->tmpFileBaseName = basename($fileName, '.zip');
             $this->DecompressZipData($filePath);
             unlink($filePath);
-            if (is_file($this->inputInfo['path'] . "/spj")) {
-                exec("chmod +x " . $this->inputInfo['path'] . "/spj");
-            }
-            if (is_file($this->inputInfo['path'] . "/tpj")) {
-                exec("chmod +x " . $this->inputInfo['path'] . "/tpj");
-            }
+            // 不再处理 spj 和 tpj 可执行文件
         }
     }
     public function upload_ajax()

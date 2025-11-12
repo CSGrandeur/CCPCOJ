@@ -7,12 +7,12 @@
     If not, You can join QQ group 1065953958 and ask in the group.(don't send private message to any admin)<br/>
 </span>
 <form id="passback_form" method='post' action="passback_ajax">
-    <div class="form-group">
-        <label for="user_id" class='control-label'>User ID：</label>
+    <div class="mb-3">
+        <label for="user_id" class="form-label">User ID：</label>
         <input type="text" class="form-control" name="user_id" placeholder="User ID..." style="max-width: 200px;" required>
     </div>
-    <div class="form-group">
-        <label class="description_label">*V-Code ：</label>
+    <div class="mb-3">
+        <label class="form-label">*V-Code ：</label>
         <input type="text" class="form-control" placeholder="Verification Code" name="vcode" style="max-width: 200px;"  required>
     </div>
     <button type="submit" id="submit_button" class="btn btn-primary">Submit</button>

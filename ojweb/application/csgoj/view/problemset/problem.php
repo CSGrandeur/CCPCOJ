@@ -1,68 +1,64 @@
 {include file="../../csgoj/view/problemset/problem_header" /}
 {include file="../../csgoj/view/public/mathjax_js" /}
 {include file="../../csgoj/view/public/code_highlight" /}
-<link rel="stylesheet" type="text/css" href="__STATIC__/csgoj/oj_problem.css" />
-<script type="text/javascript" src="__STATIC__/csgoj/oj_problem.js"></script>
+{css href="__STATIC__/csgoj/oj_problem.css" /}
+{js href="__STATIC__/csgoj/oj_problem.js" /}
 <div>
     <?php
-    if($problem['source'] == "<p>" . strip_tags($problem['source']) . "</p>") {
-        $problem['source'] = strip_tags($problem['source']);
-        $problem['source'] = "<a href='/csgoj/problemset#search=" . $problem['source'] . "'>" . $problem['source'] . "</a>";
-    }
     $items = [
-        'Description'   => ['article', $problem['description']],
-        'Input'         => ['article', $problem['input']],
-        'Output'        => ['article', $problem['output']],
-        'Sample Input'  => ['pre', $problem['sample_input']],
-        'Sample Output' => ['pre', $problem['sample_output']],
-        'Hint'          => ['article', $problem['hint']],
-        'Source'        => ['article', $problem['source']],
+        'description' => ['article', $problem['description'], '题目描述', 'Description'],
+        'input' => ['article', $problem['input'], '输入格式', 'Input'],
+        'output' => ['article', $problem['output'], '输出格式', 'Output'],
+        'sample_input' => ['pre', $problem['sample_input'], 'Sample Input', 'Sample Input'],
+        'sample_output' => ['pre', $problem['sample_output'], 'Sample Output', 'Sample Output'],
+        'hint' => ['article', $problem['hint'], '提示', 'Hint'],
     ];
-    if(isset($problem['author']) && $problem['author'] != null && strlen(trim($problem['author'])) > 0) {
-        $items['Author'] = ['article', $problem['author']];
+    if($controller == 'problemset') {
+        if($problem['source'] == "<p>" . strip_tags($problem['source']) . "</p>") {
+            $problem['source'] = strip_tags($problem['source']);
+            $problem['source'] = "<a href='/csgoj/problemset#search=" . $problem['source'] . "'>" . $problem['source'] . "</a>";
+        }
+        if(isset($problem['author']) && $problem['author'] != null && strlen(trim($problem['author'])) > 0) {
+            $items['author'] = ['article', $problem['author'], '出题', 'Author'];
+        }
+        $items['source'] = ['article', $problem['source'], '来源', 'Source'];
     }
-    foreach($items as $key=>$value)
+    foreach($items as $key => $value)
     {
+        $type = $value[0];
+        $content = $value[1];
+        $title_cn = $value[2];
+        $title_en = $value[3];
         ?>
-        {if $key=='Sample Input'}
+        {if $key=='sample_input'}
         <div name="Sample" class="md_display_div">
-            <h2 class="text-primary">Sample</h2>
+            <h2 class="text-info bilingual-inline">样例<span class="en-text">Sample</span></h2>
             <div class="sample_div">
-                <div class="sample_row">
-                    <div class="sample_col" class="sample_input">
-                        <pre class="sampledata sample_input_area">{$value[1]|htmlspecialchars}</pre>
-                    </div>
-        {elseif $key=='Sample Output'}
-                    <div class="sample_col" class="sample_output">
-                        <pre class="sampledata sample_output_area">{$value[1]|htmlspecialchars}</pre>
-                    </div>
-                </div>
+                <textarea id="sample_input_hidden" style="display: none;">{$content|htmlspecialchars}</textarea>
+        {elseif $key=='sample_output'}
+                <textarea id="sample_output_hidden" style="display: none;">{$content|htmlspecialchars}</textarea>
             </div>
         </div>
         {else /}
+        {if !empty($content)}
         <div name="{$key}" class="md_display_div">
-            <h2 class="text-primary">{$key}</h2>
-            {$value[1]}
+            <h2 class="text-info bilingual-inline">{$title_cn}<span class="en-text">{$title_en}</span></h2>
+            {$content}
         </div>
+        {/if}
         {/if}
         <?php
     }
     ?>
 </div>
-<script>
-    $(document).ready(function() {
-        let sample_div = $('.sample_div');
-        let sample_in_str = sample_div.find('.sample_input_area').text();
-        let sample_out_str = sample_div.find('.sample_output_area').text();
-
-        sample_div.html(ProblemSampleHtml(sample_in_str, sample_out_str));
-    })
-</script>
-
 {include file="../../csgoj/view/problemset/problem_footer" /}
 
+{if $controller == 'problemset' }
 <script type="text/javascript">
     $('.disabled_problem_submit_button').on('click', function(){
         alertify.error('Please login before submit!');
     });
 </script>
+{/if}
+
+

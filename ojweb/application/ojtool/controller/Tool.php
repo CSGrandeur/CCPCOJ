@@ -10,10 +10,6 @@ class Tool extends Ojtoolbase
         $this->assign("pagetitle", "Award");
         return $this->fetch();
     }
-    public function contest2print() {
-        $this->assign("pagetitle", "Contest Problem Print");
-        return $this->fetch();
-    }
     public function time_page_set() {
         // 监考时显示时间的小工具
         $this->assign("pagetitle", "Time Page Set");
@@ -27,5 +23,14 @@ class Tool extends Ojtoolbase
     public function polygon_parser() {
         $this->assign("pagetitle", "Polygon Parser");
         return $this->fetch();
+    }
+    
+    public function server_time_ajax() {
+        if (!IsLogin()) {
+            $this->error("Please login first");
+        }
+        $this->success("OK", null, [
+            'server_time' => microtime(true)
+        ]);
     }
 }

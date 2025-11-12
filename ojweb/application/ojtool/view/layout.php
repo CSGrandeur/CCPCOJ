@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-{include file="public/global_head" /}
+{include file="../../csgoj/view/public/global_head" /}
 <body>
 {include file="public/header" /}
 <main>

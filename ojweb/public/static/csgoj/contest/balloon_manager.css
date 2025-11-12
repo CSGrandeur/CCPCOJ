@@ -1,0 +1,536 @@
+/* ==========================================
+   气球管理系统样式 - 最小定制，主要使用Bootstrap 5
+   ========================================== */
+
+/* 头部区域 - 使用 Bootstrap 标准样式 */
+.balloon-header-section {
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    padding: 1rem 0;
+}
+
+.balloon-header-row {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+/* 紧凑型标题（使用bilingual.css和Bootstrap标准样式） */
+.balloon-title-compact {
+    flex-shrink: 0;
+}
+
+.balloon-title-text {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    /* 确保 .en-text 在标题中上下显示，字号比中文小 */
+}
+
+/* 确保标题中的英文文本是上下结构，字号比中文小 */
+.balloon-title-text en-text,
+.balloon-title-text .en-text {
+    display: block !important;
+    margin-left: 0 !important;
+    margin-top: 1px !important;
+    font-size: 0.7em !important;
+    color: inherit;
+    font-style: italic;
+    opacity: 0.8;
+    line-height: 1.0em;
+    font-weight: normal;
+}
+
+/* 控制组 - 使用 Bootstrap 标准样式 */
+.balloon-controls-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+.balloon-refresh-countdown {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 12px;
+    background: #0d6efd;
+    color: #ffffff;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+#balloon-countdown-text {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+/* 全局统计信息样式 - 使用Bootstrap card样式 */
+.balloon-global-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(120px, 1fr));
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.balloon-stat-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 120px;
+    max-width: 180px;
+    box-sizing: border-box;
+}
+
+.balloon-stat-item:hover {
+    background-color: rgba(13, 110, 253, 0.1);
+    transform: translateY(-2px);
+}
+
+.balloon-stat-item[data-status="0"] {
+    border: 2px solid #dc3545;
+}
+
+.balloon-stat-item[data-status="10"] {
+    border: 2px solid #ffc107;
+}
+
+.balloon-stat-item[data-status="20"] {
+    border: 2px solid #0dcaf0;
+}
+
+.balloon-stat-item[data-status="30"] {
+    border: 2px solid #198754;
+}
+
+/* 选中状态的统计项 - 更粗的边框 */
+.balloon-stat-item.stat-selected {
+    border-width: 4px !important;
+    box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+    background-color: rgba(13, 110, 253, 0.05);
+    font-weight: 700;
+}
+
+.balloon-stat-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #495057;
+    white-space: nowrap;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.balloon-stat-label en-text,
+.balloon-stat-label .en-text {
+    font-size: 11px;
+    font-weight: 400;
+    color: #6c757d;
+    opacity: 0.8;
+}
+
+.balloon-stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: #212529;
+    white-space: nowrap;
+}
+
+/* 气球状态边框样式 - 使用outline不占DOM空间，更粗的边框 */
+.problem-item.balloon-status-0 {
+    /* 未发气球 - 红色 */
+    outline: 6px solid #dc3545 !important;
+    outline-offset: -6px !important;
+}
+
+.problem-item.balloon-status-10 {
+    /* 已通知 - 黄色 */
+    outline: 6px solid #ffc107 !important;
+    outline-offset: -6px !important;
+}
+
+.problem-item.balloon-status-20 {
+    /* 已分配 - 青色 */
+    outline: 6px solid #0dcaf0 !important;
+    outline-offset: -6px !important;
+}
+
+.problem-item.balloon-status-30 {
+    /* 已发放 - 绿色 */
+    outline: 6px solid #198754 !important;
+    outline-offset: -6px !important;
+}
+
+/* 确保outline不影响布局 */
+.problem-item[class*="balloon-status-"] {
+    box-sizing: border-box;
+}
+
+/* 气球管理：题目列背景色半透明，让边框更显著 - 仅对balloon-manager-system生效 */
+.balloon-manager-system .problem-item {
+    background-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.balloon-manager-system .problem-item.pro-ac {
+    background-color: rgba(40, 167, 69, 0.2) !important;
+}
+
+.balloon-manager-system .problem-item.pro-wa {
+    background-color: rgba(220, 53, 69, 0.15) !important;
+}
+
+.balloon-manager-system .problem-item.pro-pending {
+    background-color: rgba(255, 193, 7, 0.2) !important;
+}
+
+/* 气球管理：题目内容只显示time-brief，居中 */
+.balloon-problem-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.balloon-problem-content .pro-submit-cnt,
+.balloon-problem-content .problem-separator,
+.balloon-problem-content .time-full {
+    display: none !important;
+}
+
+.balloon-problem-content .time-brief {
+    display: inline-block !important;
+    text-align: center;
+    width: 100%;
+}
+
+/* 统计值点击样式 */
+.balloon-stats-clickable {
+    transition: all 0.2s ease;
+}
+
+.balloon-stats-clickable:hover {
+    background-color: rgba(13, 110, 253, 0.1);
+    border-radius: 4px;
+    transform: scale(1.1);
+}
+
+.problem-header-stats-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 4px;
+    font-size: 11px;
+}
+
+.problem-header-stats {
+    display: inline-block;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+/* 响应式布局 - 窄屏时统计值变成 2x2 布局 */
+@media (max-width: 768px) {
+    .balloon-header-row {
+        gap: 1rem;
+    }
+    
+    .balloon-title-text {
+        font-size: 1.25rem;
+    }
+    
+    .balloon-global-stats {
+        grid-template-columns: repeat(2, 1fr);
+        width: 100%;
+    }
+    
+    .balloon-stat-item {
+        padding: 0.375rem 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .balloon-header-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .balloon-title-text {
+        font-size: 1.125rem;
+    }
+    
+    .balloon-controls-group {
+        width: 100%;
+    }
+    
+    .balloon-global-stats {
+        width: 100%;
+    }
+}
+
+/* 队伍信息模板样式 - 水平布局：label在左，内容在右，每条一行 */
+.team-info-template {
+    font-size: 0.875rem;
+    line-height: 1.75;
+    color: #212529;
+}
+
+.team-info-template .team-info-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    padding: 0;
+    transition: background-color 0.2s ease;
+}
+
+.team-info-template .team-info-item:last-child {
+    margin-bottom: 0;
+}
+
+.team-info-template .team-info-item i {
+    width: 20px;
+    height: 20px;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.team-info-template .team-info-item .label-text {
+    font-size: 0.875rem;
+    color: #6c757d;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.team-info-template .team-info-item .main-text {
+    font-weight: 500;
+    color: #212529;
+    word-break: break-word;
+    line-height: 1.5;
+    flex: 1;
+    min-width: 0;
+}
+
+.team-info-template .team-info-item .sub-text {
+    font-size: 0.813rem;
+    color: #6c757d;
+    font-weight: 400;
+}
+
+.team-info-template .team-info-item.team-info-highlight {
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(13, 110, 253, 0.05) 100%);
+    padding: 0.625rem 0.875rem;
+    margin: 0.5rem 0;
+    border-radius: 0.375rem;
+    box-shadow: 0 1px 3px rgba(13, 110, 253, 0.1);
+}
+
+/* 筛选器工具栏样式优化 */
+.balloon-filter-container {
+    width: 100%;
+}
+
+.balloon-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    border: 1px solid #e9ecef;
+}
+
+.balloon-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    min-width: 150px;
+    flex: 1 1 auto;
+}
+
+.balloon-filter-group:last-child {
+    flex: 0 0 auto;
+    min-width: auto;
+}
+
+.balloon-filter-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #495057;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.balloon-filter-label .en-text {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: #6c757d;
+    font-style: italic;
+}
+
+.balloon-filter-input {
+    width: 100%;
+    min-width: 200px;
+}
+
+.balloon-filter-group select.multiple-select {
+    width: 100%;
+    min-width: 150px;
+}
+
+/* 清空按钮样式 */
+#balloon-filter-clear {
+    white-space: nowrap;
+    height: fit-content;
+    margin-top: 1.5rem;
+}
+
+#balloon-filter-clear .en-text {
+    margin-left: 0.25rem;
+}
+
+/* 响应式：窄屏时筛选器垂直排列 */
+@media (max-width: 992px) {
+    .balloon-filter-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .balloon-filter-group {
+        width: 100%;
+        min-width: 100%;
+    }
+    
+    #balloon-filter-clear {
+        margin-top: 0;
+        align-self: flex-start;
+    }
+}
+
+.card-body .team-info-template .team-info-item.team-info-highlight {
+    margin-left: -0.75rem;
+    margin-right: -0.75rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
+
+.team-info-template .team-info-item.team-info-highlight i {
+    font-size: 1.25rem;
+    width: 24px;
+    height: 24px;
+}
+
+.team-info-template .team-info-item.team-info-highlight .main-text {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0d6efd;
+    letter-spacing: 0.3px;
+}
+
+.team-info-template .team-info-item.team-info-highlight .label-text {
+    font-size: 0.875rem;
+    color: #495057;
+    font-weight: 600;
+}
+.team-info-template .team-info-item.team-info-highlight .label-text, .team-info-template .team-info-item .label-text {
+    margin-right: 1em;
+    width: 60px;
+    text-align: right;
+}
+.team-info-template .team-info-item .badge {
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    display: inline-block;
+}
+
+/* ==========================================
+   自动打印小票管理区域样式
+   ========================================== */
+
+.balloon-print-manager {
+    border: 1px solid #dee2e6;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.balloon-print-manager .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    padding: 0.75rem 1rem;
+}
+
+.balloon-print-manager .card-body {
+    padding: 1rem;
+}
+
+.balloon-print-manager .toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.balloon-print-manager #balloon-print-countdown {
+    font-size: 0.875rem;
+    color: #0d6efd;
+}
+
+.balloon-print-manager #balloon-print-countdown-text {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.balloon-print-manager #balloon-print-max-hint {
+    margin-left: 0.25rem;
+    white-space: nowrap;
+}
+
+.balloon-print-manager #balloon-print-max-count {
+    font-weight: 600;
+    color: #0d6efd;
+}
+
+/* 自定义尺寸输入组样式 */
+#balloon-print-custom-size-group,
+#balloon-print-custom-size-group2 {
+    display: none !important;
+}
+
+#balloon-print-custom-size-group.show,
+#balloon-print-custom-size-group2.show {
+    display: flex !important;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .balloon-print-manager .card-body .d-flex {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .balloon-print-manager .toolbar-group {
+        width: 100%;
+    }
+}
+

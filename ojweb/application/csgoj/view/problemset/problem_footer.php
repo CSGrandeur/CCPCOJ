@@ -1,3 +1,3 @@
-<hr class="bs-docs-separator">
+<hr>
 
 {include file="../../csgoj/view/problemset/submit_button" /}

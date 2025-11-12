@@ -1,0 +1,474 @@
+/* ========================================
+   气球颜色管理样式
+   Balloon Color Management Styles
+   ======================================== */
+
+/* 气球颜色容器 */
+.balloon-colors-container {
+    border: 1px solid var(--bs-border-color);
+    border-radius: .375rem;
+    padding: 1rem;
+    background: var(--bs-body-bg);
+    transition: border-color 0.15s ease-in-out;
+}
+
+.balloon-colors-container:focus-within {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+/* 颜色预览网格 */
+.balloon-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background: var(--bs-light);
+    border-radius: .375rem;
+    min-height: 60px;
+}
+
+/* 颜色块样式 - 水平布局紧凑版 */
+.balloon-color-item {
+    display: flex;
+    align-items: center;
+    padding: 0.375rem;
+    border: 1px solid transparent;
+    border-radius: .375rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: white;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    min-height: 50px;
+    position: relative;
+    gap: 0.5rem;
+}
+
+.balloon-color-item:hover {
+    border-color: var(--bs-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.balloon-color-item.selected {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* 颜色块 - 使用圆角矩形 */
+.balloon-color-block {
+    width: 28px;
+    height: 28px;
+    border-radius: .25rem;
+    border: 1px solid rgba(255,255,255,0.8);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    flex-shrink: 0;
+    position: relative;
+}
+
+/* 颜色块上的字母标识 */
+.balloon-color-block::after {
+    content: attr(data-letter);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    pointer-events: none;
+}
+
+/* 右侧信息区域 */
+.balloon-color-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+}
+
+/* 题号信息 - 字母:数字 */
+.balloon-color-problem-info {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--bs-dark);
+    margin-bottom: 0.125rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 颜色值 */
+.balloon-color-value {
+    font-size: 9px;
+    color: var(--bs-muted);
+    font-family: 'Courier New', monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* 输入组样式 - 使用Bootstrap5 input-group */
+.balloon-colors-container .input-group .form-control {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.balloon-colors-container .input-group .btn-group .btn {
+    border-radius: 0;
+    border-left: 0;
+}
+
+.balloon-colors-container .input-group .btn-group .btn:last-child {
+    border-top-right-radius: .375rem;
+    border-bottom-right-radius: .375rem;
+}
+
+/* 预设颜色容器 */
+.preset-colors {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* 预设颜色行 */
+.preset-colors-row {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 0.5rem;
+    justify-items: center;
+}
+
+/* 预设颜色项 */
+.preset-color-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    width: 100%;
+    max-width: 60px;
+}
+
+/* 预设颜色按钮 */
+.preset-color-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    padding: 0;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.preset-color-btn:hover {
+    border-color: var(--bs-primary);
+    transform: scale(1.1);
+    z-index: 1;
+}
+
+.preset-color-btn:focus {
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    outline: none;
+}
+
+.preset-color-btn:active {
+    transform: scale(1.05);
+}
+
+/* 预设颜色标签 */
+.preset-color-label {
+    font-size: 0.65rem;
+    color: var(--bs-muted);
+    font-family: 'Courier New', monospace;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    line-height: 1.2;
+    font-weight: 500;
+}
+
+/* 响应式调整 */
+@media (max-width: 992px) {
+    .preset-colors-row {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.375rem;
+    }
+    
+    .preset-color-item {
+        max-width: 50px;
+    }
+    
+    .preset-color-btn {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .preset-color-label {
+        font-size: 0.6rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .preset-colors-row {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.25rem;
+    }
+    
+    .preset-color-item {
+        max-width: 45px;
+    }
+    
+    .preset-color-btn {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .preset-color-label {
+        font-size: 0.55rem;
+    }
+}
+
+/* 颜色预览 */
+.color-preview-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--bs-border-color);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    flex-shrink: 0;
+}
+
+.color-preview {
+    padding: 0.75rem;
+    background: var(--bs-light);
+    border-radius: .375rem;
+}
+
+#colorPreviewText {
+    font-family: 'Courier New', monospace;
+    font-weight: 500;
+}
+
+
+/* 空状态 */
+.balloon-preview-grid:empty::before {
+    content: "暂无题目，请先添加题目";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bs-muted);
+    font-style: italic;
+    min-height: 60px;
+    font-size: 0.875rem;
+}
+
+/* 气球颜色模态框样式 */
+#balloonColorModal .modal-header .problem-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#balloonColorModal .modal-header .problem-info .problem-letter {
+    font-size: 1.125rem;
+    font-weight: 700;
+    background: var(--bs-light);
+    border-radius: 50%;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+#balloonColorModal .modal-header .problem-info .problem-id {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--bs-dark);
+    font-family: 'Courier New', monospace;
+}
+
+/* 颜色对比样式 */
+.color-comparison-item {
+    text-align: center;
+    padding: 0.75rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: .375rem;
+    background: var(--bs-light);
+}
+
+.color-comparison-item .color-preview {
+    justify-content: center;
+    margin-top: 0.5rem;
+}
+
+.color-comparison-item .color-preview-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--bs-white);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.color-comparison-item .color-preview span {
+    font-family: 'Courier New', monospace;
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+/* ========================================
+   表单样式优化
+   Form Styles Optimization
+   ======================================== */
+
+/* ========================================
+   比赛类型按钮组样式
+   Contest Type Button Group Styles
+   ======================================== */
+.contest-type-btn {
+    transition: all 0.2s ease;
+    border: 2px solid transparent !important;
+    position: relative;
+}
+
+.contest-type-btn:not(.active) {
+    opacity: 0.7;
+    border-color: #dee2e6 !important;
+}
+
+.contest-type-btn.active {
+    opacity: 1;
+    border-color: var(--bs-primary) !important;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    z-index: 10;
+}
+
+.contest-type-btn:hover:not(.active) {
+    opacity: 0.9;
+    border-color: #adb5bd !important;
+}
+
+/* 激活状态指示器 */
+.contest-type-btn.active::after {
+    content: '✓';
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: var(--bs-primary);
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: bold;
+    z-index: 5;
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+    .contest-type-btn.active::after {
+        width: 16px;
+        height: 16px;
+        font-size: 10px;
+        top: 3px;
+        right: 3px;
+    }
+}
+
+/* 时间输入框样式 */
+.form-control-sm {
+    font-size: 0.875rem;
+}
+
+/* 响应式调整 - 气球颜色预览 */
+@media (max-width: 768px) {
+    .balloon-preview-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 0.375rem;
+    }
+    
+    .balloon-color-item {
+        min-height: 45px;
+        padding: 0.25rem;
+        gap: 0.375rem;
+    }
+    
+    .balloon-color-block {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .balloon-color-block::after {
+        font-size: 9px;
+    }
+    
+    .balloon-color-problem-info {
+        font-size: 10px;
+    }
+    
+    .balloon-color-value {
+        font-size: 8px;
+    }
+}
+
+/* ========================================
+   题目选择器模态框样式
+   Problem Selection Modal Styles
+   ======================================== */
+#problemSelectionModal .modal-dialog {
+    max-width: 1200px;
+    height: 90vh;
+}
+
+#problemSelectionModal .modal-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#problemSelectionModal .modal-body {
+    flex: 1;
+    overflow-y: auto;
+}
+
+#problemSelectionModal .table th {
+    border-top: none;
+    font-weight: 600;
+    background-color: #f8f9fa;
+}
+
+#problemSelectionModal .table td {
+    vertical-align: middle;
+}
+
+#problemSelectionModal .problem-checkbox {
+    transform: scale(1.1);
+}
+
+#problemSelectionModal .sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+#problemSelectionModal .table-responsive {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+}
+
+#problemSelectionModal .text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

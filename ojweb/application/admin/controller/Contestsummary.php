@@ -466,7 +466,7 @@ class Contestsummary extends Adminbase
             $solContent .= "\tSimilar:".$sol['sim']."% to solution " . $sol['sim_s_id'] . "\n";
         }
         $solContent .= "**********************************************************************/\n\n";
-        $solContent .= str_replace("\n\r","\n", $sol['source']);
+        $solContent .= str_replace("\r\n","\n", $sol['source']);
 
         $solContent .= "\n````\n\n";
         return $title . $solContent;

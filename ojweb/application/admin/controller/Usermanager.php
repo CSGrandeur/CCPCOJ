@@ -6,6 +6,7 @@
  * Time: 21:40
  */
 namespace app\admin\controller;
+use think\Db;
 use think\Validate;
 class Usermanager extends Adminbase
 {
@@ -76,6 +77,8 @@ class Usermanager extends Adminbase
         if(strlen($search) > 0)
             $map['user_id|nick'] =  ['like', "%$search%"];
 
+        // 只查询user_id长度不少于5的用户
+		$map[] = ['exp', Db::raw('CHAR_LENGTH(user_id) >= 5')];
         $ret = [];
         $Users = db('users');
         $userlist = $Users
@@ -139,100 +142,121 @@ class Usermanager extends Adminbase
 			$this->error("No permission");
 		}
 		
-        $userDescription = trim(input('user_description/s'));
-        if(strlen($userDescription) == 0)
-            $userList = [];
-        else
-            $userList = explode("\n", $userDescription);
-        $userListNum = count($userList);					//userDescription的行数，与userNumber取较大者
-        if($userListNum == 0) {
-            $this->error('At least fill in one form of User description or User number.');
+		// 获取POST数据
+		$userList = input('user_list');
+		
+		if (!$userList) {
+			$this->error('No user data provided');
 		}
-		else if($userListNum > 100) {
-            $this->error('No more than 100 user allowed to generate at once.');
+		
+		// 解析JSON数据
+		$users = json_decode($userList, true);
+		if (!$users || !is_array($users)) {
+			$this->error('Invalid user data format');
 		}
-        $userToInsert = [];
-        $userToShow = [];
-        $fieldList = ['user_id', 'nick', 'school', 'email', 'password'];
-        $fieldNum = count($fieldList);
-        $validate = new Validate(config('CpcSysConfig.userinfo_rule'), config('CpcSysConfig.userinfo_msg'));
-        $validateNotList = '';
-        $solutionUserQuery = db('solution')->group('user_id')->field('user_id')->select();
-        $solutionUsers = [];
-        foreach($solutionUserQuery as $val) {
-            $solutionUsers[strtolower($val['user_id'])] = true;
+		
+		if(count($users) == 0) {
+			$this->error('No users to generate');
 		}
-        $privilegeUserQuery = db('privilege')->group('user_id')->field('user_id')->select();
-        $privilegeUsers = [];
-        foreach($privilegeUserQuery as $val) {
-            $privilegeUsers[strtolower($val['user_id'])] = true;
+		if(count($users) > 100) {
+			$this->error('No more than 100 user allowed to generate at once.');
 		}
-
+		
+		$userToInsert = [];
+		$userToShow = [];
+		$validate = new Validate(config('CpcSysConfig.userinfo_rule'), config('CpcSysConfig.userinfo_msg'));
+		$validateNotList = '';
+		
+		// 检查user_id重复
+		$userIds = [];
+		foreach($users as $userData) {
+			$userId = $userData['user_id'] ?? '';
+			if($userId != '') {
+				if(in_array($userId, $userIds)) {
+					$this->error("Duplicate user_id found: " . $userId);
+				}
+				$userIds[] = $userId;
+			}
+		}
+		
+		// 检查已存在的用户
+		$solutionUserQuery = db('solution')->group('user_id')->field('user_id')->select();
+		$solutionUsers = [];
+		foreach($solutionUserQuery as $val) {
+			$solutionUsers[strtolower($val['user_id'])] = true;
+		}
+		$privilegeUserQuery = db('privilege')->group('user_id')->field('user_id')->select();
+		$privilegeUsers = [];
+		foreach($privilegeUserQuery as $val) {
+			$privilegeUsers[strtolower($val['user_id'])] = true;
+		}
+		
 		$userIdsInsert = [];
 		$userNotUpdateInfo = "";
-        $idxNotupdate = 0;
-		foreach($userList as $userStr)
-        {
-            $user = preg_split("/[#\\t]/", $userStr);
-            $userinfo = [];
-            for($j = 0; $j < $fieldNum; $j ++)
-            {
-                if(!array_key_exists($j, $user))
-                    $user[$j] = '';
-                $field = trim($user[$j]);
-                switch($fieldList[$j])
-                {
-                    case 'user_id':
-                        if($field == '' || strlen($field) < 3) {
-                        	continue 2;
-						}
-                        $userinfo['user_id'] = $field;
-                        break;
-                    case 'password':
-                        if($field == '' || strlen($field) < 6) {
-                            $field = RandPass();
-						}
-                        $userinfo['password'] = $field;
-                        break;
-                    default:
-                        $userinfo[$fieldList[$j]] = $field;
-                }
-            }
-            $userinfo['reg_time'] = date('Y-m-d H:i:s');
-            if(!$validate->check($userinfo)) {
-                $validateNotList .= "<br/>" . $userinfo['user_id'] . ': ' . $validate->getError();
-            }
-            if(strlen($validateNotList) == 0 && 
-				!array_key_exists(strtolower($userinfo['user_id']), $solutionUsers) &&
-				!array_key_exists(strtolower($userinfo['user_id']), $privilegeUsers)
-			)
-            {
-                $userToShow[] = $userinfo;
-                $userinfo['password'] = MkPasswd($userinfo['password']);
-                $userToInsert[] = $userinfo;
-				$userIdsInsert[] = $userinfo['user_id'];
-            }
-			else {
-                $idxNotupdate ++;
-				$userNotUpdateInfo .= "<br/>" . $idxNotupdate . ". " . $userinfo['user_id'];
+		$idxNotupdate = 0;
+		
+		foreach($users as $userData) {
+			$nowUser = [];
+			
+			// 处理user_id（必须提供，不允许为空）
+			$userId = $userData['user_id'] ?? '';
+			if($userId == '') {
+				$this->error('User ID is required for all users');
 			}
-        }
-        if(strlen($validateNotList) > 0)
-        {
-            $addInfo = '<br/>Some user information is not valid. Please check.' . $validateNotList;
-            $this->error('User generation failed.' . $addInfo);
-        }
+			$nowUser['user_id'] = $userId;
+			
+			// 处理其他字段
+			$nowUser['nick'] = $userData['nick'] ?? '';
+			$nowUser['school'] = $userData['school'] ?? '';
+			$nowUser['email'] = $userData['email'] ?? '';
+			$nowUser['ip'] = 'localhost';
+			
+			// 处理密码
+			$password = $userData['password'] ?? '';
+			if($password == '') {
+				$password = RandPass();
+			}
+			$nowUser['password'] = $password;
+			
+			$nowUser['reg_time'] = date('Y-m-d H:i:s');
+			
+			// 验证数据
+			if(!$validate->check($nowUser)) {
+				$validateNotList .= "<br/>" . $nowUser['user_id'] . ': ' . $validate->getError();
+			}
+			
+			if(strlen($validateNotList) == 0 && 
+				!array_key_exists(strtolower($nowUser['user_id']), $solutionUsers) &&
+				!array_key_exists(strtolower($nowUser['user_id']), $privilegeUsers)
+			) {
+				$userToShow[] = $nowUser;
+				$nowUser['password'] = MkPasswd($nowUser['password']);
+				$userToInsert[] = $nowUser;
+				$userIdsInsert[] = $nowUser['user_id'];
+			} else {
+				$idxNotupdate++;
+				$userNotUpdateInfo .= "<br/>" . $idxNotupdate . ". " . $nowUser['user_id'];
+			}
+		}
+		
+		if(strlen($validateNotList) > 0) {
+			$addInfo = '<br/>Some user information is not valid. Please check.' . $validateNotList;
+			$this->error('User generation failed.' . $addInfo);
+		}
+		
 		if(strlen($userNotUpdateInfo) > 0) {
 			$userNotUpdateInfo = "<br/>User with submission or privilege not updated:" . $userNotUpdateInfo;
 		}
-        $Users = db('users');
-        if(!$Users->insertAll($userToInsert, 'REPLACE')) {
-            $retInfo = 'No user generated. Users already exist or data input is invalid.';
-            if(strlen($userNotUpdateInfo) > 0) {
-                $retInfo .= $userNotUpdateInfo;
-            }
-            $this->error($retInfo);
-        }
-        $this->success('User successfully generated/updated. See the table below.' . $userNotUpdateInfo, null, ['rows' => $userToShow, 'type' => 'usergen']);
+		
+		$Users = db('users');
+		$success_num = $Users->insertAll($userToInsert, true);
+		if(!$success_num) {
+			$retInfo = 'No user generated. Users already exist or data input is invalid.';
+			if(strlen($userNotUpdateInfo) > 0) {
+				$retInfo .= $userNotUpdateInfo;
+			}
+			$this->error($retInfo);
+		}
+		$this->success('User successfully generated/updated. See the table below.' . $userNotUpdateInfo, null, ['rows' => $userToShow, 'type' => 'usergen', 'success_num'=> $success_num]);
 	}
 }

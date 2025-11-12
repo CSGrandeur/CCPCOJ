@@ -7,7 +7,6 @@ class News extends Adminbase
 	//News
 	//***************************************************************//
 	var $staticPage;
-	var $homeCategory;
 	var $maxTag;
 	var $tagLength;
 	public function _initialize()
@@ -15,13 +14,11 @@ class News extends Adminbase
 		$this->OJMode();
 		$this->AdminInit();
 		$this->staticPage 		= config('CsgcpcConst.STATIC_PAGE');
-		$this->homeCategory 	= config('CsgcpcConst.HOME_CATEGORY');
 		$this->maxTag 			= config('CsgcpcConst.MAX_TAG');
 		$this->tagLength 		= config('CsgcpcConst.TAG_LENGTH');
 
 		$this->assign([
 			'staticPage' 	=> $this->staticPage,
-			'homeCategory' 	=> $this->homeCategory,
 			'maxTag'		=> $this->maxTag,
 			'tagLengh'		=> $this->tagLength,
 		]);
@@ -32,47 +29,71 @@ class News extends Adminbase
 	}
 	public function news_list_ajax()
 	{
-		// 目前news在bootstrap table 使用 client side paginate，所以一次性输出全部数据
 		$columns = ['news_id', 'user_id', 'category', 'title', 'time', 'defunct'];
-		$order	= input('order', 'desc');
-		$search	= trim(input('search', ''));
+		$offset		= intval(input('offset'));
+		$limit		= intval(input('limit'));
+		$sort		= trim(input('sort'));
+		$sort       = validate_item_range($sort, $columns);
+		$order		= input('order');
+		$search		= trim(input('search/s'));
+		
+		// 新增筛选参数
+		$category_filter = input('category', -1);
+		$defunct_filter = input('defunct', -1);
 
-		$News = db('news');
-		$map = [];
-		if(isset($search) && strlen($search) > 0)
+		$map = [
+			'news_id' => ['egt', 1000]
+		];
+		if(strlen($search) > 0)
 			$map['news_id|user_id|title|category'] = ['like', "%$search%"];
-		$list = $News
-			->field(implode(",", $columns))
-			->where('news_id', 'egt', 1000)
-//			->where($map)
-//			->limit($offset,$limit)
-			->order('news_id', $order)
-			->select();
-		foreach($list as &$news)
-		{
-			$news['title'] = "<a href='/index/" . $news['category'] ."/detail?nid=".$news["news_id"]."'>".$news["title"]."</a>";
-			$news['user_id'] = "<a href='/csgoj/user/userinfo?user_id=" . $news['user_id'] . "'>" . $news['user_id'] . "</a>";
-			if(IsAdmin($this->privilegeStr, $news['news_id']))
-			{
-				$news['defunct'] =
-					"<button type='button' field='defunct' itemid='".$news['news_id']."' class='change_status btn ".
-					($news['defunct'] == '0' ? "btn-success' status='0' >Available" : "btn-warning' status='1' >Reserved").
-					"</button>";
-				$news['edit'] = "<a href='/admin/news/news_edit?id=" . $news['news_id'] . "'>Edit</a>";
-			}
-			else
-			{
-				$news['defunct'] = $news['defunct'] == '0' ? "<span class='text-success'>Available</span>" : "<span class='text-warning'>Reserved</span>";
-				$news['edit'] = "-";
-			}
-			$news['category_show'] = array_key_exists($news['category'], $this->homeCategory) ? $this->homeCategory[$news['category']] : "UnKnown";
+			
+		// 添加category筛选
+		if($category_filter != -1) {
+			$map['category'] = $category_filter;
 		}
-//		$total_map = [];
-//		if(strlen($search) > 0)
-//			$total_map['news_id|user_id|title'] = ['like', "%$search%"];
-//		$ret['total'] = $News->where($total_map)->count();
-//		$ret["rows"] = $list;
-		return $list;
+		
+		// 添加defunct筛选
+		if($defunct_filter != -1) {
+			$map['defunct'] = $defunct_filter;
+		}
+		
+		$ret = [];
+		$ordertype = [];
+		if(strlen($sort) > 0)
+		{
+			$ordertype = [
+				$sort => $order
+			];
+		}
+		$News = db('news');
+		$newsList = $News
+			->field(implode(",", $columns))
+			->where($map)
+			->order($ordertype)
+			->select();
+		foreach($newsList as &$news) {
+			if(IsAdmin($this->privilegeStr, $news['news_id'])) {
+				$news['is_admin'] = true; // 有权限管理该新闻
+			}
+			else {
+				$news['is_admin'] = false;
+			}
+		}
+		$total_map = [];
+		if(strlen($search) > 0) {
+			$total_map['news_id|user_id|title|category'] = ['like', "%$search%"];
+		}
+		$total_map['news_id'] = ['egt', 1000];
+		$ret['total'] = $News->where($total_map)->count();
+		$ret['order'] = $order;
+		$ret['rows'] = $newsList;
+		
+		// 如果是 AJAX 请求，返回 JSON 格式
+		if (request()->isAjax()) {
+			return json($ret);
+		}
+		
+		return $ret;
 	}
 	public function news_add()
 	{
@@ -118,7 +139,9 @@ class News extends Adminbase
 		//tag
 		$news_add['tags'] = trim($news_add['tags'], "; \0\x0B\r\t\n");
 		$tagList = $this->GetTagList($news_add['tags']);
-		if(!array_key_exists($news_add['category'], $this->homeCategory))
+		// 验证分类是否有效（现在在前端配置中定义）
+		$validCategories = ['news', 'notification', 'answer', 'cpcinfo'];
+		if(!in_array($news_add['category'], $validCategories))
 			$this->error("Not a valid category");
 		$news_md_add = [
 			'content'	=> 	$news_add['content'],

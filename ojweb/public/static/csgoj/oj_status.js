@@ -49,11 +49,11 @@ function FormatterStatusResult(value, row, index, field) {
         return '-';
     }
     if(value < 4) {
-        return "<div class='inline-waiting'><div class='load-container loadingblock'><div class='loader'>Loading...</div></div>" + row['res_text'] + "</div>";
+        return `<div class='result-span loading-overlay text-secondary' title='${row.res_text}'><span class='loading-text'>${row.res_short}</span><div class='spinner-overlay'><div class='spinner-border spinner-border-sm' role='status'><span class='visually-hidden'>Loading...</span></div></div></div>`;
     } else if(row['res_show']) {
-        return "<div class='btn result_show_btn btn-" + row['res_color'] + "'>" + row['res_text'] + "</div>";
+        return `<div class='btn result_show_btn btn-${row['res_color']} result-btn' title='${row.res_text}'>${row.res_short}</div>`;
     } else {
-        return "<span class='text-" + row['res_color'] + "'>" + row['res_text'] + "</span>";
+        return `<span class='text-${row['res_color']} result-span' title='${row.res_text}'>${row.res_short}</span>`;
     }
 }
 function FormatterPassRate(value, row, index, field) {
@@ -61,23 +61,28 @@ function FormatterPassRate(value, row, index, field) {
 }
 function FormatterLanguage(value, row, index, field) {
     if(('code_show' in row) && row['code_show']) {
-        return "<button class='btn btn-primary' solution_id='" + row['solution_id'] + "' >" + value + "</button>";
+        let value_show = value;
+        switch(value) {
+            case 'Python3': value_show = 'Py3'; break;
+            default: value_show = value;
+        }
+        return `<button class='btn btn-primary lang-btn' solution_id='${row['solution_id']}' title='${value}'>${value_show}</button>`;
     } else {
-        return value;
+        return `<strong class='lang-strong'>${value}</strong>`;
     }
 }
 function FormatterRejudge(value, row, index, field) {
     if("contest_id" in row && row.contest_id != 0 && status_page_where != 'contest') {
         row.allow_rejudge = false;
-        return "IN CONTEST"
+        return `<a href="/csgoj/admin/contest_rejudge?cid=${row.contest_id}" title="比赛中的代码需在比赛中执行重测 (Rejudge in contest)" target="_blank"><i class="bi bi-calendar-event"></i></span>`
     } else {
         row.allow_rejudge = row.result != 4;
-        return row.result == 4 ? '-' : `<button class='btn btn-warning'>Rejudge</button>`;
+        return row.result == 4 ? `<span class="text-muted" title="AC 的代码不能快捷重测，请到后台慎重执行"><i class="bi bi-shield-check"></i></span>` : `<button class='btn btn-warning btn-sm' title="重新评测 (Rejudge)"><i class="bi bi-arrow-clockwise"></i></button>`;
     }
 }
 function FormatterSim(value, row, index, field) {
     if(value == null) return '-';
-    return `<a href='status_code_compare?sid0=${row.solution_id}&sid1=${row.sim_s_id}&cid=${row.contest_id}' target='_blank' class='btn btn-info'>${row.sim_s_id}:${row.sim}%</a>`;
+    return `<a href='status_code_compare?sid0=${row.solution_id}&sid1=${row.sim_s_id}&cid=${row.contest_id}' target='_blank' class='btn btn-primary'>${row.sim_s_id}:${row.sim}%</a>`;
 }
 //table related
 var $table = $('#status_table');
@@ -85,17 +90,7 @@ var $ok = $('#status_ok'), $refresh = $('#status_refresh'), $clear = $('#status_
 var status_table_div = $('#status_table_div');
 var status_toolbar = $('#status_toolbar');
 
-var content_show_modal = $('#content_show_modal');
-var content_show_modal_label = $('#content_show_modal_label');
-var content_show_modal_content = $('#content_show_modal_content');
-var content_show_modal_label_span = $('#content_show_modal_label_span');
-
-var clipboard = new ClipboardJS('.content_show_modal_copy');
-
-clipboard.on('success', function(e) {
-    alertify.success('Content Copied');
-    e.clearSelection();
-});
+// 移除旧的modal相关代码，使用新的 CodeViewer
 
 $(window).keydown(function(e) {
     if (e.keyCode == 116 && !e.ctrlKey) {
@@ -149,6 +144,7 @@ $('.fake-form').on('keypress', function(e){
 });
 var timer_ids = [];
 let flg_auto_refresh_status=false;
+// 已经移除了 ensureResultModal 函数，使用独立的 RuninfoViewer 组件代替
 function auto_refresh_results(time_cnt=2) {
     if(!flg_auto_refresh_status) {
         return;
@@ -168,12 +164,15 @@ function auto_refresh_results(time_cnt=2) {
             },
             function(ret) {
                 let finish_flag = true;
-                for(let i in ret['rows']) {                    
-                    $table.bootstrapTable('updateByUniqueId', {
-                        id: ret['rows'][i]['solution_id'],
-                        row: ret['rows'][i]
-                    });
-                    if(ret['rows'][i]['result'] != '-' && ret['rows'][i]['result'] < 4) {
+                for(let i in ret.rows) {
+                    const row_in_table = $table.bootstrapTable('getRowByUniqueId', ret.rows[i].solution_id);
+                    if(ret.rows[i].result != row_in_table.result || ret.rows[i].memory != row_in_table.memory) {
+                        $table.bootstrapTable('updateByUniqueId', {
+                            id: ret.rows[i].solution_id,
+                            row: ret.rows[i]
+                        });
+                    }
+                    if(ret.rows[i]['result'] != '-' && ret.rows[i]['result'] < 4) {
                         finish_flag = false;
                     }
                 }
@@ -190,9 +189,24 @@ function auto_refresh_results(time_cnt=2) {
     }
 }
 function BtnCodeShow(td, row) {
-    // 点击查看代码
+    // 点击查看代码 - 使用新的CodeViewer
     let solution_id = row.solution_id;
     if(!row.code_show) return;
+    
+    // 显示加载状态
+    if (window.codeViewer) {
+        window.codeViewer.contentContainer.innerHTML = `
+            <div class="text-center p-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">加载中...</span>
+                </div>
+                <p class="mt-2 text-muted">正在加载代码...</p>
+                <p class="en-text">Loading code...</p>
+            </div>
+        `;
+        window.codeViewer.modal.show();
+    }
+    
     $.get(
         show_code_url,
         {
@@ -200,28 +214,56 @@ function BtnCodeShow(td, row) {
             'cid': status_page_information.attr('cid')
         },
         function(ret){
-            if(ret['code'] == 1) {
-                let data = ret['data'];
-                let showcode_pre = $('<pre class="' + $(td).text().toLowerCase() + '" id="content_show_to_copy"><code>' + data['source'] + data['auth'] + '</code></pre>')[0];
-                let showcode_div = $('<div class="code_linenumber_div"></div>').append(showcode_pre);
-                AddLineNumber(showcode_div);
-                hljs.highlightElement(showcode_div.find('.ln_code_pre')[0]);
-
-                content_show_modal_content.empty();
-                content_show_modal_content.append(showcode_div);
-                content_show_modal_label_span.text('Code of Submission #' + solution_id);
-                content_show_modal.modal('show');
+            if(ret?.code == 1) {
+                let data = ret.data;
+                let language = data.language ?? row?.language;
+                // 使用新的CodeViewer显示代码（前端会生成头部注释）
+                if (window.codeViewer) {
+                    window.codeViewer.showCode(solution_id, language, {
+                        solution_id: solution_id,
+                        source: data.source,
+                        submitTime: data.submit_time ?? row?.in_date,
+                        codeLength: data.code_length ?? row?.code_length,
+                        problemId: data.problem_id ?? row?.problem_id,
+                        user_id: data.user_id ?? row?.user_id,
+                        result: data.result ?? row?.result,
+                        time: data.time ?? row?.time,
+                        memory: data.memory ?? row?.memory,
+                        contest_id: data?.contest_id ?? row?.contest_id
+                    });
+                }
             }
             else {
-                return false;
+                // 显示错误信息
+                if (window.codeViewer) {
+                    window.codeViewer.contentContainer.innerHTML = `
+                        <div class="text-center p-5 text-danger">
+                            <i class="bi bi-exclamation-triangle fs-1"></i>
+                            <p class="mt-2">加载代码失败</p>
+                            <p class="en-text">Failed to load code</p>
+                        </div>
+                    `;
+                }
             }
         }
-    );
+    ).fail(function() {
+        // 网络错误处理
+        if (window.codeViewer) {
+            window.codeViewer.contentContainer.innerHTML = `
+                <div class="text-center p-5 text-danger">
+                    <i class="bi bi-wifi-off fs-1"></i>
+                    <p class="mt-2">网络连接失败</p>
+                    <p class="en-text">Network connection failed</p>
+                </div>
+            `;
+        }
+    });
 }
 function BtnResultShow(td, row) {
     // 查看Result的提示信息
     if(!row.res_show) return;
     let solution_id = row['solution_id'];
+
     $.get(
         status_page_information.attr('show_res_url'),
         {
@@ -229,53 +271,8 @@ function BtnResultShow(td, row) {
             'cid': status_page_information.attr('cid')
         },
         function (ret) {
-            let info_hidden = '';
-            let info_addition = '<div></div>';
-            if(ret.code == 1) {
-                if(row.result == 6 || row.result == 5 || row.result == 9) {
-                    // WA diff
-                    info_hidden = 'style="display:none;';
-                    let str = ret.msg;
-                    // 先将 diff 部分替换为 HTML 格式
-                    str = str.replace(/(------diff out top.*?-----)([\s\S]*?)(------diff|=====)/g, (match, p1, p2, p3) => {
-                        try {
-                            let htmlStr = Diff2Html.html(p2, {drawFileList: false, matching: 'lines', outputFormat: 'side-by-side'});
-                            let diff_str = '';
-                            if(htmlStr.includes('<span class="d2h-code-line-ctn">')) {
-                                diff_str = htmlStr;
-                            } else {
-                                diff_str = `<pre class="content_show_modal_realinfo">${p2}</pre>`;
-                            }
-                            return `</pre><h4>${p1.replace(/-/g, '')}</h4><strong class='text-danger'>输出比对仅展示前若干字节数据，数据过大时可能看不到差异部分，建议下载测试数据在本地进行测试</strong>${diff_str}<pre class="content_show_modal_realinfo">${p3}`;
-                        } catch (error) {
-                            return match;
-                        }                        
-                    });
-                    str = str.replace(/========\[(.*?)\]=========/g, (match, p1) => {
-                        return `</pre><h3># Data: ${p1.replace('.out', '')}</h3><pre class="content_show_modal_realinfo">`
-                    });
-                    str = str.replace(/------(test in top.*?)------/g, (match, p1) => {
-                        return `</pre><h4>${p1}</h4><pre class="content_show_modal_realinfo">`
-                    });
-
-                    // info_addition = `<strong class='text-danger'>输出比对仅展示前若干字节数据，数据过大时可能看不到差异部分，建议下载测试数据在本地进行测试</strong><pre class="content_show_modal_realinfo">${str}</pre>`;
-                    info_addition = `<pre class="content_show_modal_realinfo">${str}</pre>`;
-                    info_addition = info_addition.replace(/<pre class="content_show_modal_realinfo">\s*?<\/pre>/g, '');
-                }
-                var info = $(`<pre class="content_show_modal_realinfo" id="content_show_to_copy" ${info_hidden}>${ret.msg}</pre>`)[0];
-                // hljs.highlightElement(info);
-                content_show_modal_content.empty();
-                content_show_modal_content.append(info);
-                content_show_modal_content.append(info_addition);
-                content_show_modal_label_span.text('Runinfo of Submission #' + solution_id);
-                content_show_modal.modal('show');
-            }
-            else {
-                return false;
-            }
-            return false;
-        }
-    );
+            window.runinfoViewer.showInfo(solution_id, ret);
+        });
 }
 function SetStatusButton() {
     // show running information and code.
@@ -285,29 +282,33 @@ function SetStatusButton() {
         } else if(field == 'result') {
             BtnResultShow(td, row);
         } else if(field == 'rejudge' && row.allow_rejudge) {
-            alertify.confirm(`确定要重测该提交 [提交号=<strong class='text-danger'>${row.solution_id}</strong>]?<br/>Confirm to rejudge solution [RunID=<strong class='text-danger'>${row.solution_id}</strong>]?`, function() {
-                $.post(rejudge_url, {solution_id: row.solution_id, rejudge_res_check: ['any']}, function(ret) {
-                    if(ret.code == 1) {
-                        $table.bootstrapTable('updateByUniqueId', {
-                            id: row.solution_id,
-                            row: {
-                                result: 0,
-                                memory: 0,
-                                time: 0,
-                                res_text: 'Pending Rejudging'
+            alerty.confirm({
+                message: `确定要重测该提交 [提交号=<strong class='text-danger'>${row.solution_id}</strong>]?`, 
+                message_en: `Confirm to rejudge solution [RunID=<strong class='text-danger'>${row.solution_id}</strong>]?`, 
+                callback: function() {
+                    $.post(rejudge_url, {solution_id: row.solution_id, rejudge_res_check: ['any']}, function(ret) {
+                        if(ret.code == 1) {
+                            $table.bootstrapTable('updateByUniqueId', {
+                                id: row.solution_id,
+                                row: {
+                                    result: 0,
+                                    memory: 0,
+                                    time: 0,
+                                    res_text: 'Pending Rejudging'
+                                }
+                            });
+                            if(!flg_auto_refresh_status) {
+                                flg_auto_refresh_status = true;
+                                auto_refresh_results();
                             }
-                        });
-                        if(!flg_auto_refresh_status) {
-                            flg_auto_refresh_status = true;
-                            auto_refresh_results();
+                            alerty.success(`重测启动 [RunID=${row.solution_id}]`, `Rejudge started`);
+                        } else {
+                            alerty.error(`重测启动失败 [RunID=${row.solution_id}]`, `Rejudge start failed\n${ret.msg}`);
                         }
-                        alertify.success(`[RunID=${row.solution_id}]<br/>rejudge start.`);
-                    } else {
-                        alertify.err(`[RunID=${row.solution_id}]<br/>rejudge failed.<br/>${ret.msg}`);
-                    }
 
-                })
-            }).set('title', '确认重测');
+                    });
+                }
+            });
         }
     });
 }

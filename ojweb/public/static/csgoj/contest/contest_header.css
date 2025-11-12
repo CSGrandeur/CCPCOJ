@@ -1,0 +1,187 @@
+/**
+ * Contest Header CSS样式文件
+ * 包含比赛头部、导航菜单、信息显示等样式
+ */
+
+/* Contest Header 美化样式 */
+.contest-header-container {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.contest-title {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    margin-right: 80px;
+}
+
+.contest-info {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.contest-info .badge {
+    margin-right: 0.5rem;
+    font-size: 0.75em;
+}
+
+.contest-info .text-danger,
+.contest-info .text-info,
+.contest-info .text-success {
+    font-weight: 500;
+}
+
+/* 导航标签美化 - 简化版 */
+#contest_menu {
+    border-bottom: 2px solid #dee2e6;
+    margin-bottom: 0;
+}
+
+#contest_menu .nav-item .nav-link {
+    border: none;
+    border-radius: 6px 6px 0 0;
+    margin-right: 0.15rem;
+    padding: 0.5rem 0.75rem;
+    transition: all 0.2s ease-in-out;
+    position: relative;
+    overflow: hidden;
+    font-size: 0.9em;
+    min-width: 60px;
+    text-align: center;
+}
+
+#contest_menu .nav-item .nav-link:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+#contest_menu .nav-item .nav-link.active {
+    background-color: #007bff;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+#contest_menu .nav-item .nav-link.active .en-text {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+#contest_menu .nav-item .nav-link i {
+    margin-right: 0.25rem;
+    font-size: 0.8em;
+}
+
+/* 双语文本优化 - 简化版 */
+#contest_menu .nav-item .nav-link .en-text {
+    font-size: 0.6em;
+    opacity: 0.8;
+}
+
+/* 自定义紫色样式 */
+.text-purple {
+    color: #6f42c1 !important;
+}
+
+/* 紧凑化信息显示 */
+.contest-info .inline_span {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    width: 140px;
+    flex-shrink: 0;
+}
+
+/* 确保bilingual-inline在contest-info中正确工作 */
+.contest-info .bilingual-inline .en-text {
+    display: inline !important;
+    margin-left: 6px !important;
+    margin-top: 0 !important;
+}
+
+/* 时间显示在下方 */
+.contest-info .inline_span div {
+    font-size: 0.9em;
+    margin-top: 2px;
+    line-height: 1.2;
+}
+
+/* 统一信息项样式 */
+.contest-info .inline_span div .en-text {
+    font-size: 0.7em;
+    margin-left: 0.25rem;
+    opacity: 0.8;
+}
+
+.contest-info .badge .en-text {
+    font-size: 0.7em;
+    margin-left: 0.25rem;
+    opacity: 0.9;
+}
+
+.contest-info strong .en-text {
+    font-size: 0.7em;
+    margin-left: 0.25rem;
+    opacity: 0.9;
+}
+
+/* 特殊状态样式 */
+.contest-info .text-info {
+    background: rgba(13, 202, 240, 0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.contest-info .text-primary {
+    background: rgba(13, 110, 253, 0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.contest-info .text-success {
+    background: rgba(25, 135, 84, 0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.contest-info .text-secondary {
+    background: rgba(108, 117, 125, 0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.contest-info .text-purple {
+    background: rgba(111, 66, 193, 0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .contest-header-container {
+        padding: 0.75rem;
+    }
+    
+    #contest_menu .nav-item .nav-link {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9em;
+    }
+    
+    #contest_menu .nav-item .nav-link i {
+        margin-right: 0.25rem;
+        font-size: 0.8em;
+    }
+}

@@ -1,0 +1,67 @@
+# CSGOJ judge2 评测机 .gitignore
+# 采用"忽略所有，排除需要的文件"策略
+
+# 忽略所有文件
+*
+
+# 排除项目需要的文件
+!README.md
+!LICENSE
+!version
+!build.sh
+!docker_build_base.sh
+!dockerbuild.sh
+!start_judge2025.sh
+!core/config.json.default
+!.gitignore
+
+# 排除core目录及其必要文件
+!core/
+!core/*.py
+!core/*.cc
+!core/*.h
+!core/*.sh
+
+# 排除子目录
+!core/judge_type/
+!core/judge_type/*.py
+!core/monitor/
+!core/monitor/*.py
+!core/lang/
+!core/lang/*.py
+!core/tools/
+!core/tools/*.py
+!core/execute_tools/
+!core/execute_tools/*.py
+!core/monitor/tool_syscall/
+!core/monitor/tool_syscall/*.py
+!core/monitor/tool_syscall/*.txt
+!core/monitor/tool_syscall/*.md
+
+# 排除test开头的Python文件
+core/test*.py
+
+# 排除Docker相关文件
+!Dockerfile
+!Dockerfile_base
+!docker-compose.yml
+
+# 排除judge_lib目录
+!judge_lib/
+!judge_lib/*.h
+
+
+# 排除配置文件模板
+!core/config.json.default
+
+# 排除文档文件
+!README.md
+
+# 排除版本文件
+!version
+
+# 排除 python 依赖文件
+!requirements.txt
+
+!debug/
+!debug/*.sh

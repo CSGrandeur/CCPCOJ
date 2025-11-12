@@ -1,0 +1,3897 @@
+/* Rank模块样式隔离 - 确保完全独立 */
+.rank-container {
+    /* 重置可能的外部影响 */
+    font-size: 16px !important; /* 固定基准字体大小 */
+    line-height: 1.5 !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    
+    /* 防止外部样式干扰 */
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    
+    /* 确保所有子元素继承 */
+    * {
+        box-sizing: border-box !important;
+    }
+}
+
+/* SVG 图标常量定义 */
+:root {
+    /* 教练选手图标 */
+    --icon-coach: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z'/%3E%3C/svg%3E");
+    --icon-player: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z'/%3E%3C/svg%3E");
+    
+    /* 队伍类型图标 */
+    --icon-team-regular: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z'/%3E%3C/svg%3E");
+    --icon-team-girl: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z'/%3E%3C/svg%3E");
+    --icon-team-star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z'/%3E%3C/svg%3E");
+    
+    /* 控制按钮图标 */
+    --icon-refresh: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z'/%3E%3Cpath d='M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z'/%3E%3C/svg%3E");
+    --icon-fullscreen: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z'/%3E%3C/svg%3E");
+    --icon-exit-fullscreen: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M5.5 0a.5.5 0 0 1 .5.5v4A1.5 1.5 0 0 1 4.5 6h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5zm5 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 10 4.5v-4a.5.5 0 0 1 .5-.5zM0 10.5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 6 11.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zm15 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5h-4a.5.5 0 0 1-.5-.5v-4a.5.5 0 0 1 1 0v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 .5-.5v-4a.5.5 0 0 1-.5-.5z'/%3E%3C/svg%3E");
+    --icon-roll: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z'/%3E%3Cpath d='M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z'/%3E%3C/svg%3E");
+    --icon-pause: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M6 3.5a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-1 0V4a.5.5 0 0 1 .5-.5zm4 0a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-1 0V4a.5.5 0 0 1 .5-.5z'/%3E%3C/svg%3E");
+    --icon-stop: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M5 3.5h6A1.5 1.5 0 0 1 12.5 5v6a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 11V5A1.5 1.5 0 0 1 5 3.5z'/%3E%3C/svg%3E");
+    --icon-settings: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z'/%3E%3Cpath d='M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.434-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.292-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.292c.415.764-.42 1.6-1.185 1.184l-.292-.159a1.873 1.873 0 0 0-2.692 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.693-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.292A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z'/%3E%3C/svg%3E");
+    --icon-filter: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z'/%3E%3C/svg%3E");
+    --icon-export: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/%3E%3Cpath d='M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z'/%3E%3C/svg%3E");
+    --icon-print: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z'/%3E%3Cpath d='M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H5zm-1 1h8v6H4V7z'/%3E%3C/svg%3E");
+    --icon-help: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z'/%3E%3Cpath d='M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z'/%3E%3C/svg%3E");
+    --icon-close: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z'/%3E%3C/svg%3E");
+    --icon-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z'/%3E%3C/svg%3E");
+    --icon-warning: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z'/%3E%3C/svg%3E");
+    --icon-info: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z'/%3E%3Cpath d='m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z'/%3E%3C/svg%3E");
+    
+    /* 气球图标 */
+    --icon-balloon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M8.48 10.901C11.211 10.227 13 7.837 13 5A5 5 0 0 0 3 5c0 2.837 1.789 5.227 4.52 5.901l-.244.487a.25.25 0 1 0 .448.224l.04-.08c.009.17.024.315.051.45.068.344.208.622.448 1.102l.013.028c.212.422.182.85.05 1.246-.135.402-.366.751-.534 1.003a.25.25 0 0 0 .416.278l.004-.007c.166-.248.431-.646.588-1.115.16-.479.212-1.051-.076-1.629-.258-.515-.365-.732-.419-1.004a2 2 0 0 1-.037-.289l.008.017a.25.25 0 1 0 .448-.224zM4.352 3.356a4 4 0 0 1 3.15-2.325C7.774.997 8 1.224 8 1.5s-.226.496-.498.542c-.95.162-1.749.78-2.173 1.617a.6.6 0 0 1-.52.341c-.346 0-.599-.329-.457-.644'/%3E%3C/svg%3E");
+}
+
+/* 全局样式变量定义 - 必须在最前面 */
+:root {
+    /* 布局尺寸 - 使用px确保独立性 */
+    --rank-col-width: 64px;
+    --rank-solve-col-width: 72px;
+    --rank-penalty-col-width: 72px;
+    --rank-problem-col-width: 80px;
+    --rank-header-height: 60px;
+    --rank-stats-height: 32px;
+    --rank-col-gap: 5px;
+    --rank-row-gap: 8px;
+    --rank-border-radius: 8px;
+    --rank-border-radius-small: 4px;
+
+    /* 内边距 - 使用px确保独立性 */
+    --rank-padding-xs: 4px;
+    --rank-padding-sm: 8px;
+    --rank-padding-md: 12px;
+    --rank-padding-lg: 16px;
+    --rank-padding-xl: 24px;
+
+    /* 字体大小 - 使用px确保独立性 */
+    --rank-font-size-xs: 11px;
+    --rank-font-size-sm: 13px;
+    --rank-font-size-md: 14px;
+    --rank-font-size-lg: 16px;
+    --rank-font-size-xl: 18px;
+    --rank-font-size-2xl: 19px;
+    --rank-font-size-3xl: 22px;
+    --rank-font-size-4xl: 32px;
+    --rank-font-size-5xl: 40px;
+    
+    /* 字体粗细 */
+    --rank-font-weight-normal: 400;
+    --rank-font-weight-medium: 500;
+    --rank-font-weight-semibold: 600;
+    --rank-font-weight-bold: 700;
+    --rank-font-weight-extrabold: 800;
+    --rank-font-weight-black: 900;
+    
+    /* 颜色系统 */
+    --rank-color-primary: #007bff;
+    --rank-color-success: #28a745;
+    --rank-color-warning: #ffc107;
+    --rank-color-danger: #dc3545;
+    --rank-color-info: #17a2b8;
+    --rank-color-light: #f8f9fa;
+    --rank-color-dark: #343a40;
+    
+    /* 背景色 */
+    --rank-bg-primary: #ffffff;
+    --rank-bg-secondary: #f8f9fa;
+    --rank-bg-tertiary: #e9ecef;
+    --rank-bg-header: #1e293b;
+    
+    /* 文字颜色 */
+    --rank-text-primary: #333333;
+    --rank-text-secondary: #6c757d;
+    --rank-text-muted: #999999;
+    --rank-text-light: #cbd5e1;
+    --rank-text-white: #ffffff;
+    
+    /* 边框颜色 */
+    --rank-border-light: #dee2e6;
+    --rank-border-medium: #adb5bd;
+    --rank-border-dark: #6c757d;
+    --rank-border-white: rgba(255,255,255,0.3);
+    
+    /* 阴影 */
+    --rank-shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+    --rank-shadow-md: 0 2px 6px rgba(0,0,0,0.08);
+    --rank-shadow-lg: 0 4px 12px rgba(0,0,0,0.15);
+    --rank-shadow-xl: 0 6px 20px rgba(0,0,0,0.4);
+    
+    /* 过渡动画 */
+    --rank-transition-fast: 0.15s ease;
+    --rank-transition-normal: 0.3s ease;
+    --rank-transition-slow: 0.5s ease;
+}
+
+/* 基础样式 */
+.rank-system {
+    position: relative; /* 让子元素可以根据容器进行相对定位 */
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Microsoft YaHei', '微软雅黑', 'SimSun', '宋体', sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+    width: max-content;
+    min-width: 100%;
+    max-width: none;
+    overflow: visible;
+    margin: 0 auto; /* 在父容器中居中 */
+}
+
+.rank-system * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 榜单容器 */
+.rank-container {
+    margin: 0 auto;
+    width: max-content;
+    min-width: 100%;
+    max-width: none;
+    overflow: visible;
+    max-height: none;
+    user-select: text; /* 允许文字选择 */
+    scroll-behavior: smooth;
+    position: relative;
+}
+
+/* 允许校名和队名文字选择 */
+.rank-row .team-name,
+.rank-row .school-name,
+.rank-row .team-name-cn,
+.rank-row .team-name-en,
+.rank-row .school-name-text,
+.team-name-cn,
+.team-name-en,
+.school-name {
+    user-select: text !important;
+    cursor: text;
+}
+
+/* 保持按钮和交互元素不可选择 */
+.control-btn,
+.custom-select-btn,
+.rank-item,
+.solve-item,
+.penalty-item,
+.problem-item {
+    user-select: none;
+}
+
+
+/* 页面头部 */
+.rank-header {
+    color: #333;
+    padding: var(--rank-padding-lg);
+    margin: 0 auto;
+}
+
+.header-content {
+    margin-bottom: 16px;
+}
+
+.header-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.title-section {
+    container-type: inline-size;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+/* 旧的controls-section已整合到controls-time-section，保留此样式以防万一 */
+.controls-section {
+    display: none; /* 已整合到controls-time-section */
+}
+
+.header-left {
+    flex: 1;
+    min-width: 0;
+}
+
+.rank-header-row {
+    display: flex;
+    gap: var(--rank-col-gap);
+    padding: 12px 16px 0 16px;
+    background: #f8f9fa;
+    color: var(--rank-text-secondary);
+    font-weight: 600;
+    font-size: var(--rank-font-size-md);
+    border-bottom: 1px solid #dee2e6;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+}
+
+.rank-header-row .rank-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--rank-border-radius);
+    background: linear-gradient(135deg, var(--rank-bg-header) 0%, #334155 100%);
+    box-shadow: var(--rank-shadow-lg);
+    border: 1px solid rgba(255,255,255,0.1);
+    position: relative;
+    overflow: visible;
+    flex-shrink: 0;
+    height: var(--rank-header-height);
+}
+
+/* 表头基础样式 - 复用 */
+.rank-header-row .rank-col .header-cell,
+.problem-header-content {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    line-height: 1.2;
+    white-space: nowrap;
+    font-size: var(--rank-font-size-2xl);
+    font-weight: 900;
+    color: var(--rank-text-white);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* 表头子元素样式 - 复用 */
+.rank-header-row .rank-col .header-cell en-text,
+.problem-header-stats {
+    font-size: var(--rank-font-size-md);
+    font-weight: 600;
+    color: var(--rank-text-light);
+    margin-top: 2px;
+    white-space: nowrap;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* 题目列特殊样式 */
+.rank-header-row .rank-col.rank-col-problem {
+    width: var(--rank-problem-col-width);
+}
+
+/* 题目表头容器特殊样式 */
+.problem-header-content {
+
+    position: relative;
+    z-index: 2;
+}
+
+/* 题目表头标题特殊样式 */
+.problem-header-title {
+    font-size: var(--rank-font-size-2xl);
+    font-weight: 900;
+    color: var(--rank-text-white);
+    line-height: 1.2;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* 题目表头统计特殊样式 */
+.problem-header-stats {
+    font-variant-numeric: tabular-nums;
+}
+
+.problem-header-color-bg {
+    position: absolute;
+    top: -24px;
+    left: 70%;
+    transform: translateX(-50%);
+    z-index: 3;
+    color: var(--rank-problem-color);
+    font-size: var(--rank-font-size-5xl);
+    -webkit-text-stroke: 0.5px var(--rank-text-white);
+}
+
+/* 题目表头悬停效果 */
+.rank-header-row .rank-col.rank-col-problem:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* 图标样式 - 使用Bootstrap Icons */
+
+
+#rank-page-title {
+    font-size: var(--rank-font-size-4xl);
+    font-weight: 600;
+    margin: 0;
+    text-align: left;
+    word-wrap: break-word;
+    word-break: break-all;
+    line-height: 1.3;
+    max-width: 100%;
+    white-space: normal;
+}
+
+.controls-toolbar {
+    display: flex;
+    gap: var(--rank-padding-lg);
+    align-items: center;
+    background: white;
+    padding: var(--rank-padding-sm);
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 100001;
+}
+
+.toolbar-group {
+    display: flex;
+    gap: var(--rank-padding-sm);
+    align-items: center;
+}
+
+.toolbar-item {
+    display: flex;
+    align-items: center;
+    gap: var(--rank-padding-xs);
+}
+
+.header-controls.collapsed {
+    display: none;
+}
+
+.controls-dropdown.show {
+    display: flex;
+}
+
+.custom-select-container {
+    position: relative;
+    display: inline-block;
+}
+
+.custom-select-btn {
+    padding: var(--rank-padding-sm);
+    border: 1px solid #dee2e6;
+    border-radius: var(--rank-border-radius-small);
+    background: white;
+    color: var(--rank-text-secondary);
+    cursor: pointer;
+    font-size: var(--rank-font-size-md);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 40px;
+    height: 40px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    outline: none;
+}
+
+.custom-select-btn.icon-only {
+    width: 40px;
+    height: 40px;
+    padding: var(--rank-padding-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.custom-select-btn:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.custom-select-btn:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+.custom-select-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.custom-select-btn i {
+    font-size: var(--rank-font-size-2xl);
+    margin: 0;
+}
+
+.custom-select-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: var(--rank-border-radius);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    z-index: 105;
+    display: none;
+    flex-direction: column;
+    min-width: 200px;
+    width: auto;
+    white-space: nowrap;
+}
+
+.custom-select-dropdown.show {
+    display: flex;
+    animation: dropdownFadeIn 0.2s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.custom-select-option {
+    padding: var(--rank-padding-md) var(--rank-padding-lg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--rank-padding-md);
+    transition: all 0.2s ease;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    color: #4a5568;
+    font-size: var(--rank-font-size-md);
+    min-width: 180px;
+}
+
+.custom-select-option:last-child {
+    border-bottom: none;
+    border-radius: 0 0 8px 8px;
+}
+
+.custom-select-option:first-child {
+    border-radius: 8px 8px 0 0;
+}
+
+.custom-select-option:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.custom-select-option.selected {
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-weight: 600;
+    border-left: 3px solid #3b82f6;
+}
+
+.custom-select-option i {
+    font-size: var(--rank-font-size-lg);
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.option-text {
+    flex: 1;
+    font-size: var(--rank-font-size-md);
+    line-height: 1.2;
+}
+
+.option-text en-text {
+    display: block;
+    font-size: var(--rank-font-size-sm);
+    color: #6c757d;
+    margin-top: 2px;
+    white-space: nowrap;
+}
+
+.control-group {
+    display: flex;
+    gap: var(--rank-padding-sm);
+    align-items: center;
+    flex-shrink: 0;
+    min-width: 0;
+}
+
+.control-select {
+    padding: var(--rank-padding-xs) var(--rank-padding-sm);
+    border: 1px solid #dee2e6;
+    border-radius: var(--rank-border-radius-small);
+    background: white;
+    color: #333;
+    font-size: var(--rank-font-size-md);
+    min-width: 120px;
+    max-width: 150px;
+    flex-shrink: 0;
+    height: 24px;
+    line-height: 1;
+}
+
+.control-btn {
+    padding: var(--rank-padding-sm) var(--rank-padding-md);
+    border: 1px solid #dee2e6;
+    border-radius: var(--rank-border-radius-small);
+    background: white;
+    color: var(--rank-text-secondary);
+    cursor: pointer;
+    font-size: var(--rank-font-size-md);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 40px;
+    height: 40px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    outline: none;
+}
+
+.control-btn:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.control-btn.active {
+    background: #e9ecef;
+    font-weight: 600;
+    border-color: #6c757d;
+    color: var(--rank-text-secondary);
+}
+
+.control-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.control-btn:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+.control-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.summary-btn {
+    background: #fff3cd;
+    color: #856404;
+    border-color: #ffeaa7;
+}
+
+.summary-btn:hover {
+    background: #ffeaa7;
+    border-color: #f39c12;
+}
+
+.roll-btn {
+    background: #d1ecf1;
+    color: #0c5460;
+    border-color: #bee5eb;
+}
+
+.roll-btn:hover {
+    background: #bee5eb;
+    border-color: #17a2b8;
+}
+
+.fullscreen-btn {
+    background: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+}
+
+.fullscreen-btn:hover {
+    background: #c3e6cb;
+    border-color: #28a745;
+}
+
+.refresh-btn {
+    background: #e3f2fd;
+    color: #1976d2;
+    border-color: #bbdefb;
+}
+
+.refresh-btn:hover {
+    background: #bbdefb;
+    border-color: #1976d2;
+}
+
+/* 刷新按钮加载状态 */
+.refresh-btn.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.refresh-btn.loading i {
+    animation: spin 1s linear infinite;
+}
+
+/* 榜单容器 */
+.rank-container {
+    margin: 0 auto;
+}
+
+
+.rank-grid {
+    background: white;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    overflow: visible; /* 允许内容溢出 */
+    border: 1px solid #e9ecef;
+    border-top: 2px solid var(--rank-border-dark);
+    margin-top: 5px;
+    padding-top: 5px;
+    width: max-content; /* 宽度由内容决定 */
+    min-width: 100%; /* 最小宽度为父容器宽度 */
+}
+
+/* 榜单行 */
+.rank-row {
+    display: flex;
+    gap: var(--rank-row-gap);
+    padding: 0 var(--rank-padding-lg);
+    border-bottom: 3px solid #d1d5db; /* 更粗的分隔线 */
+    background: linear-gradient(135deg, var(--rank-bg-primary) 0%, var(--rank-bg-secondary) 100%);
+    transition: var(--rank-transition-normal);
+    position: relative;
+    contain: content;
+    will-change: transform;
+    width: 100%;
+    align-items: stretch;
+    margin-bottom: 12px; /* 大幅增加行间距 */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 更明显的阴影 */
+    border-radius: 0 0 12px 12px; /* 更大的底部圆角 */
+}
+
+/* 排名行分界 */
+.rank-row:not(:last-child) {
+    border-bottom: 3px solid #d1d5db; /* 更粗的分隔线 */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 更明显的阴影 */
+}
+
+.rank-row:last-child {
+    border-bottom: none;
+}
+
+/* 交替背景色 */
+.rank-row:nth-child(even) {
+    background: var(--rank-bg-secondary);
+}
+
+.rank-row:nth-child(odd) {
+    background: var(--rank-bg-primary);
+}
+
+/* 悬停效果 */
+.rank-row:hover {
+    background: var(--rank-bg-secondary) !important;
+}
+
+
+/* 基础列样式 */
+.rank-col-rank,
+.rank-col-solve,
+.rank-col-penalty,
+.rank-col-problem {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* 排名列 */
+.rank-col-rank {
+    width: var(--rank-col-width);
+}
+
+/* 题数列 */
+.rank-col-solve {
+    width: var(--rank-solve-col-width);
+}
+
+/* 罚时列 */
+.rank-col-penalty {
+    width: var(--rank-penalty-col-width);
+}
+
+/* 题目列 */
+.rank-col-problem {
+    width: var(--rank-problem-col-width);
+    overflow: visible; /* 允许一血星星超出列范围 */
+}
+
+/* 主体内容区 */
+.rank-main-content {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1; /* 占满剩余空间 */
+    overflow-x: visible; /* 允许内容溢出 */
+    position: relative; /* 为绝对定位的背景提供定位上下文 */
+    padding-top: 0; /* 初始无padding */
+}
+
+/* 上半部分：教练选手 + 校名队名 - 绝对定位，不影响父容器宽度 */
+.top-section {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: flex-start;
+    z-index: 3; /* 确保在背景之上 */
+    pointer-events: none;
+    gap: var(--rank-col-gap);
+}
+
+/* 为top-section内容恢复交互 */
+.top-section > * {
+    pointer-events: auto;
+}
+
+/* 教练选手信息区（横跨前三列） - 透明背景不遮挡校徽 */
+.coach-player-section {
+    flex: 0 0 calc(var(--rank-col-width) + var(--rank-solve-col-width) + var(--rank-penalty-col-width) + 2 * var(--rank-col-gap)); /* 精确计算三列宽度 */
+    display: flex;
+    flex-direction: column;
+    gap: 2px; /* 减少行间距 - 特殊值保持 */
+    border-radius: var(--rank-border-radius); /* 更圆润的圆角 */
+    background: transparent; /* 透明背景，不遮挡校徽 */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* 降低阴影，减少割裂感 */
+    overflow: hidden; /* 超出部分隐藏 */
+    position: relative; /* 为渐隐效果提供定位上下文 */
+    z-index: 4; /* 确保内容在背景之上 */
+    border: 1px solid rgba(255,255,255,0.3); /* 更透明的边框 */
+}
+
+.coach-player-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(248,249,250,0), rgba(248,249,250,0.9));
+    pointer-events: none;
+    z-index: 10;
+    border-radius: 0 8px 8px 0; /* 与父容器圆角保持一致 */
+}
+
+/* 教练信息 */
+.coach-info, .player-info {
+    display: flex;
+    align-items: center;
+    gap: var(--rank-col-gap); /* 减少标签和姓名间距 */
+    height: 20px; /* 固定行高，与主副队名对齐 */
+}
+
+/* 教练选手图标 */
+.coach-icon, .player-icon {
+    font-size: var(--rank-font-size-2xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background-color 0.2s;
+    color: #6b7280;
+}
+
+.coach-icon:hover, .player-icon:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #374151;
+}
+
+/* 教练选手图标样式 */
+.coach-icon .rank-icon, .player-icon .rank-icon {
+    font-size: var(--rank-font-size-lg);
+}
+
+/* 控制按钮图标样式 */
+.control-btn .rank-icon, .fold-btn .rank-icon {
+    font-size: var(--rank-font-size-2xl);
+    margin: 0;
+}
+
+
+/* 下拉选择图标样式 */
+
+.team-type-icon {
+    font-size: var(--rank-font-size-3xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    color: #6b7280;
+}
+
+.team-type-icon.regular {
+    color: #3b82f6; /* 蓝色 - 常规队 */
+}
+
+.team-type-icon.girl {
+    color: #ec4899; /* 粉色 - 女队 */
+}
+
+.team-type-icon.star {
+    color: #f59e0b; /* 橙色 - 打星队 */
+}
+
+/* 教练、选手 姓名 - 与副队名样式一致 */
+.coach-name, .player-name {
+    font-size: var(--rank-font-size-md); /* 与副队名相同字号 */
+    font-weight: 500;
+    color: var(--rank-text-secondary); /* 与副队名相同颜色 */
+    line-height: 1; /* 与副队名相同行高 */
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+}
+
+/* 占位系统样式 - 金黄色文字 */
+.tinfo-placeholder {
+    color: #D4AF37 !important; 
+    opacity: 0.8;
+}
+
+/* 主队名占位 - 中英双语 */
+.team-name-cn.tinfo-placeholder::after {
+    content: '队名 TeamName';
+}
+
+/* 副队名占位 - 花纹装饰 */
+.team-name-en.tinfo-placeholder::after {
+    content: '◊ ◇ ◊ ◇ ◊';
+}
+
+
+/* 教练选手占位花纹 */
+.coach-name.tinfo-placeholder::after {
+    content: '◊ ◇ ◊';
+}
+.player-name.tinfo-placeholder::after {
+    content: '◊ ◇ ◊ ◊ ◇ ◊ ◊ ◇ ◊';
+}
+
+/* 整体占位花纹 */
+.coach-player-placeholder::after {
+    content: '◊ ◇ ◊ ◇ ◊';
+}
+
+/* 主队名占位内容 */
+.team-name-cn.tinfo-placeholder::after {
+    content: '队名 TeamName';
+}
+
+/* 副队名占位花纹 */
+.team-name-en.tinfo-placeholder::after {
+    content: '◊ ◇ ◊ ◇ ◊';
+}
+.school-name.tinfo-placeholder::after {
+    content: '🏫';
+}
+/* 处理教练或选手信息缺失的情况 */
+.coach-info:empty,
+.player-info:empty {
+    display: none;
+}
+
+/* 当只有教练或只有选手时，调整布局 */
+.coach-player-section:has(.coach-info:not(:empty)):not(:has(.player-info:not(:empty))) .coach-info {
+    flex: 1;
+    justify-content: center;
+}
+
+.coach-player-section:has(.player-info:not(:empty)):not(:has(.coach-info:not(:empty))) .player-info {
+    flex: 1;
+    justify-content: center;
+}
+
+/* 队伍信息区（右侧） - Panel风格 */
+.team-info-section {
+    flex: 1;
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    border-radius: var(--rank-border-radius); 
+    background: transparent;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* 降低阴影，减少割裂感 */
+    position: relative; /* 为渐隐效果提供定位上下文 */
+    border: 1px solid rgba(255,255,255,0.3); /* 降低边框透明度，减少割裂感 */
+}
+
+.team-info-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 40px; /* 增加渐隐宽度 */
+    background: linear-gradient(90deg, rgba(248,249,250,0), rgba(248,249,250,0.9));
+    z-index: 10; /* 提高层级，确保覆盖所有内容 */
+    pointer-events: none;
+    border-radius: 0 8px 8px 0; /* 与父容器圆角保持一致 */
+}
+
+/* 队伍信息容器 - 使用表格布局模拟Excel合并单元格 */
+.team-info {
+    display: grid !important; /* 强制使用grid布局 */
+    grid-template-columns: auto auto auto 1fr; /* 队伍类型、旗帜、学校、队名 */
+    grid-template-rows: 1fr 1fr; /* 两行 */
+    gap: var(--rank-padding-sm);
+    width: 100%;
+    min-width: 0; /* 允许收缩 */
+    align-items: center;
+    flex-shrink: 1; /* 允许收缩 */
+    position: relative; /* 为渐隐效果提供定位上下文 */
+    max-width: 100%; /* 限制最大宽度，防止超出 */
+    box-sizing: border-box; /* 确保宽度计算正确 */
+}
+
+/* 队伍类型 - 跨两行 */
+.team-type-icon {
+    grid-row: 1 / 3; /* 跨两行 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--rank-font-size-3xl); /* 增大字号 */
+    flex-shrink: 0;
+    width: 32px; /* 增大尺寸 */
+    height: 32px;
+}
+
+/* 旗帜 - 跨两行 */
+.flag-icon {
+    grid-row: 1 / 3; /* 跨两行 */
+    width: 24px; /* 增大尺寸 */
+    height: 18px;
+    border-radius: 2px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.15);
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+/* 学校名 - 跨两行 */
+.school-name {
+    grid-row: 1 / 3; /* 跨两行 */
+    font-size: 1.4rem; /* 增大字号 */
+    font-weight: 800;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: clip;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    flex-shrink: 0;
+    min-width: 0;
+}
+
+/* team_id显示样式 - 与校名样式一致 */
+.team-id-display {
+    font-weight: inherit;
+    font-size: inherit;
+    color: inherit;
+}
+
+.team-id-separator {
+    margin: 0 4px;
+    color: var(--rank-color-primary);
+    opacity: 1;
+    font-weight: var(--rank-font-weight-semibold);
+}
+
+.team-names {
+    border-left: 2px solid var(--rank-color-primary); /* 降低边框粗细，减少割裂感 */
+    padding-left: var(--rank-padding-sm);
+    /* #3498db; */
+}
+
+/* 队伍名称容器 - 占两行 */
+.team-names {
+    grid-row: 1 / 3; /* 跨两行 */
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+}
+
+/* 主队名样式 */
+.team-name-cn {
+    font-size: 18px;
+    font-weight: 800;
+    color: #111827;
+    white-space: nowrap;
+    position: relative;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    min-height: 21px;
+    flex-shrink: 0;
+}
+
+/* 副队名样式 */
+.team-name-en {
+    font-size: var(--rank-font-size-md);
+    font-weight: 500;
+    color: #6b7280;
+    font-style: italic;
+    line-height: 1;
+    white-space: nowrap;
+    position: relative;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    min-height: 0;
+    flex-shrink: 0;
+}
+
+/* 统计区域 - 决定父容器宽度 */
+.stats-section {
+    display: flex;
+    align-items: center;
+    gap: var(--rank-col-gap);
+    padding: var(--rank-padding-xs) 0;
+    min-width: max-content;
+    flex-shrink: 0;
+    /* 为top-section让出空间 */
+    margin-top: 45px; /* 根据top-section的实际高度调整 */
+}
+
+/* 前三列背景区域 - 横跨三列纵跨两行 */
+.school-logo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(var(--rank-col-width) + var(--rank-solve-col-width) + var(--rank-penalty-col-width) + 2 * var(--rank-col-gap));
+    height: 100%; /* 覆盖top-section的高度 */
+    background-size: 128px auto; /* 宽度100%，高度等比缩放 */
+    background-position: right top;
+    background-repeat: no-repeat;
+    opacity: 0.15; /* 半透明背景 */
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+    pointer-events: none;
+    overflow: visible; /* 允许超出范围 */
+    image-rendering: -webkit-optimize-contrast; /* WebKit优化 */
+    image-rendering: crisp-edges; /* 保持边缘清晰 */
+    image-rendering: pixelated; /* 像素化渲染，适合小图标 */
+}
+
+/* 当有背景图片时，使用CSS变量 */
+.school-logo.has-background {
+    background-image: var(--rank-school-logo-bg);
+}
+
+/* 统计行 - 包含题数、罚时、题目组 */
+/* 排名、题数、罚时列 - 数据部分，透明背景不遮挡校徽 */
+.rank-col-rank, .rank-col-solve, .rank-col-penalty {
+    flex: 0 0 var(--rank-col-width);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--rank-border-radius); /* 更圆润的圆角 */
+    font-weight: bold;
+    color: #333;
+    position: relative;
+    z-index: 4; /* 确保内容在背景和top-section之上 */
+    background: transparent; /* 透明背景，不遮挡校徽 */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.08); /* 精美阴影 */
+    border: 1px solid rgba(255,255,255,0.3); /* 更透明的边框 */
+}
+
+.rank-col-solve {
+    flex: 0 0 var(--rank-solve-col-width);
+}
+
+.rank-col-penalty {
+    flex: 0 0 var(--rank-penalty-col-width);
+}
+
+.stats-row {
+    display: flex;
+    gap: var(--rank-padding-xs);
+    align-items: center;
+    width: 100%;
+    min-width: max-content; /* 防止内容被压缩 */
+    flex-wrap: nowrap; /* 禁止换行 */
+    justify-content: flex-start; /* 左对齐，不对齐表头 */
+}
+
+/* 基础项目样式 */
+.rank-item, .solve-item, .penalty-item, .problem-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--rank-border-radius-small);
+    font-weight: var(--rank-font-weight-extrabold);
+    position: relative;
+    transition: var(--rank-transition-fast);
+    user-select: none;
+    flex-shrink: 0;
+    overflow: hidden;
+    height: var(--rank-stats-height);
+}
+
+/* 排名方框样式 */
+.rank-item {
+    background: var(--rank-bg-secondary);
+    color: var(--rank-text-secondary);
+    border: 1px solid var(--rank-border-light);
+    width: var(--rank-col-width);
+    font-size: var(--rank-font-size-2xl);
+    font-weight: var(--rank-font-weight-black);
+}
+
+/* 解题数方框样式 */
+.solve-item {
+    background: transparent;
+    color: #0c4a6e; /* 深蓝色文字，增强对比度 */
+    border: 2px solid #0ea5e9; /* 蓝色边框，更醒目 */
+    width: var(--rank-solve-col-width);
+    font-size: var(--rank-font-size-2xl);
+    font-weight: var(--rank-font-weight-black);
+}
+
+/* 罚时方框样式 */
+.penalty-item {
+    background: transparent;
+    color: #9a3412; /* 深橙色文字，增强对比度 */
+    border: 2px solid #ea580c; /* 橙色边框，更醒目 */
+    width: var(--rank-penalty-col-width);
+    font-size: var(--rank-font-size-2xl);
+    font-weight: var(--rank-font-weight-black);
+}
+
+/* 题目方框样式 */
+.problem-item {
+    width: var(--rank-problem-col-width);
+    font-size: var(--rank-font-size-2xl);
+    font-weight: var(--rank-font-weight-black);
+}
+
+
+/* 罚时内容样式 */
+.penalty-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: var(--rank-font-size-2xl);
+    font-weight: var(--rank-font-weight-black);
+    font-variant-numeric: tabular-nums;
+    position: relative;
+}
+
+/* 罚时时间显示 */
+.penalty-time-brief {
+    font-size: var(--rank-font-size-2xl);
+    font-weight: var(--rank-font-weight-black);
+    color: #055160;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    transition: var(--rank-transition-normal);
+}
+
+.penalty-time-full {
+    display: none;
+    font-size: var(--rank-font-size-2xl);
+    font-weight: var(--rank-font-weight-black);
+    color: #055160;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    letter-spacing: 0.02em;
+    transition: var(--rank-transition-normal);
+    width: 100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* 题目组容器、题目表头容器 */
+.problem-group, .pro-header-group {
+    display: flex;
+    gap: var(--rank-col-gap);
+    flex-wrap: nowrap;
+    min-width: 0;
+    overflow: visible; /* 允许一血星星超出题目组范围 */
+}
+/* 校名统计列 - 包含校名、地区名、题数、罚时，带校徽背景 */
+.school-stats-column {
+    width: calc(var(--rank-solve-col-width) + var(--rank-penalty-col-width) + var(--rank-col-gap));
+    min-width: 0;
+    flex-shrink: 0; /* 防止被压缩 */
+    position: relative;
+    overflow: display;
+    height: 100%;
+}
+
+
+
+/* 队名题目列 - 包含队名、副队名、题目组 */
+.team-problems-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    min-width: 0;
+    overflow: hidden; /* 防止内容超出 */
+    width: 0; /* 强制flex收缩，确保宽度计算正确 */
+}
+
+/* 旧的样式已移除，使用新的grid布局 */
+
+/* 地区名区域 - 在新布局中占满父容器宽度 */
+.region-info {
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* 旗帜和地区名一起居中 */
+    gap: 6px;
+    height: 10px; /* 固定小高度，即使为空也保持一致 */
+}
+
+/* 旗帜显示状态 - 通过JavaScript添加show类控制 */
+.flag-icon.show {
+    display: inline-block;
+}
+
+.rank-row:hover {
+    background: linear-gradient(135deg, var(--rank-bg-secondary) 0%, var(--rank-bg-primary) 100%);
+    transform: translate(0, -2px);
+    box-shadow: var(--rank-shadow-lg);
+}
+
+.rank-row.judging {
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    /* border-left: 4px solid #f39c12; */
+    box-shadow: inset 0 0 10px rgba(243, 156, 18, 0.2);
+}
+
+.rank-row.judging-last {
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    /* border-left: 4px solid #27ae60; */
+    box-shadow: inset 0 0 10px rgba(39, 174, 96, 0.2);
+}
+
+/* 排名数字样式 */
+.rank-number {
+    width: var(--rank-col-width);
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-radius: 6px;
+    font-size: var(--rank-font-size-2xl); /* 调整以适配四位数 */
+    font-weight: 800;
+    line-height: 1;
+}
+
+/* 排名方框样式 - 使用Bootstrap 5色系 */
+.rank-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--rank-col-width);
+    height: var(--rank-stats-height);
+    border-radius: var(--rank-border-radius-small);
+    font-weight: var(--rank-font-weight-extrabold);
+    position: relative;
+    transition: var(--rank-transition-fast);
+    user-select: none;
+    flex-shrink: 0;
+    overflow: visible;
+}
+
+.rank-item.gold {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); /* 更深的金色渐变 */
+    color: #ffffff; /* 白色文字，增强对比度 */
+    border: 2px solid #b45309; /* 更深的金色边框 */
+    box-shadow: 0 2px 8px rgba(180, 83, 9, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.rank-item.silver {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%); /* 深灰色渐变，特化银奖 */
+    color: #ffffff; /* 白色文字，增强对比度 */
+    border: 2px solid #343a40; /* 深灰色边框 */
+    box-shadow: 0 2px 8px rgba(52, 58, 64, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.rank-item.bronze {
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%); /* 更深的铜色渐变 */
+    color: #ffffff; /* 白色文字，增强对比度 */
+    border: 2px solid #92400e; /* 更深的铜色边框 */
+    box-shadow: 0 2px 8px rgba(146, 64, 14, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.rank-item.star {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); /* Bootstrap 5 gray-100 */
+    color: #6c757d; /* Bootstrap 5 gray-600 */
+    border: 2px solid #adb5bd; /* Bootstrap 5 gray-400 */
+    box-shadow: 0 2px 8px rgba(173, 181, 189, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* 无奖排名特化样式 - 与题目列区分 */
+.rank-item:not(.gold):not(.silver):not(.bronze):not(.star) {
+    background: var(--rank-bg-tertiary); /* 纯色浅灰背景 */
+    color: #495057; /* 深灰色文字，增强对比度 */
+    border: 2px solid #dee2e6; /* 浅灰色边框 */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* 排名emoji样式 - 精美水印效果 */
+.rank-emoji {
+    position: absolute;
+    left: 50%;
+    top: 20%;
+    transform: translate(-50%, -100%) scale(3);
+    font-size: 24px;
+    opacity: 0.1;
+    z-index: 1;
+    pointer-events: none;
+    text-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+/* 奖牌水印配色差异 */
+.rank-item.gold .rank-emoji {
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.25);
+}
+
+.rank-item.silver .rank-emoji {
+    text-shadow: 0 0 12px rgba(192, 192, 192, 0.2);
+}
+
+.rank-item.bronze .rank-emoji {
+    text-shadow: 0 0 13px rgba(205, 127, 50, 0.22);
+}
+
+.rank-item.star .rank-emoji {
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.15);
+    transform: translate(-50%, -50%) scale(2);
+}
+
+/* 排名数字样式 - 水平居中，可覆盖emoji */
+.rank-number {
+    position: relative;
+    z-index: 2;
+    font-size: var(--rank-font-size-2xl);
+    font-weight: var(--rank-font-weight-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+
+
+.problem-item:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--rank-shadow-lg);
+    z-index: 10;
+}
+
+/* status with pro- prefix to avoid global collisions */
+
+/* 题目状态样式 - 深色系 */
+.problem-item.pro-ac {
+    background: #198754; /* Bootstrap5 success-600 深绿色 */
+    color: var(--rank-text-white); /* 白色文字 */
+    border: 1px solid #146c43; /* 更深的绿色边框 */
+}
+
+.problem-item.pro-wa {
+    background: #dc3545; /* Bootstrap5 danger-600 深红色 */
+    color: var(--rank-text-white); /* 白色文字 */
+    border: 1px solid #b02a37; /* 更深的红色边框 */
+}
+
+.problem-item.pro-pending {
+    background: #ffb300; /* Amber-600 偏黄的橙色，比 #ffc107 稍深 */
+    color: var(--rank-text-white); /* 白色文字 */
+    border: 1px solid #ffa000; /* Amber-700 深一点的偏黄橙色边框 */
+}
+
+.problem-item.pro-none {
+    background: #adb5bd; /* Bootstrap5 gray-600 深灰色 */
+    color: var(--rank-text-primary) !important; 
+    border: 1px solid var(--rank-bg-tertiary); 
+}
+.problem-item.pro-none .pro-submit-cnt {
+    color: black;
+    text-shadow: none;
+}
+
+.problem-item.pro-first-blood {
+    box-shadow: 0 0 0 2px #facc15, var(--rank-shadow-md);
+    border-color: #f59e0b;
+}
+
+/* Regular 一血样式 - 蓝色背景，覆盖AC绿色 */
+.problem-item.pro-first-blood-regular {
+    background: #007bff !important; /* 蓝色背景 */
+    color: var(--rank-text-white) !important; /* 白色文字 */
+    border: 1px solid #0056b3 !important; /* 深蓝色边框 */
+    box-shadow: var(--rank-shadow-md);
+}
+
+/* Global 一血样式 - 右上角小黄星 */
+.problem-item.pro-first-blood-global {
+    position: relative;
+    overflow: visible; /* 允许内容超出容器 */
+}
+
+.problem-item.pro-first-blood-global::after {
+    content: '★';
+    position: absolute;
+    top: -16px; /* 更大幅度超出方框范围 */
+    right: -10px; /* 更大幅度超出方框范围 */
+    font-size: 20px;
+    color: #ffc107;
+    background: none; /* 无背景色 */
+    width: auto;
+    height: auto;
+    display: block;
+    z-index: 9999; /* 更高的z-index确保在最上层 */
+    font-weight: bold;
+    pointer-events: none; /* 不响应鼠标事件 */
+    /* 不占据空间，可以与其他元素重叠 */
+    margin: 0;
+    padding: 0;
+    border: none;
+    box-shadow: none; /* 移除发光效果 */
+    text-shadow: none; /* 移除文字阴影 */
+}
+
+/* 题目内容样式 */
+.problem-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0 var(--rank-padding-sm);
+    position: relative;
+}
+/* 提交次数 */
+.pro-submit-cnt {
+    font-size: var(--rank-font-size-2xl);
+    font-weight: var(--rank-font-weight-black);
+    color: var(--rank-text-white);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    transition: var(--rank-transition-normal);
+    flex-shrink: 0;
+    text-shadow: 0 1px 2px rgba(0,0,255,0.45), 0 0px 4px rgba(0,0,255,0.45);
+}
+
+/* 分隔符 */
+.problem-separator {
+    font-size: var(--rank-font-size-2xl);
+    color: var(--rank-text-white);
+    margin: 0 5px;
+    font-weight: var(--rank-font-weight-normal);
+    opacity: 0.8;
+    transition: var(--rank-transition-normal);
+}
+
+/* 时间显示 */
+.time-brief {
+    font-size: var(--rank-font-size-2xl);
+    font-weight: var(--rank-font-weight-black);
+    color: var(--rank-text-white);
+    font-variant-numeric: tabular-nums;
+    text-align: left;
+    transition: var(--rank-transition-normal);
+    flex-shrink: 0;
+    text-shadow: 0 1px 2px rgba(255,0,0,0.7), 0 0px 4px rgba(255,0,0,0.45);
+}
+
+/* 悬停时显示完整时间 */
+.problem-item .time-brief,
+.problem-item .time-full {
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.problem-item .time-brief {
+    opacity: 1;
+    visibility: visible;
+}
+
+.problem-item .time-full {
+    display: none;
+    opacity: 0;
+    visibility: hidden;
+    font-size: var(--rank-font-size-sm);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    letter-spacing: 0.02em;
+    text-align: center;
+    width: 100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* penalty-item的time-brief和time-full默认状态 */
+.penalty-item .penalty-time-brief {
+    opacity: 1;
+    visibility: visible;
+}
+
+.penalty-item .penalty-time-full {
+    display: none; /* 默认隐藏完整时间 */
+    opacity: 0;
+    visibility: hidden;
+}
+
+.problem-item .pro-submit-cnt {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 加载覆盖层 - 使用 fixed 定位确保在全局定位上下文中，避免被 controls-toolbar 遮挡 */
+.rank-system .loading-overlay {
+    position: fixed; /* 改为 fixed，确保在全局定位上下文中 */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(255,255,255,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100010; /* 提高到比 controls-toolbar (100001) 更高 */
+    backdrop-filter: blur(6px); 
+}
+
+.loading-spinner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--rank-padding-md);
+    padding: 24px 32px;
+    background: rgba(255,255,255,0.9);
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 12px;
+    color: #111827;
+    font-size: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    animation: fadeIn 0.25s ease;
+    z-index: 100011; /* 确保在 loading-overlay 之上 */
+}
+
+.rank-system .loading-spinner::before {
+    content: "";
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 3px solid #e5e7eb;
+    border-top-color: #3b82f6;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 模态框 - 覆盖整个窗口，类似Bootstrap 5 modal */
+.modal-overlay {
+    position: fixed; /* 改为fixed，覆盖整个视窗 */
+    top: 0;
+    left: 0;
+    width: 100vw; /* 视窗宽度 */
+    height: 100vh; /* 视窗高度 */
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100003; /* Bootstrap 5 modal的z-index */
+}
+
+.modal-content {
+    background: white;
+    border-radius: var(--rank-border-radius); /* 使用系统圆角 */
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2), 0 4px 6px rgba(0, 0, 0, 0.1); /* 增强阴影效果 */
+    animation: modalSlideIn 0.3s ease;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: auto; /* 改为auto，让modal根据内容自适应宽度 */
+    min-width: 300px; /* 最小宽度 */
+    pointer-events: auto;
+    border: 1px solid rgba(255, 255, 255, 0.2); /* 微妙边框 */
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    padding: var(--rank-padding-lg);
+    border-bottom: 2px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: var(--rank-border-radius) var(--rank-border-radius) 0 0;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #374151;
+    font-weight: 600;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #6b7280;
+    padding: 4px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+    color: #374151;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.modal-body {
+    padding: var(--rank-padding-lg);
+}
+
+/* 滚榜帮助模态框专用样式 - 紧凑布局，分类并排 */
+#roll-help-modal .modal-header {
+    padding: 8px 16px 6px 16px; /* 进一步减少内边距 */
+    margin: 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+#roll-help-modal .modal-header h3 {
+    margin: 0;
+    font-size: 18px; /* 减小标题字体 */
+    font-weight: 600;
+}
+
+#roll-help-modal .modal-body {
+    padding: 12px 20px 16px 20px; /* 减少内边距 */
+    max-height: 85vh; /* 限制最大高度，避免modal过高 */
+    overflow-y: auto; /* 仅在必要时显示滚动条 */
+}
+
+#roll-help-modal .modal-content {
+    max-width: 95vw; /* 增加最大宽度，更好地利用屏幕空间 */
+    width: auto;
+    min-width: 800px; /* 设置最小宽度，确保有足够的横向空间 */
+}
+
+.roll-help-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px 24px; /* 减少列间距 */
+    padding: 0;
+}
+
+.roll-help-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* 减少section内部间距 */
+}
+
+.roll-help-section-title {
+    font-size: 14px; /* 减小标题字体 */
+    font-weight: 700;
+    color: #333;
+    padding-bottom: 4px; /* 减少底部内边距 */
+    border-bottom: 2px solid #0d6efd;
+    margin-bottom: 2px; /* 减少底部外边距 */
+}
+
+.roll-help-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 6px 12px; /* 减少行间距和列间距 */
+}
+
+.roll-help-item {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* 减少gap */
+    font-size: 14px; /* 减小字体 */
+    font-weight: 500;
+    padding: 4px 0; /* 减少上下内边距 */
+    color: #333;
+    line-height: 1.3; /* 减小行高 */
+}
+
+.roll-help-item code {
+    font-size: 15px; /* 减小快捷键字母字体 */
+    font-weight: 800; /* 字母加粗 */
+    background-color: #f1f3f5;
+    padding: 2px 8px; /* 减少内边距 */
+    border-radius: 3px; /* 减小圆角 */
+    color: #0d6efd;
+    font-family: 'Courier New', 'Monaco', 'Consolas', monospace;
+    min-width: 45px; /* 减小最小宽度 */
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.roll-help-item span {
+    line-height: 1.3; /* 减小行高 */
+    flex: 1;
+}
+
+/* 统计表格modal的特殊样式 */
+.modal-body:has(.summary-table) {
+    padding: 16px; /* 减少内边距，让表格更紧凑 */
+}
+
+.modal-header:has(+ .modal-body .summary-table) {
+    padding: 12px 16px; /* 减少header内边距 */
+}
+
+/* 统计表格 - 美化样式 */
+.summary-table {
+    width: auto; /* 改为auto，让表格根据内容自适应 */
+    min-width: 200px; /* 最小宽度 */
+    max-width: 90vw; /* 最大宽度不超过视窗 */
+    border-collapse: collapse;
+    font-size: var(--rank-font-size-md);
+    border-radius: var(--rank-border-radius);
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: white;
+    table-layout: fixed; /* 固定表格布局，确保列宽控制生效 */
+}
+
+.summary-table th,
+.summary-table td {
+    padding: 12px 8px;
+    text-align: center;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 控制各列宽度 */
+.summary-table th:first-child,
+.summary-table td:first-child {
+    width: 80px; /* 结果列 */
+    min-width: 80px;
+    max-width: 80px;
+}
+
+.summary-table th:last-child,
+.summary-table td:last-child {
+    width: 80px; /* 合计列 */
+    min-width: 80px;
+    max-width: 80px;
+}
+
+.summary-table th:not(:first-child):not(:last-child),
+.summary-table td:not(:first-child):not(:last-child) {
+    width: 60px; /* 题目列 */
+    min-width: 60px;
+    max-width: 60px;
+}
+
+.summary-table th {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 2px solid #d1d5db;
+}
+
+.summary-table tr:nth-child(even) {
+    background: #f9fafb;
+}
+
+.summary-table tr:hover {
+    background: #f3f4f6;
+    transition: background-color 0.2s ease;
+}
+
+/* 统计表格双语标题样式 */
+.summary-table th .bilingual-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.summary-table th .bilingual-header .header-cn {
+    font-size: var(--rank-font-size-md);
+    font-weight: 600;
+    color: #374151;
+}
+
+.summary-table th .bilingual-header .header-en {
+    font-size: var(--rank-font-size-sm);
+    font-weight: 500;
+    color: #6b7280;
+}
+
+/* ============================================
+   获奖Modal - 大屏幕投屏专用精美设计（参考旧代码优化）
+   ============================================ */
+
+/* Modal容器 - 优化16:9屏幕布局，减少空白 */
+.award-modal {
+    /* 最大尺寸限制：不超过视口的96%宽度和90%高度 */
+    max-width: 96vw;
+    max-height: 90vh;
+    
+    /* 最小高度限制：避免超宽屏幕上过于扁平（至少为视口高度的60%） */
+    min-height: 60vh;
+    
+    /* 宽高比限制：16:9 */
+    aspect-ratio: 16 / 9;
+    
+    /* 宽度设置逻辑：
+     * 1. 优先保证最小高度 60vh，对应的宽度为 60vh * 16/9
+     * 2. 但宽度不能超过 96vw，高度不能超过 90vh
+     * 3. 如果按最小高度计算的宽度超过 96vw，则使用 96vw，高度按 16:9 计算
+     * 
+     * 计算公式：取以下值的最小值，确保优先满足最小高度要求
+     * - 96vw（最大宽度限制）
+     * - 90vh * 16/9（最大高度对应的宽度）
+     * - 但如果 60vh * 16/9 < 96vw，优先使用 60vh * 16/9
+     * 
+     * 简化：min(96vw, 90vh * 16/9, max(60vh * 16/9, 某个合理的值))
+     * 最简形式：min(96vw, max(60vh * 16/9, 90vh * 16/9))
+     * 由于 max(60vh * 16/9, 90vh * 16/9) = 90vh * 16/9（因为 90 > 60）
+     * 最终：min(96vw, 90vh * 16/9)
+     * 
+     * 但这样在超宽屏幕上可能高度太大，所以我们要确保最小高度：
+     * 使用 min(96vw, max(60vh * 16/9, min(96vw, 90vh * 16/9)))
+     * 这样可以：如果 60vh * 16/9 <= 96vw，使用 60vh * 16/9；否则使用 min(96vw, 90vh * 16/9)
+     */
+    width: min(96vw, max(60vh * 16 / 9, min(96vw, 90vh * 16 / 9)));
+    
+    margin: auto;
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    animation: awardModalEnter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    display: flex;
+    flex-direction: column;
+}
+
+@keyframes awardModalEnter {
+    0% {
+        opacity: 0;
+        transform: scale(0.9) translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* 关闭按钮 - 右上角，大而明显 */
+.award-close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border: none;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    font-size: 40px;
+    font-weight: 300;
+    color: #666;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.award-close-btn:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Modal内容容器 - 自适应高度，压缩间距 */
+.award-modal-content {
+    padding: min(40px, 3vw) min(45px, 3.5vw) min(30px, 2.5vw); /* 响应式内边距 */
+    display: flex;
+    flex-direction: column;
+    gap: min(30px, 2.5vw); /* 响应式间距 */
+    flex: 1;
+    overflow-y: auto; /* 如果内容过多，允许滚动 */
+    min-height: 0; /* 允许flex子元素缩小 */
+}
+
+/* 顶部获奖等级大标题 - 参考旧代码，但适当缩小 */
+.award-level-title {
+    text-align: center;
+    font-size: 80px; /* 进一步缩小以适应屏幕 */
+    font-weight: 900;
+    letter-spacing: 6px;
+    padding: 25px 35px; /* 压缩内边距 */
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+    animation: awardTitleGlow 2s ease-in-out infinite;
+    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3);
+    line-height: 1.1; /* 压缩行高 */
+}
+
+.award-level-title::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+    animation: awardTitleShine 3s linear infinite;
+}
+
+@keyframes awardTitleGlow {
+    0%, 100% {
+        filter: drop-shadow(0 0 10px currentColor);
+    }
+    50% {
+        filter: drop-shadow(0 0 20px currentColor);
+    }
+}
+
+@keyframes awardTitleShine {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.award-level-title.gold {
+    /* 更优雅的金色：使用深金色到浅金色的渐变，更有质感 */
+    background: linear-gradient(135deg, #e6c200 0%, #ffd700 50%, #ffed4e 100%);
+    color: #b8860b; /* 深金色文字，更有对比度 */
+    text-shadow: 3px 3px 6px rgba(184, 134, 11, 0.4), 0 0 20px rgba(255, 215, 0, 0.3);
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.25);
+}
+
+.award-level-title.silver {
+    /* 更优雅的银色：使用深灰银到亮银的渐变，更有金属质感 */
+    background: linear-gradient(135deg, #6c757d 0%, #9ca3af 50%, #c0c0c0 100%);
+    color: #2c3e50; /* 深灰蓝色文字，与银色背景形成强烈对比 */
+    text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8), 0 0 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 20px rgba(108, 117, 125, 0.35);
+}
+
+.award-level-title.bronze {
+    /* 更优雅的铜色：使用深铜色到金铜色的渐变，更有质感 */
+    background: linear-gradient(135deg, #a0522d 0%, #cd7f32 50%, #daa520 100%);
+    color: #8b4513; /* 深棕色文字，更有对比度 */
+    text-shadow: 3px 3px 6px rgba(139, 69, 19, 0.4), 0 0 15px rgba(205, 127, 50, 0.3);
+    box-shadow: 0 4px 20px rgba(205, 127, 50, 0.25);
+}
+
+/* 主体内容区域 - 响应式布局，确保照片区和信息区高度一致 */
+.award-main-content {
+    display: flex;
+    gap: min(40px, 3.5vw); /* 响应式左右间距 */
+    align-items: stretch; /* 拉伸对齐，确保两个区域高度一致 */
+    flex: 1;
+    min-height: 0;
+    max-height: calc(90vh - 200px); /* 限制最大高度，确保不超出modal */
+}
+
+/* 左侧照片区域 - 放大照片区域，适配16:9屏幕 */
+.award-photo-section {
+    flex-shrink: 0;
+    width: 60%;
+    min-width: 600px; /* 增大最小宽度 */
+    display: flex;
+    flex-direction: column;
+    align-self: stretch; /* 拉伸以匹配高度 */
+    height: 100%; /* 确保高度匹配 */
+}
+
+.award-photo-frame {
+    position: relative;
+    width: 100%;
+    height: 100%; /* 填充父容器高度，与信息区域对齐 */
+    min-height: 400px; /* 最小高度确保照片可见 */
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+    /* 使用flex布局让高度由容器决定，而不是aspect-ratio */
+}
+
+.award-photo-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.award-photo-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 20px;
+}
+
+/* 照片光效 */
+.award-photo-glow {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
+    animation: photoGlow 3s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes photoGlow {
+    0%, 100% {
+        opacity: 0.3;
+        transform: rotate(0deg);
+    }
+    50% {
+        opacity: 0.6;
+        transform: rotate(180deg);
+    }
+}
+
+/* 照片placeholder - emoji奖牌（参考旧代码，使用SVG背景） */
+.award-photo-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 400px; /* 缩小以适应 */
+    opacity: 0.15;
+    border-radius: 20px;
+    font-family: '等线', system-ui, sans-serif;
+}
+
+.award-photo-placeholder-gold {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 237, 78, 0.25) 100%);
+}
+
+.award-photo-placeholder-silver {
+    background: linear-gradient(135deg, rgba(192, 192, 192, 0.15) 0%, rgba(232, 232, 232, 0.25) 100%);
+}
+
+.award-photo-placeholder-bronze {
+    background: linear-gradient(135deg, rgba(205, 127, 50, 0.15) 0%, rgba(218, 165, 32, 0.25) 100%);
+}
+
+/* 右侧详细信息区域 */
+.award-details-section {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-self: stretch; /* 拉伸以匹配高度 */
+}
+
+.award-details-card {
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 20px;
+    padding: min(30px, 2.5vw); /* 响应式内边距 */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    gap: min(18px, 1.5vw); /* 响应式间距 */
+    flex: 1; /* 填充可用空间，与照片区域高度匹配 */
+    position: relative;
+    overflow: hidden;
+    min-height: 0; /* 允许flex子元素缩小 */
+    height: 100%; /* 确保与照片区域高度一致 */
+}
+
+/* 文字信息区域（包含所有文字信息行） */
+.award-info-section {
+    position: relative; /* 为logo背景提供定位上下文 */
+    display: flex;
+    flex-direction: column;
+    gap: min(18px, 1.5vw); /* 与卡片整体间距一致 */
+}
+
+/* 学校logo背景（半透明，放在文字信息区后面） */
+.award-school-logo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    background-size: min(400px, 30%) auto; /* 响应式大小，最大不超过30%宽度 */
+    background-position: right top;
+    background-repeat: no-repeat;
+    opacity: 0.15; /* 半透明背景，参考rank.js中的school-logo */
+    pointer-events: none;
+    z-index: 0; /* 在文字后面 */
+    overflow: visible;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
+}
+
+/* 当有背景图片时，使用CSS变量 */
+.award-school-logo.has-background {
+    background-image: var(--rank-school-logo-bg);
+}
+
+/* 文字信息区域内的所有信息行都应该在logo之上 */
+.award-info-section > .award-info-row {
+    position: relative;
+    z-index: 1;
+}
+
+/* 信息行 - 参考旧代码简洁布局，label和value清晰分开，进一步压缩间距 */
+.award-info-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px; /* 进一步减小label和value之间的间距 */
+    padding: 0;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.08);
+    padding-bottom: 14px; /* 进一步减小行间距 */
+}
+
+/* 隐藏的行不应该显示分割线和间距 */
+.award-info-row.award-info-row-hidden {
+    display: none !important; /* 确保完全隐藏 */
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
+    margin: 0 !important;
+}
+
+/* 如果一个信息行后面跟着隐藏的一血行，则移除下边框（让统计容器直接接上） */
+.award-info-row:not(.award-info-row-hidden) + #award-first-blood-row.award-info-row-hidden {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+/* 前面是隐藏一血行的信息行，移除上边框 */
+.award-info-row:not(.award-info-row-hidden) + .award-info-row.award-info-row-hidden + .award-stats-container {
+    margin-top: 0;
+}
+
+/* 如果一血行可见，移除下边框 */
+#award-first-blood-row:not(.award-info-row-hidden) {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+/* 统计容器前面如果是隐藏的一血行，正常显示上边框 */
+#award-first-blood-row.award-info-row-hidden + .award-stats-container {
+    margin-top: 0;
+    padding-top: 16px;
+    border-top: 2px solid rgba(0, 0, 0, 0.1); /* 保持上边框 */
+}
+
+/* 如果一血行可见，统计容器正常显示 */
+#award-first-blood-row:not(.award-info-row-hidden) + .award-stats-container {
+    margin-top: 8px;
+    padding-top: 16px;
+    border-top: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.award-info-primary {
+    padding-bottom: 16px; /* 主信息进一步压缩 */
+}
+
+/* 获奖modal中的双语文本 - 左右结构（提高优先级，覆盖通用规则） */
+.award-modal .award-info-label en-text,
+.award-modal .award-stat-label en-text {
+    display: inline !important;
+    font-size: 0.65em;
+    color: #999;
+    margin-left: 10px;
+    margin-top: 0 !important;
+    font-weight: 500;
+    vertical-align: baseline;
+}
+
+/* 添加分隔符样式，更清晰 */
+.award-modal .award-info-label en-text::before,
+.award-modal .award-stat-label en-text::before {
+    content: ' / ';
+    margin-right: 4px;
+    color: #bbb;
+    font-weight: 300;
+}
+
+.award-info-label {
+    font-size: 28px; /* 进一步缩小字体 */
+    font-weight: 700;
+    color: #666;
+    line-height: 1.2; /* 压缩行高 */
+    white-space: nowrap;
+}
+
+.award-info-value {
+    font-size: 44px; /* 进一步缩小字体 */
+    font-weight: 900;
+    color: #222;
+    line-height: 1.2; /* 压缩行高 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-height: 52px; /* 减小最小高度 */
+}
+
+/* 统计数据容器 - 进一步压缩间距 */
+.award-stats-container {
+    display: flex;
+    gap: 25px;
+    margin-top: 8px;
+    padding-top: 16px;
+    border-top: 2px solid rgba(0, 0, 0, 0.1);
+    flex-shrink: 0; /* 关键：统计容器固定，不被压缩 */
+}
+
+/* ============================================
+   获奖Modal信息区跑马灯效果
+   ============================================ */
+
+/* 当文本溢出时，启用跑马灯 */
+#award-school.needs-marquee,
+#award-team-name.needs-marquee,
+#award-members.needs-marquee,
+#award-coach.needs-marquee,
+#award-first-blood.needs-marquee {
+    text-overflow: clip; /* 移除ellipsis */
+    overflow: hidden;
+    position: relative;
+}
+
+/* 跑马灯包装元素 */
+#award-school.needs-marquee > .marquee-wrapper,
+#award-team-name.needs-marquee > .marquee-wrapper,
+#award-members.needs-marquee > .marquee-wrapper,
+#award-coach.needs-marquee > .marquee-wrapper,
+#award-first-blood.needs-marquee > .marquee-wrapper {
+    display: inline-block;
+    white-space: nowrap;
+    padding-right: 200px; /* 增加空白间距：让文本滚动完一遍后，有足够的时间空白，然后再循环，给观众充足时间阅读 */
+    animation: award-marquee linear infinite;
+    animation-duration: var(--marquee-duration, 15s);
+    will-change: transform; /* 硬件加速 */
+    backface-visibility: hidden; /* 防止闪烁 */
+}
+
+/* 跑马灯动画：从右滚动到左（文本从可见区域左侧滚动出去）
+ * 关键：动画距离 = 文本宽度 + 空白，这样当文本完全滚动出视野后，
+ * 空白部分会继续滚动，然后无缝循环回开头，形成首尾相接的效果 */
+@keyframes award-marquee {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(var(--marquee-translate, -100px));
+        /* 使用CSS变量动态设置滚动距离：文本宽度 + 空白 - 容器宽度 */
+    }
+}
+
+/* Hover时暂停，方便查看完整内容 */
+#award-school.needs-marquee:hover > .marquee-wrapper,
+#award-team-name.needs-marquee:hover > .marquee-wrapper,
+#award-members.needs-marquee:hover > .marquee-wrapper,
+#award-coach.needs-marquee:hover > .marquee-wrapper,
+#award-first-blood.needs-marquee:hover > .marquee-wrapper {
+    animation-play-state: paused;
+    cursor: text; /* 提示可以查看 */
+}
+
+.award-stat-box {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* 减小gap */
+    padding: 25px; /* 减小内边距 */
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(248, 249, 250, 0.9) 0%, rgba(233, 236, 239, 0.9) 100%);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.award-stat-box:hover {
+    background: linear-gradient(135deg, rgba(248, 249, 250, 1) 0%, rgba(233, 236, 239, 1) 100%);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.award-stat-label {
+    font-size: 24px; /* 进一步缩小字体 */
+    font-weight: 700;
+    color: #666;
+    line-height: 1.2; /* 压缩行高 */
+}
+
+.award-stat-value {
+    font-size: 64px; /* 缩小字体，但仍突出显示 */
+    font-weight: 900;
+    color: #222;
+    line-height: 1.1; /* 压缩行高 */
+}
+
+/* 对于可能换行的字段（如成员、教练） - 改为单行，溢出时使用跑马灯 */
+#award-members,
+#award-coach {
+    white-space: nowrap; /* 改为单行，配合跑马灯 */
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 默认显示ellipsis，启用跑马灯后会被覆盖 */
+    font-size: 38px;
+    min-height: 50px;
+}
+
+/* 队名字体大小与成员、教练一致（小一点） */
+#award-team-name {
+    font-size: 38px; /* 与成员、教练的字号一致 */
+    min-height: 50px; /* 与成员、教练的最小高度一致 */
+}
+
+/* 响应式优化 - 更好的自适应 */
+@media (max-width: 1600px) {
+    .award-modal {
+        max-width: min(98%, 1600px);
+        max-height: min(95vh, 1100px);
+        min-height: 50vh; /* 中等屏幕上最小高度稍小一些 */
+        width: min(min(98%, 1600px), max(50vh * 16 / 9, 95vh * 16 / 9));
+    }
+    
+    .award-level-title {
+        font-size: min(80px, 6vw);
+        padding: min(25px, 2vw) min(35px, 2.5vw);
+    }
+    
+    .award-photo-section {
+        width: min(900px, 48%);
+        min-width: 550px;
+    }
+    
+    .award-details-card {
+        padding: min(25px, 2vw);
+        gap: min(16px, 1.3vw);
+        min-height: 0;
+    }
+    
+    .award-info-label {
+        font-size: min(28px, 2.2vw);
+    }
+    
+    .award-info-value {
+        font-size: min(44px, 3.5vw);
+    }
+    
+    .award-stat-label {
+        font-size: min(24px, 2vw);
+    }
+    
+    .award-stat-value {
+        font-size: min(64px, 5vw);
+    }
+    
+    #award-members,
+    #award-coach,
+    #award-team-name {
+        font-size: min(38px, 3vw);
+        min-height: auto;
+    }
+}
+
+/* 更小屏幕的优化 */
+@media (max-width: 1200px) {
+    .award-main-content {
+        flex-direction: column; /* 改为上下布局 */
+        align-items: center;
+    }
+    
+    .award-photo-section {
+        width: 100%;
+        max-width: 600px;
+        min-width: auto;
+    }
+    
+    .award-photo-frame {
+        max-height: 450px;
+    }
+    
+    .award-details-section {
+        width: 100%;
+    }
+    
+    .award-details-card {
+        min-height: auto;
+    }
+}
+
+/* 倒计时覆盖层 */
+/* 全屏时间遮罩层 */
+.time-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 999999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.time-overlay-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.time-overlay-text {
+    font-size: min(25vw, 30vh);
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 
+        0 0 20px rgba(255, 255, 255, 0.6),
+        0 0 40px rgba(255, 255, 255, 0.4),
+        0 0 60px rgba(255, 255, 255, 0.2),
+        0 4px 8px rgba(0, 0, 0, 0.3);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.08em;
+    /* 多系统等宽字体族：优先使用各系统最好看的字体 */
+    /* macOS: SF Mono (SFMono-Regular), Menlo */
+    /* Windows: Consolas */
+    /* Linux: Liberation Mono */
+    /* 回退: Courier New, Monaco, monospace */
+    font-family: 
+        var(--bs-font-monospace, 
+            'SF Mono', 
+            'SFMono-Regular', 
+            ui-monospace, 
+            'Cascadia Code', 
+            'Source Code Pro', 
+            Menlo, 
+            Consolas, 
+            'Liberation Mono', 
+            Monaco, 
+            'Courier New', 
+            monospace);
+    line-height: 1;
+    text-align: center;
+    user-select: none;
+    /* 优化渲染性能 */
+    will-change: contents;
+    transform: translateZ(0);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .time-overlay-text {
+        font-size: min(20vw, 25vh);
+        letter-spacing: 0.06em;
+    }
+}
+
+.countdown-overlay {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: var(--rank-padding-lg);
+    border-radius: var(--rank-border-radius);
+    font-size: var(--rank-font-size-2xl);
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+    z-index: 101;
+    min-width: 120px;
+    text-align: center;
+}
+
+/* 现代浏览器超高性能动画系统 */
+.rank-row.rank-animating {
+    /* 移除transition，由JavaScript控制动画 */
+    will-change: transform;
+    z-index: 10;
+    /* 确保硬件加速 */
+    transform: translate3d(0, 0, 0);
+    /* 优化渲染性能 */
+    backface-visibility: hidden;
+    perspective: 1000px;
+    /* 减少重绘 */
+    contain: layout style paint;
+    
+    /* 现代浏览器优化 */
+    transform-style: preserve-3d;
+    isolation: isolate;
+    
+    /* GPU加速优化 */
+    -webkit-transform: translate3d(0, 0, 0);
+    -moz-transform: translate3d(0, 0, 0);
+    -ms-transform: translate3d(0, 0, 0);
+    -o-transform: translate3d(0, 0, 0);
+    
+    /* 减少重绘 */
+    -webkit-backface-visibility: hidden;
+    -moz-backface-visibility: hidden;
+    -ms-backface-visibility: hidden;
+    -o-backface-visibility: hidden;
+}
+
+.rank-row.rank-moving-up {
+    transform: translateY(-100%);
+    opacity: 0.8;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    z-index: 20;
+}
+
+.rank-row.rank-moving-down {
+    transform: translateY(100%);
+    opacity: 0.8;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    z-index: 20;
+}
+
+/* 排名变化时的视觉反馈 */
+.rank-row.rank-animating .rank-number {
+    transition: all 0.3s ease;
+    transform: scale(1.1);
+    color: #3b82f6;
+    font-weight: 900;
+}
+
+.rank-row.rank-animating .team-name {
+    transition: all 0.3s ease;
+    color: #1f2937;
+    font-weight: 600;
+}
+
+/* 排名上升的绿色高亮 */
+.rank-row.rank-moving-up {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    /* border-left: 4px solid #10b981; */
+}
+
+.rank-row.rank-moving-up .rank-number {
+    color: #059669;
+}
+
+/* 排名下降的橙色高亮 */
+.rank-row.rank-moving-down {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    /* border-left: 4px solid #f59e0b; */
+}
+
+.rank-row.rank-moving-down .rank-number {
+    color: #d97706;
+}
+
+/* 动画完成后的清理效果 */
+.rank-row.rank-animating:not(.rank-moving-up):not(.rank-moving-down) {
+    transition: all 0.3s ease;
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 数据更新时的动画效果 */
+/* rank-updating 类已移除transform和scale效果，只用于标记状态 */
+
+/* 排名变化时的特殊效果 */
+.rank-row.rank-changed {
+    animation: rankChangePulse 0.5s ease-in-out;
+}
+
+.rank-row.rank-improved {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    /* border-left: 4px solid #10b981; */
+    animation: rankImproveGlow 0.5s ease-in-out;
+}
+
+.rank-row.rank-declined {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    /* border-left: 4px solid #f59e0b; */
+    animation: rankDeclineGlow 0.5s ease-in-out;
+}
+
+/* 排名数字变化动画 */
+.rank-row.rank-changed .rank-number {
+    transition: all 0.3s ease;
+    animation: rankNumberBounce 0.5s ease-in-out;
+}
+
+/* 关键帧动画 */
+@keyframes rankChangePulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+@keyframes rankImproveGlow {
+    0% { box-shadow: 0 0 0 rgba(16, 185, 129, 0.4); }
+    50% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.6); }
+    100% { box-shadow: 0 0 0 rgba(16, 185, 129, 0.4); }
+}
+
+@keyframes rankDeclineGlow {
+    0% { box-shadow: 0 0 0 rgba(245, 158, 11, 0.4); }
+    50% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.6); }
+    100% { box-shadow: 0 0 0 rgba(245, 158, 11, 0.4); }
+}
+
+@keyframes rankNumberBounce {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+
+/* 中英双语样式 */
+.rank-system en-text {
+    display: block;
+    font-size: 0.8em;
+    color: #666;
+    margin-top: 2px;
+    font-weight: normal;
+    white-space: nowrap;
+}
+
+/* 确保所有包含双语文本的元素不换行 */
+.rank-system h2, 
+.rank-system h3, 
+.rank-system h4, 
+.rank-system h5, 
+.rank-system h6,
+.rank-system .modal-header h3,
+.rank-system .award-label,
+.rank-system .rank-col,
+.rank-system .control-btn,
+.rank-system .custom-select-btn {
+    white-space: nowrap;
+}
+
+/* 标题特殊处理，允许折行 */
+#rank-page-title {
+    white-space: normal !important;
+    word-break: break-all !important;
+}
+
+/* 容器查询：当容器宽度较小时，保持左对齐 */
+@container (max-width: 400px) {
+    .title-section {
+        justify-content: flex-start;
+    }
+    
+    #rank-page-title {
+        text-align: left;
+    }
+}
+
+
+
+/* 自定义Tooltip样式 */
+.tooltip-container {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip {
+    position: fixed;
+    background: rgba(0, 0, 0, 0.95);
+    color: white;
+    padding: 10px 14px;
+    border-radius: var(--rank-border-radius);
+    font-size: var(--rank-font-size-md);
+    line-height: 1.5;
+    white-space: pre-line;
+    z-index: 100009; /* 确保在全屏模式下显示 */
+    max-width: 320px;
+    word-wrap: break-word;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    pointer-events: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.tooltip-content {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.tooltip-cn {
+    font-size: var(--rank-font-size-md);
+    font-weight: 600;
+    color: var(--rank-text-white);
+    line-height: 1.4;
+}
+
+.tooltip-en {
+    font-size: 13px;
+    font-weight: 400;
+    color: #e0e0e0;
+    line-height: 1.3;
+    font-style: italic;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 5px;
+}
+
+.tooltip.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Tooltip箭头 */
+.tooltip::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: 6px solid transparent;
+}
+
+.tooltip.tooltip-top::before {
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-top-color: rgba(0, 0, 0, 0.9);
+}
+
+.tooltip.tooltip-bottom::before {
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-bottom-color: rgba(0, 0, 0, 0.9);
+}
+
+.tooltip.tooltip-left::before {
+    right: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-left-color: rgba(0, 0, 0, 0.9);
+}
+
+.tooltip.tooltip-right::before {
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-right-color: rgba(0, 0, 0, 0.9);
+}
+
+.rank-system.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 10000;
+    overflow: auto;
+    background: white; /* 确保背景色 */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.rank-system.fullscreen .rank-content-wrapper {
+    width: max-content;
+    /* 居中 */
+    margin: 0 auto;
+}
+
+.rank-system.fullscreen .rank-container {
+    margin-top: 0; /* 移除margin-top，让容器紧贴header */
+    height: auto; /* 必须设置，否则内容无法纵向滚动 */
+    overflow: visible;
+    background: white; /* 确保容器有背景色 */
+}
+
+/* 全屏模式下的tooltip样式 */
+.rank-system.fullscreen .tooltip {
+    z-index: 10010; /* 确保在全屏模式下显示 */
+    position: fixed; /* 使用fixed定位，相对于视口 */
+}
+
+/* 全屏模式下的modal样式 */
+.rank-system.fullscreen .modal-overlay {
+    z-index: 10020; /* 确保在全屏模式下显示，高于全屏容器 */
+    position: fixed; /* 使用fixed定位，相对于视口 */
+}
+
+.rank-system ::-webkit-scrollbar {
+    width: 8px;
+}
+
+.rank-system ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.rank-system ::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: var(--rank-border-radius-small);
+}
+
+.rank-system ::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.rank-system.fullscreen ::-webkit-scrollbar {
+    display: none;
+}
+
+/* 时间进度条样式 */
+/* ============================================
+   集成控制区和时间轴的样式
+   ============================================ */
+
+/* 合并的控制区和时间轴容器 */
+.controls-time-section {
+    width: 100%;
+    padding: 12px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    border-top: 1px solid #e9ecef;
+}
+
+.controls-time-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    max-width: 100%;
+    position: relative;
+}
+
+/* ============================================
+   时间轴区域样式（左侧，集成设计）
+   ============================================ */
+
+.time-progress-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+    padding: 8px 12px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8);
+    transition: all 0.3s ease;
+}
+
+.time-progress-wrapper:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
+    border-color: #adb5bd;
+}
+
+/* 时间显示组（垂直布局） */
+.time-display-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 1px;
+    font-family: 'Courier New', 'Monaco', 'Consolas', monospace;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding: 0 6px;
+    width: 90px; /* 固定宽度，防止因时间文本长度变化导致进度条位置抖动 */
+}
+
+.time-current {
+    color: #007bff; /* Bootstrap 5 primary - 正常模式 */
+    font-weight: 700;
+    font-size: 13px;
+    line-height: 1.3;
+    text-shadow: 0 1px 2px rgba(0, 123, 255, 0.1);
+    letter-spacing: 0.3px;
+    transition: color 0.2s ease-in-out; /* 平滑过渡 */
+}
+
+/* 回放模式时间显示样式 */
+.time-current.time-replay-mode {
+    color: #ffc107; /* Bootstrap 5 warning - 回放模式，明显区分 */
+    text-shadow: 0 1px 2px rgba(255, 193, 7, 0.2);
+}
+
+.time-total {
+    color: #6c757d;
+    font-weight: 500;
+    font-size: 11px;
+    line-height: 1.3;
+    opacity: 0.75;
+    letter-spacing: 0.2px;
+}
+
+/* 进度条容器 */
+.time-progress-bar-container {
+    flex: 1;
+    position: relative;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    min-width: 120px;
+    background: #e9ecef; /* Bootstrap 5 gray-200 */
+    border-radius: 0.375rem; /* 6px */
+    padding: 0.25rem; /* 4px */
+}
+
+.time-progress-slider {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border-radius: 0.375rem;
+    outline: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    position: relative;
+    z-index: 3;
+    margin: 0;
+}
+
+/* 滑块 - 圆角方形，Bootstrap 5 风格 */
+/* 进度条容器高度24px，滑块高度32px，需要垂直居中 */
+/* 容器24px - 滑块32px = -8px，所以需要向上偏移4px来居中 */
+.time-progress-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 40px;
+    background: #0d6efd; /* Bootstrap 5 primary */
+    border: 2px solid white;
+    border-radius: 0.375rem; /* 圆角方形 */
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* 简单阴影 */
+    transition: background-color 0.15s ease-in-out;
+    margin-top: -12px; /* 垂直居中：容器24px - 滑块32px = -8px，除以2 = -4px */
+}
+
+.time-progress-slider::-webkit-slider-thumb:hover {
+    background: #0b5ed7; /* Bootstrap 5 primary hover */
+}
+
+.time-progress-slider::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border-radius: 0.375rem;
+}
+
+.time-progress-slider::-moz-range-thumb {
+    width: 18px;
+    height: 32px; /* 与 webkit 版本保持一致 */
+    background: #0d6efd; /* Bootstrap 5 primary */
+    border: 2px solid white;
+    border-radius: 0.375rem; /* 圆角方形 */
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.15s ease-in-out;
+    /* Firefox 的滑块垂直居中通过 track 高度自动处理，但如果有问题可以添加 margin-top */
+}
+
+.time-progress-slider::-moz-range-thumb:hover {
+    background: #0b5ed7; /* Bootstrap 5 primary hover */
+}
+
+.time-progress-slider::-moz-range-track {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border-radius: 0.375rem;
+}
+
+/* 进度条背景（已过时间区域）- 纯色 */
+.time-progress-track {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    height: 100%;
+    background: #0d6efd; /* Bootstrap 5 primary - 纯色 */
+    border-radius: 0.375rem;
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 1;
+    transition: width 0.3s ease-out;
+}
+
+/* 进度条轮廓（未来时间区域） */
+.time-progress-track-outline {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 1px solid #dee2e6; /* Bootstrap 5 border color */
+    border-radius: 0.375rem;
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 0;
+    background: transparent;
+}
+
+/* 重置按钮（图标样式，集成设计） */
+.time-reset-btn {
+    padding: 8px;
+    background: transparent;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.time-reset-btn i {
+    font-size: 16px;
+}
+
+.time-reset-btn:hover {
+    background: #e9ecef;
+    color: #007bff;
+    border-color: #007bff;
+    transform: rotate(180deg);
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+.time-reset-btn:active {
+    transform: rotate(180deg) scale(0.95);
+    box-shadow: 0 1px 2px rgba(0, 123, 255, 0.2);
+}
+
+/* ============================================
+   控制按钮区域样式（右侧）
+   ============================================ */
+
+.controls-toolbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: white;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    flex-shrink: 0;
+}
+
+.toolbar-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.toolbar-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* 折叠按钮（默认隐藏，窄屏时显示） */
+.controls-toggle-btn {
+    display: none;
+    padding: 10px;
+    background: white;
+    color: #495057;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.controls-toggle-btn:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+.controls-toggle-btn i {
+    font-size: 20px;
+}
+
+/* 下拉菜单（窄屏时使用） */
+.controls-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 12px;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 280px;
+    z-index: 1000;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.controls-dropdown.show {
+    display: flex;
+}
+
+.controls-dropdown .toolbar-group {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+}
+
+.controls-dropdown .toolbar-item {
+    width: 100%;
+}
+
+.controls-dropdown .control-btn,
+.controls-dropdown .custom-select-btn {
+    width: 100%;
+    justify-content: flex-start;
+}
+
+/* 下拉菜单中带文字的按钮样式 */
+.controls-dropdown .control-btn.with-text {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    min-height: 44px;
+}
+
+.controls-dropdown .control-btn.with-text i,
+.controls-dropdown .control-btn.with-text .rank-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    width: 20px;
+    text-align: center;
+}
+
+.controls-dropdown .control-btn.with-text .button-text {
+    flex: 1;
+    display: inline-block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #495057;
+    line-height: 1.4;
+}
+
+.controls-dropdown .control-btn.with-text .button-text en-text {
+    display: block;
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 400;
+    margin-top: 2px;
+    opacity: 0.8;
+}
+
+/* 滚榜按钮专用双语文本样式（上下结构，英文字号调小） */
+.roll-button-bilingual-stacked {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.2;
+    gap: 2px;
+}
+
+.roll-button-text-cn {
+    font-size: inherit;
+    font-weight: inherit;
+}
+
+.roll-button-text-en {
+    font-size: 0.75em;
+    font-weight: 400;
+    opacity: 0.8;
+    color: inherit;
+}
+
+/* 工具栏按钮的双语文本（仅在hover或active时显示为tooltip） */
+.control-btn {
+    position: relative;
+}
+
+.control-btn .button-text-bilingual {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 1000;
+    display: none; /* 默认隐藏，hover时显示 */
+}
+
+.control-btn:hover .button-text-bilingual,
+.control-btn:focus .button-text-bilingual {
+    opacity: 1;
+    display: block;
+}
+
+.control-btn .button-text-bilingual .roll-button-bilingual-stacked {
+    align-items: center;
+    gap: 1px;
+}
+
+.control-btn .button-text-bilingual .roll-button-text-cn {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.control-btn .button-text-bilingual .roll-button-text-en {
+    font-size: 9px;
+    font-weight: 400;
+    opacity: 0.9;
+}
+
+/* 下拉菜单中的滚榜按钮直接显示双语文本上下结构 */
+.controls-dropdown .control-btn.with-text .button-text .roll-button-bilingual-stacked {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.3;
+    gap: 2px;
+}
+
+.controls-dropdown .control-btn.with-text .button-text .roll-button-text-cn {
+    font-size: 14px;
+    font-weight: 500;
+    color: #495057;
+}
+
+.controls-dropdown .control-btn.with-text .button-text .roll-button-text-en {
+    font-size: 11px;
+    font-weight: 400;
+    color: #6c757d;
+    opacity: 0.8;
+}
+
+/* 下拉菜单中自定义选择按钮也显示文字 */
+.controls-dropdown .custom-select-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    min-height: 44px;
+    width: 100%;
+    justify-content: flex-start;
+}
+
+.controls-dropdown .custom-select-btn.icon-only {
+    width: 100%;
+    min-width: auto;
+}
+
+.controls-dropdown .custom-select-btn i,
+.controls-dropdown .custom-select-btn .rank-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    width: 20px;
+    text-align: center;
+}
+
+.controls-dropdown .custom-select-btn .option-text {
+    flex: 1;
+    display: inline-block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #495057;
+    line-height: 1.4;
+}
+
+.controls-dropdown .custom-select-btn .option-text en-text {
+    display: block;
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 400;
+    margin-top: 2px;
+    opacity: 0.8;
+}
+
+/* ============================================
+   响应式设计
+   ============================================ */
+
+/* 窄屏：折叠所有按钮 */
+@media (max-width: 1024px) {
+    .controls-toolbar {
+        display: none;
+    }
+    
+    .controls-toggle-btn {
+        display: flex;
+    }
+    
+    .time-progress-wrapper {
+        flex: 1;
+    }
+}
+
+/* 超窄屏：时间轴也调整 */
+@media (max-width: 768px) {
+    .controls-time-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    
+    .time-progress-wrapper {
+        width: 100%;
+        flex-direction: column;
+        gap: 10px;
+        padding: 12px;
+    }
+    
+    .time-display-group {
+        width: 80px; /* 保持固定宽度，即使在移动端 */
+        align-items: center;
+    }
+    
+    .time-progress-bar-container {
+        width: 100%;
+        min-width: 100px;
+    }
+    
+    .time-reset-btn {
+        align-self: center;
+    }
+    
+    .controls-toggle-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .controls-dropdown {
+        left: 0;
+        right: 0;
+        min-width: auto;
+        position: fixed;
+        top: auto;
+        bottom: 20px;
+        max-height: 60vh;
+    }
+}
+
+/* 保留旧的类名以兼容（如果需要） */
+.time-progress-section {
+    display: none;
+}
+
+/* time-progress-container 已移除，兼容旧代码 */
+
+/* 学校排名模式 - 队伍信息合计样式 */
+.school-summary .team-summary-info {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    padding: 3px 10px;
+}
+
+/* 中文信息合计样式 - 比队名稍小但依然醒目 */
+.school-summary .summary-text-cn {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    white-space: nowrap;
+    position: relative;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    min-height: 20px;
+    line-height: 1.2;
+}
+
+/* 英文信息合计样式 - 与英文队名保持一致 */
+.school-summary .summary-text-en {
+    font-size: var(--rank-font-size-md);
+    font-weight: 500;
+    color: #6b7280;
+    font-style: italic;
+    line-height: 1;
+    white-space: nowrap;
+    position: relative;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    min-height: 16px;
+}
+
+/* 学校排名模式水印样式 - 印章风格 */
+.team-names {
+    position: relative;
+}
+
+.team-watermark {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) rotate(-15deg);
+    text-align: center;
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 10;
+    /* 确保水印不被渐隐遮挡 */
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.8) 20%, rgba(255,255,255,0.9) 100%);
+    padding: 3px 8px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    /* 印章边框 */
+    border: 2px solid #dc2626;
+    border-style: solid;
+    /* 固定宽度，不受父容器影响 */
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.watermark-text-cn {
+    font-size: 9px;
+    font-weight: 700;
+    color: #dc2626;
+    line-height: 1;
+    margin-bottom: 1px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    font-family: 'Microsoft YaHei', 'SimHei', sans-serif;
+}
+
+/* 滚榜控制按钮区 */
+.roll-controls-section {
+    padding: 12px 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.roll-controls-toolbar {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+/* 滚榜控制按钮基础样式（不依赖 Bootstrap） */
+.roll-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.5;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    user-select: none;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    transition: all 0.15s ease-in-out;
+    background-color: #fff;
+    color: #333;
+}
+
+.roll-btn:not(:disabled):hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+}
+
+.roll-btn:not(:disabled):active {
+    transform: translateY(0);
+    opacity: 0.75;
+}
+
+.roll-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* 主按钮（启动滚榜） */
+.roll-btn-primary {
+    background-color: #0d6efd;
+    color: #fff;
+    border-color: #0d6efd;
+}
+
+.roll-btn-primary:not(:disabled):hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+.roll-btn-primary:not(:disabled):active {
+    background-color: #0a58ca;
+    border-color: #0a53be;
+}
+
+/* 次要按钮（重置滚榜） */
+.roll-btn-secondary {
+    background-color: #6c757d;
+    color: #fff;
+    border-color: #6c757d;
+}
+
+.roll-btn-secondary:not(:disabled):hover {
+    background-color: #5c636a;
+    border-color: #565e64;
+}
+
+.roll-btn-secondary:not(:disabled):active {
+    background-color: #565e64;
+    border-color: #51585e;
+}
+
+/* 轮廓信息按钮（帮助） */
+.roll-btn-outline-info {
+    background-color: transparent;
+    color: #0dcaf0;
+    border-color: #0dcaf0;
+}
+
+.roll-btn-outline-info:not(:disabled):hover {
+    background-color: #0dcaf0;
+    color: #000;
+}
+
+.roll-btn-outline-info:not(:disabled):active {
+    background-color: #0aa2c0;
+    border-color: #0aa2c0;
+    color: #000;
+}
+
+/* 轮廓次要按钮（导出离线滚榜） */
+.roll-btn-outline-secondary {
+    background-color: transparent;
+    color: #6c757d;
+    border-color: #6c757d;
+}
+
+.roll-btn-outline-secondary:not(:disabled):hover {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+.roll-btn-outline-secondary:not(:disabled):active {
+    background-color: #5c636a;
+    border-color: #565e64;
+    color: #fff;
+}
+
+/* 滚榜控制按钮中的图标样式 */
+.roll-btn i {
+    font-size: 1em;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 滚榜控制按钮中的双语文本样式 */
+.roll-btn .roll-button-bilingual-stacked {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.2;
+    gap: 2px;
+}
+
+.roll-btn .roll-button-text-cn {
+    font-size: inherit;
+    font-weight: inherit;
+}
+
+.roll-btn .roll-button-text-en {
+    font-size: 0.75em;
+    font-weight: 400;
+    opacity: 0.8;
+}
+
+.watermark-text-en {
+    font-size: 7px;
+    font-weight: 600;
+    color: #dc2626;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    font-family: 'Arial', sans-serif;
+}
+
+/* 滚榜锁定特效 - 醒目但不影响布局 */
+.rank-row.roll-judging {
+    background: linear-gradient(135deg, 
+        rgba(59, 130, 246, 0.3) 0%, 
+        rgba(59, 130, 246, 0.25) 50%,
+        rgba(96, 165, 250, 0.3) 100%) !important;
+    animation: rollJudgingPulse 1.2s ease-in-out infinite;
+    position: relative;
+    z-index: 5;
+    /* 使用滤镜增强醒目度，不影响布局 */
+    filter: brightness(1.05) saturate(1.15);
+}
+
+/* 使用伪元素添加装饰性光效，绝对定位不影响布局 */
+.rank-row.roll-judging::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.3) 20%,
+        rgba(255, 255, 255, 0.5) 50%,
+        rgba(255, 255, 255, 0.3) 80%,
+        transparent 100%);
+    pointer-events: none;
+    z-index: 1;
+    animation: rollJudgingShine 2s ease-in-out infinite;
+    opacity: 0;
+}
+
+.problem-item.roll-judging-problem {
+    /* 黄色系背景，与pending状态保持一致 */
+    background: #ffb300 !important; /* Amber-600 黄色背景 */
+    color: var(--rank-text-white) !important;
+    /* 使用 outline 添加粗边框，不占据DOM空间 */
+    outline: 4px solid #ff6f00; /* Amber-800 深黄色粗边框 */
+    outline-offset: -2px; /* 内嵌边框，更紧凑 */
+    animation: rollJudgingProblemPulse 0.8s ease-in-out infinite;
+    filter: brightness(1.1) saturate(1.2);
+    z-index: 10;
+    position: relative;
+}
+
+.rank-row.roll-result-revealed {
+    animation: rollResultReveal 0.5s ease-out;
+}
+
+@keyframes rollJudgingPulse {
+    0%, 100% {
+        background: linear-gradient(135deg, 
+            rgba(59, 130, 246, 0.3) 0%, 
+            rgba(59, 130, 246, 0.25) 50%,
+            rgba(96, 165, 250, 0.3) 100%);
+        filter: brightness(1.05) saturate(1.15);
+    }
+    50% {
+        background: linear-gradient(135deg, 
+            rgba(59, 130, 246, 0.45) 0%, 
+            rgba(59, 130, 246, 0.4) 50%,
+            rgba(96, 165, 250, 0.45) 100%);
+        filter: brightness(1.15) saturate(1.3);
+    }
+}
+
+@keyframes rollJudgingShine {
+    0% {
+        opacity: 0;
+        transform: translateX(-100%);
+    }
+    50% {
+        opacity: 1;
+        transform: translateX(0%);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
+@keyframes rollJudgingProblemPulse {
+    0%, 100% {
+        background: #ffb300 !important; /* Amber-600 黄色背景 */
+        outline-color: #ff6f00; /* Amber-800 深黄色边框 */
+        filter: brightness(1.1) saturate(1.2);
+    }
+    50% {
+        background: #ffc107 !important; /* Amber-500 更亮的黄色 */
+        outline-color: #ff8f00; /* Amber-700 稍亮的边框 */
+        filter: brightness(1.25) saturate(1.4);
+    }
+}
+
+@keyframes rollResultReveal {
+    0% {
+        background: rgba(34, 197, 94, 0.3);
+    }
+    100% {
+        background: transparent;
+    }
+}
+
+/* 跳过过程中被处理的队伍特效 */
+.rank-row.roll-skip-revealed {
+    animation: rollSkipReveal 1s ease-out;
+    box-shadow: 
+        0 0 20px rgba(16, 185, 129, 0.4),
+        inset 0 0 15px rgba(16, 185, 129, 0.2);
+    z-index: 15;
+    position: relative;
+    background: linear-gradient(135deg, rgba(209, 250, 229, 0.6) 0%, rgba(167, 243, 208, 0.4) 100%);
+}
+
+@keyframes rollSkipReveal {
+    0% {
+        background: rgba(16, 185, 129, 0.4);
+        transform: scale(1);
+        box-shadow: 
+            0 0 30px rgba(16, 185, 129, 0.6),
+            inset 0 0 20px rgba(16, 185, 129, 0.3);
+    }
+    30% {
+        background: rgba(16, 185, 129, 0.6);
+        transform: scale(1.02);
+        box-shadow: 
+            0 0 40px rgba(16, 185, 129, 0.8),
+            inset 0 0 25px rgba(16, 185, 129, 0.4);
+    }
+    60% {
+        background: rgba(16, 185, 129, 0.4);
+        transform: scale(1.01);
+        box-shadow: 
+            0 0 25px rgba(16, 185, 129, 0.5),
+            inset 0 0 15px rgba(16, 185, 129, 0.25);
+    }
+    100% {
+        background: linear-gradient(135deg, rgba(209, 250, 229, 0.6) 0%, rgba(167, 243, 208, 0.4) 100%);
+        transform: scale(1);
+        box-shadow: 
+            0 0 20px rgba(16, 185, 129, 0.4),
+            inset 0 0 15px rgba(16, 185, 129, 0.2);
+    }
+}
+
+/* 队伍落下动画 - 优雅美观 */
+.rank-row.rank-falling-down {
+    will-change: transform, opacity;
+    position: relative;
+    z-index: 50;
+}
+
+.rank-row.rank-falling-down::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(148, 163, 184, 0.1) 0%,
+        rgba(148, 163, 184, 0.05) 50%,
+        transparent 100%
+    );
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* 优化落下动画的性能 */
+@supports (will-change: transform) {
+    .rank-row.rank-falling-down {
+        backface-visibility: hidden;
+        perspective: 1000px;
+        transform: translateZ(0);
+    }
+}
+

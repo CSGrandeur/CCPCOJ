@@ -21,50 +21,46 @@ class Privilege extends Adminbase
 	public function index()
 	{
 		$allowAdmin = [];
-		foreach($this->ojAllPrivilege as $key=>$value)
-		{
-			if($key == 'administrator' && !IsAdmin('super_admin'))
-				continue;
-			if($key == 'super_admin')
-				continue;
+		foreach($this->ojAllPrivilege as $key=>$value) {
+			// 为每个权限添加flg_allow字段
 			$allowAdmin[$key] = $value;
+			$allowAdmin[$key]['flg_allow'] = true; // 默认允许
+			
+			// 根据权限规则设置flg_allow
+			if($key == 'administrator' && !IsAdmin('super_admin')) {
+				$allowAdmin[$key]['flg_allow'] = false;
+			}
+			if($key == 'super_admin') {
+				$allowAdmin[$key]['flg_allow'] = false;
+			}
+			if($key == 'judger') {
+				$allowAdmin[$key]['flg_allow'] = false; // 不在此界面管理评测机
+			}
 		}
 		$this->assign('allowAdmin', $allowAdmin);
 		return $this->fetch();
 	}
 	public function privilege_list_ajax()
 	{
-		$limit	= input('limit', 10);
-		$offset	= input('offset', 0);
-		$search	= trim(input('search', ''));
-
 		$Privilege = db('privilege');
 
 		$map = ['rightstr' => ['in', array_keys($this->ojAllPrivilege)]];
-		if(isset($search) && strlen($search) > 0)
-			$map['user_id|rightstr'] = ['like', "%$search%"];
 		$list = $Privilege
+			->field('privilege_id,user_id,rightstr as privilege')
 			->where($map)
-			->limit($offset,$limit)
 			->order('user_id', 'asc')
 			->select();
-		$i = 1;
 		foreach($list as &$privilege)
 		{
-			$privilege['serial'] = $i;
-			$i ++;
-			$privilege['user_id'] = "<a href='/csgoj/user/userinfo?user_id=" . $privilege['user_id'] . "'>" . $privilege['user_id'] . "</a>";
-			$privilege['delete'] = "-";
-			if(IsAdmin('administrator') && $privilege['rightstr'] != 'super_admin' && ($privilege['rightstr'] != 'administrator' || IsAdmin('super_admin')))
+			// 只返回原始数据，不进行HTML格式化
+			$privilege['can_delete'] = false;
+			if(IsAdmin('administrator') && $privilege['privilege'] != 'super_admin' && ($privilege['privilege'] != 'administrator' || IsAdmin('super_admin')))
 			{
 				// 是管理员、且管理对象不是超级管理员、且（管理对象不是管理员 或 自己是超级管理员）时，可以delete
-				$privilege['delete'] = "<button class='delete_button btn btn-warning'>Delete</button>";
+				$privilege['can_delete'] = true;
 			}
-			$privilege['rightstr'] = "<span rightstr='" . $privilege['rightstr'] . "'>" . $this->ojAllPrivilege[$privilege['rightstr']] . "</span>";
 		}
-		$ret['total'] = $Privilege->where($map)->count();
-		$ret["rows"] = $list;
-		return $ret;
+		return $list;
 	}
 	private function privilege_Authentication()
 	{

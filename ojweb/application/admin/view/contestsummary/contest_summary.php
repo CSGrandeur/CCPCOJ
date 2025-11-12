@@ -46,7 +46,7 @@
                 </thead>
             </table>
         </div>
-        {include file="../../csgoj/view/public/refresh_in_table" /}
+        {js href="__JS__/refresh_in_table.js" /}
     </div>
 </div>
 <script type="text/javascript">

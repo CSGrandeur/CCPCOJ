@@ -1,0 +1,325 @@
+/* ========================================
+   双语显示效果样式 - 重构版
+   ======================================== */
+
+/*
+使用说明：
+1. 默认模式（上下显示）：直接在元素中使用 <span class="en-text">English</span>
+2. 左右模式：在父元素上添加 .bilingual-inline 类，如：
+   <div class="bilingual-inline">中文<span class="en-text">English</span></div>
+3. 通用性：.bilingual-inline 类可以应用到任何包含 .en-text 的元素上
+*/
+
+/* ========================================
+   基础样式定义
+   ======================================== */
+
+/* 英文辅助文本基础样式 - 默认上下模式 */
+.en-text {
+    display: block;
+    font-size: 0.7em;
+    color: inherit;
+    margin-left: 0;
+    margin-top: 1px;
+    line-height: 1.0em;
+    font-weight: normal;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+/* 通用左右模式 - 通过添加 .bilingual-inline 类启用 */
+.bilingual-inline .en-text {
+    display: inline;
+    font-size: 0.6em;
+    margin-left: 6px;
+    margin-top: 0;
+    line-height: 1.0em;
+    font-weight: normal;
+    font-style: normal;
+    color: inherit;
+    opacity: 0.7;
+}
+.label-text.bilingual-inline .en-text {
+    font-size: 0.8em;
+}
+
+/* ========================================
+   按钮样式系统
+   ======================================== */
+
+/* 按钮中的英文文本基础样式 */
+.btn .en-text {
+    display: block;
+    font-size: 0.65em;
+    margin-left: 0;
+    margin-top: 1px;
+    line-height: 1.0em;
+    color: inherit;
+    opacity: 1;
+}
+
+/* 左右模式按钮 - 覆盖默认的 block 显示 */
+.btn.bilingual-inline .en-text,
+.bilingual-inline.btn .en-text {
+    display: inline !important;
+    font-size: 0.6em;
+    margin-left: 6px;
+    margin-top: 0;
+    line-height: 1.0em;
+    font-weight: normal;
+    font-style: normal;
+    color: inherit;
+    opacity: 0.7;
+}
+
+/* 按钮交互效果 */
+.btn:hover .en-text,
+.btn.active .en-text,
+.btn:active .en-text {
+    opacity: 1;
+}
+
+.bilingual-inline:hover .en-text,
+.btn.bilingual-inline:hover .en-text {
+    opacity: 1;
+    transition: opacity 0.15s ease-in-out;
+}
+
+/* ========================================
+   特殊场景样式
+   ======================================== */
+
+/* 导航菜单 */
+.nav-link i {
+    display: inline;
+    margin-right: 0.25rem;
+    font-size: 0.8em;
+    margin-bottom: 0;
+}
+
+.nav-link .en-text {
+    display: block;
+    font-size: 0.6em;
+    margin-left: 0;
+    margin-top: 1px;
+    line-height: 1;
+}
+
+.bilingual-inline .nav-link .en-text,
+.bilingual-inline .card-title .en-text,
+.bilingual-inline .navbar .en-text {
+    color: inherit;
+    opacity: 0.7;
+}
+
+/* 侧边栏菜单 */
+#sidebar_div .en-text {
+    font-size: 0.7em;
+    line-height: 0.8em;
+}
+
+#sidebar_div .nav-link.active .en-text {
+    color: rgba(255, 255, 255, 0.8);
+    opacity: 0.9;
+}
+
+/* 标题元素 - 默认上下模式，但允许 .bilingual-inline 覆盖 */
+h1 .en-text,
+h2 .en-text,
+h3 .en-text,
+h4 .en-text,
+h5 .en-text,
+h6 .en-text {
+    display: block;
+    margin-left: 0;
+    margin-top: 1px;
+    font-size: 0.7em;
+    color: inherit;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+/* 页面标题的左右模式 - 优先级更高 */
+.page-title.bilingual-inline .en-text {
+    display: inline;
+    margin-left: 8px;
+    margin-top: 0;
+    font-size: 0.6em;
+    color: inherit;
+    font-style: normal;
+    opacity: 0.7;
+}
+
+/* 标题元素的左右模式 - 最高优先级，覆盖默认的上下模式 */
+h1.bilingual-inline .en-text,
+h2.bilingual-inline .en-text,
+h3.bilingual-inline .en-text,
+h4.bilingual-inline .en-text,
+h5.bilingual-inline .en-text,
+h6.bilingual-inline .en-text {
+    display: inline;
+    margin-left: 6px;
+    margin-top: 0;
+    font-size: 0.7em;
+    color: inherit;
+    font-style: normal;
+    opacity: 0.7;
+}
+
+/* 卡片和面板标题 */
+.card-title .en-text,
+.panel-title .en-text {
+    font-size: 0.65em;
+}
+
+/* 导航栏 */
+.navbar .en-text {
+    font-size: 0.65em;
+}
+
+/* 表单元素 */
+.form-group .bilingual-label .en-text {
+    font-weight: normal;
+}
+
+.input-group-text .en-text {
+    font-size: 0.6em;
+    color: #6c757d;
+}
+
+/* ========================================
+   布局兼容性处理
+   ======================================== */
+
+/* Flex布局中的英文文本强制上下模式 */
+[style*="display: flex"] .en-text,
+[style*="display:flex"] .en-text,
+.d-flex .en-text,
+.flex .en-text {
+    display: block;
+    margin-left: 0;
+    margin-top: 1px;
+    font-size: 0.7em;
+    color: inherit;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+/* Flex布局中的按钮英文文本统一继承颜色 */
+.d-flex .btn .en-text {
+    color: inherit;
+    opacity: 1;
+}
+
+/* Flex布局中左右模式按钮的英文文本统一继承颜色 */
+.d-flex .bilingual-inline .btn .en-text {
+    color: inherit;
+    opacity: 1;
+}
+
+/* ========================================
+   Bootstrap 5 高度统一解决方案
+   ======================================== */
+
+/* 解决Bootstrap 5中双语文本导致的高度不一致问题 */
+.btn:has(.en-text),
+.input-group:has(.en-text),
+.input-group-text:has(.en-text),
+.input-group .form-control:has(.en-text) {
+    height: 48px;
+}
+
+/* 让按钮内容垂直居中 */
+.btn:has(.en-text) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 有 bilingual-inline 的按钮使用水平布局（左右结构），英文对齐到中文底部 */
+.btn.bilingual-inline:has(.en-text),
+.bilingual-inline.btn:has(.en-text) {
+    flex-direction: row;
+    align-items: flex-end;
+    padding-bottom: 12px;
+}
+
+/* 确保input-group-text中的双语文本纵向显示 */
+.input-group-text:has(.en-text) {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 兼容性处理：不支持 :has() 选择器的浏览器 */
+@supports not selector(:has(*)) {
+    .btn .en-text,
+    .input-group-text .en-text {
+        display: block;
+        font-size: 0.6em;
+        margin-left: 0;
+        margin-top: 1px;
+        line-height: 1.0em;
+    }
+}
+
+/* ========================================
+   双语切换功能
+   ======================================== */
+
+/* 切换按钮样式 */
+#bilingual-toggle-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#bilingual-toggle-btn:hover {
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* 通知样式 */
+.bilingual-notification {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 14px;
+    z-index: 1001;
+    display: none;
+}
+
+/* ========================================
+   响应式设计
+   ======================================== */
+
+@media (max-width: 768px) {
+    #bilingual-toggle-btn {
+        top: 10px;
+        right: 10px;
+        font-size: 12px;
+        padding: 5px 10px;
+    }
+    
+    .en-text {
+        font-size: 0.7em;
+    }
+    
+    .btn .en-text {
+        font-size: 0.65em;
+    }
+    
+    .btn-group .en-text {
+        font-size: 0.6em;
+    }
+}

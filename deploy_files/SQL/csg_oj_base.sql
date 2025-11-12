@@ -44,16 +44,18 @@ CREATE TABLE IF NOT EXISTS `contest` (
   `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `start_time` datetime DEFAULT NULL,
   `end_time` datetime DEFAULT NULL,
-  `defunct` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'N',
+  `defunct` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '0',
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
   `private` tinyint NOT NULL DEFAULT '0',
   `langmask` int UNSIGNED NOT NULL DEFAULT '0' COMMENT 'bits for LANG to mask',
   `password` char(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '',
-  `attach` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '',
+  `attach` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '',
   `topteam` int NOT NULL DEFAULT '1',
   `award_ratio` int NOT NULL DEFAULT '20015010' COMMENT '获奖比例',
   `frozen_minute` int NOT NULL DEFAULT '-1' COMMENT '封榜分钟数',
   `frozen_after` int NOT NULL DEFAULT '-1' COMMENT '结束后持续封榜分钟数',
+  `addition` json DEFAULT NULL COMMENT '附加信息',
+  `flg_archive` tinyint NOT NULL DEFAULT '0' COMMENT '是否归档',
   PRIMARY KEY (`contest_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -69,8 +71,8 @@ CREATE TABLE IF NOT EXISTS `contest_balloon` (
   `team_id` varchar(64) NOT NULL,
   `room` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `ac_time` int NOT NULL,
-  `pst` tinyint NOT NULL COMMENT 'problem status，2 ac、3 fb',
-  `bst` tinyint NOT NULL COMMENT 'balloon status, 4分配,5已发',
+  `pst` tinyint NOT NULL COMMENT 'problem status，0普通 10 正式队一血 20 全局一血',
+  `bst` tinyint NOT NULL COMMENT 'balloon status, 0未发 10已通知 20已分配 30已发放',
   `balloon_sender` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   PRIMARY KEY (`contest_id`,`problem_id`,`team_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='比赛的气球任务管理表';
@@ -102,7 +104,7 @@ CREATE TABLE IF NOT EXISTS `contest_print` (
   `in_date` datetime NOT NULL,
   `ip` char(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `code_length` int NOT NULL DEFAULT '0',
-  `room` varchar(100) DEFAULT NULL,
+  `room` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`print_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -152,7 +154,7 @@ CREATE TABLE `contest_msg` (
   `content` tinytext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `in_date` datetime NOT NULL,
   `team_id` varchar(48) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `defunct` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'N',
+  `defunct` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '0',
   PRIMARY KEY (`msg_id`),
   KEY `contest_id` (`contest_id`),
   CONSTRAINT `contest_msg_ibfk_1` FOREIGN KEY (`contest_id`) REFERENCES `contest` (`contest_id`)
@@ -167,17 +169,36 @@ CREATE TABLE `contest_msg` (
 CREATE TABLE IF NOT EXISTS `cpc_team` (
   `team_id` varchar(48) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `contest_id` int NOT NULL,
-  `defunct` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'N',
+  `defunct` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '0',
   `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `tmember` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `name_en` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `tmember` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `tkind` tinyint NOT NULL DEFAULT '0' COMMENT '“常规”（0）、“女队”（1）、“打星”（2） ',
-  `coach` varchar(48) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `school` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `room` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `coach` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `school` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `room` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `privilege` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '账号权限',
-  `team_global_code` varchar(66) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'default',
+  `region` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '队伍所属国家',
+  `team_global_code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'default',
+  `addition` json DEFAULT NULL COMMENT '附加信息',
   PRIMARY KEY (`team_id`,`contest_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `cpc_client`
+--
+
+CREATE TABLE IF NOT EXISTS `cpc_client` (
+  `client_id` int NOT NULL AUTO_INCREMENT,
+  `contest_id` int NOT NULL,
+  `team_id_bind` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '绑定队伍号',
+  `ip_bind` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '绑定IP',
+  `ssh_config` json DEFAULT NULL COMMENT 'SSH配置，支持rsa和user/pass两种方式，以及ssh port存储',
+  PRIMARY KEY (`client_id`),
+  KEY `contest_id` (`contest_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -201,6 +222,7 @@ CREATE TABLE IF NOT EXISTS `custominput` (
 CREATE TABLE IF NOT EXISTS `loginlog` (
   `user_id` varchar(48) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '',
   `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `success` tinyint NOT NULL DEFAULT '0',
   `ip` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `time` datetime DEFAULT NULL,
   KEY `user_time_index` (`user_id`,`time`)
@@ -221,7 +243,7 @@ CREATE TABLE IF NOT EXISTS `mail` (
   `new_mail` tinyint(1) NOT NULL DEFAULT '1',
   `reply` int DEFAULT '-1',
   `in_date` datetime DEFAULT NULL,
-  `defunct` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'N',
+  `defunct` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '0',
   PRIMARY KEY (`mail_id`),
   KEY `uid` (`to_user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -239,12 +261,12 @@ CREATE TABLE IF NOT EXISTS `news` (
   `content` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `time` datetime DEFAULT NULL,
   `importance` tinyint NOT NULL DEFAULT '0',
-  `defunct` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'N',
+  `defunct` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '0',
   `tags` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `category` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `modify_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `modify_user_id` varchar(48) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `attach` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '',
+  `attach` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '',
   PRIMARY KEY (`news_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -281,7 +303,7 @@ CREATE TABLE IF NOT EXISTS `privilege` (
   `privilege_id` int NOT NULL AUTO_INCREMENT,
   `user_id` char(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '',
   `rightstr` char(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '',
-  `defunct` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'N',
+  `defunct` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '0',
   PRIMARY KEY (`privilege_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -305,12 +327,12 @@ CREATE TABLE IF NOT EXISTS `problem` (
   `in_date` datetime DEFAULT NULL,
   `time_limit` double NOT NULL DEFAULT '1',
   `memory_limit` int NOT NULL DEFAULT '256',
-  `defunct` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'N',
+  `defunct` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '0',
   `accepted` int DEFAULT '0',
   `submit` int DEFAULT '0',
   `solved` int DEFAULT '0',
   `author` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `attach` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '',
+  `attach` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '',
   `archived` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`problem_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -330,28 +352,6 @@ CREATE TABLE IF NOT EXISTS `problem_md` (
   `source` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `author` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   PRIMARY KEY (`problem_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
--- 表的结构 `regcontest`
---
-
-CREATE TABLE IF NOT EXISTS `regcontest` (
-  `regcontest_id` int NOT NULL AUTO_INCREMENT,
-  `contest_title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `contest_start` datetime DEFAULT NULL,
-  `contest_end` datetime DEFAULT NULL,
-  `contest_startreg` datetime DEFAULT NULL,
-  `contest_endreg` datetime DEFAULT NULL,
-  `contest_description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
-  `contest_description_md` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `defunct` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'N',
-  `contest_kind` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `contest_pass` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '比赛加密',
-  `form_require` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  PRIMARY KEY (`regcontest_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -462,7 +462,7 @@ CREATE TABLE IF NOT EXISTS `source_code_user` (
 
 CREATE TABLE IF NOT EXISTS `topic` (
   `tid` int NOT NULL AUTO_INCREMENT,
-  `title` varbinary(60) NOT NULL,
+  `title` varbinary(255) NOT NULL,
   `status` int NOT NULL DEFAULT '0',
   `top_level` int NOT NULL DEFAULT '0',
   `cid` int DEFAULT NULL,
@@ -479,20 +479,44 @@ CREATE TABLE IF NOT EXISTS `topic` (
 --
 
 CREATE TABLE IF NOT EXISTS `users` (
-  `user_id` varchar(48) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT 'user_id',
-  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `user_id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT 'user_id',
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `submit` int DEFAULT '0',
   `solved` int DEFAULT '0',
-  `defunct` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'N',
+  `defunct` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '0',
   `ip` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '',
   `accesstime` datetime DEFAULT NULL,
   `volume` int NOT NULL DEFAULT '1',
   `language` int NOT NULL DEFAULT '1',
   `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `reg_time` datetime DEFAULT NULL,
-  `nick` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '',
-  `school` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '',
+  `nick` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '',
+  `school` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `outrank`
+--
+
+CREATE TABLE IF NOT EXISTS `outrank` (
+  `outrank_id` int NOT NULL AUTO_INCREMENT,
+  `outrank_uuid` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `in_date` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `ckind` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `token` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `start_time` datetime DEFAULT NULL,
+  `end_time` datetime DEFAULT NULL,
+  `addition` json DEFAULT NULL COMMENT '附加信息',
+  `flg_allow` tinyint NOT NULL DEFAULT '1' COMMENT '是否允许推送',
+  `defunct` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '0',
+  PRIMARY KEY (`outrank_id`),
+  UNIQUE KEY `outrank_uuid` (`outrank_uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 COMMIT;
 

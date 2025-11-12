@@ -1,0 +1,2226 @@
+[
+  {
+    "中文名": "安道尔公国",
+    "中文简称": "安道尔",
+    "英文名": "Andorra",
+    "英文简称": "Andorra",
+    "英文缩写": "AND",
+    "文件名": "AND.png"
+  },
+  {
+    "中文名": "阿拉伯联合酋长国",
+    "中文简称": "阿联酋",
+    "英文名": "United Arab Emirates",
+    "英文简称": "United Arab Emirates",
+    "英文缩写": "ARE",
+    "文件名": "ARE.png"
+  },
+  {
+    "中文名": "阿富汗伊斯兰酋长国",
+    "中文简称": "阿富汗",
+    "英文名": "Afghanistan",
+    "英文简称": "Afghanistan",
+    "英文缩写": "AFG",
+    "文件名": "AFG.png"
+  },
+  {
+    "中文名": "安提瓜和巴布达",
+    "中文简称": "安提瓜和巴布达",
+    "英文名": "Antigua and Barbuda",
+    "英文简称": "Antigua and Barbuda",
+    "英文缩写": "ATG",
+    "文件名": "ATG.png"
+  },
+  {
+    "中文名": "Anguilla",
+    "中文简称": "Anguilla",
+    "英文名": "Anguilla",
+    "英文简称": "Anguilla",
+    "英文缩写": "AIA",
+    "文件名": "AIA.png"
+  },
+  {
+    "中文名": "阿尔巴尼亚共和国",
+    "中文简称": "阿尔巴尼亚",
+    "英文名": "Albania",
+    "英文简称": "Albania",
+    "英文缩写": "ALB",
+    "文件名": "ALB.png"
+  },
+  {
+    "中文名": "亚美尼亚共和国",
+    "中文简称": "亚美尼亚",
+    "英文名": "Armenia",
+    "英文简称": "Armenia",
+    "英文缩写": "ARM",
+    "文件名": "ARM.png"
+  },
+  {
+    "中文名": "安哥拉共和国",
+    "中文简称": "安哥拉",
+    "英文名": "Angola",
+    "英文简称": "Angola",
+    "英文缩写": "AGO",
+    "文件名": "AGO.png"
+  },
+  {
+    "中文名": "Antarctica",
+    "中文简称": "Antarctica",
+    "英文名": "Antarctica",
+    "英文简称": "Antarctica",
+    "英文缩写": "ATA",
+    "文件名": "ATA.png"
+  },
+  {
+    "中文名": "阿根廷共和国",
+    "中文简称": "阿根廷",
+    "英文名": "Argentina",
+    "英文简称": "Argentina",
+    "英文缩写": "ARG",
+    "文件名": "ARG.png"
+  },
+  {
+    "中文名": "American Samoa",
+    "中文简称": "American Samoa",
+    "英文名": "American Samoa",
+    "英文简称": "American Samoa",
+    "英文缩写": "ASM",
+    "文件名": "ASM.png"
+  },
+  {
+    "中文名": "奥地利共和国",
+    "中文简称": "奥地利",
+    "英文名": "Austria",
+    "英文简称": "Austria",
+    "英文缩写": "AUT",
+    "文件名": "AUT.png"
+  },
+  {
+    "中文名": "澳大利亚联邦",
+    "中文简称": "澳大利亚",
+    "英文名": "Australia",
+    "英文简称": "Australia",
+    "英文缩写": "AUS",
+    "文件名": "AUS.png"
+  },
+  {
+    "中文名": "Aruba",
+    "中文简称": "Aruba",
+    "英文名": "Aruba",
+    "英文简称": "Aruba",
+    "英文缩写": "ABW",
+    "文件名": "ABW.png"
+  },
+  {
+    "中文名": "Åland Islands",
+    "中文简称": "Åland Islands",
+    "英文名": "Åland Islands",
+    "英文简称": "Åland Islands",
+    "英文缩写": "ALA",
+    "文件名": "ALA.png"
+  },
+  {
+    "中文名": "阿塞拜疆共和国",
+    "中文简称": "阿塞拜疆",
+    "英文名": "Azerbaijan",
+    "英文简称": "Azerbaijan",
+    "英文缩写": "AZE",
+    "文件名": "AZE.png"
+  },
+  {
+    "中文名": "波斯尼亚和黑塞哥维那",
+    "中文简称": "波黑",
+    "英文名": "Bosnia and Herzegovina",
+    "英文简称": "Bosnia and Herzegovina",
+    "英文缩写": "BIH",
+    "文件名": "BIH.png"
+  },
+  {
+    "中文名": "巴巴多斯",
+    "中文简称": "巴巴多斯",
+    "英文名": "Barbados",
+    "英文简称": "Barbados",
+    "英文缩写": "BRB",
+    "文件名": "BRB.png"
+  },
+  {
+    "中文名": "孟加拉人民共和国",
+    "中文简称": "孟加拉国",
+    "英文名": "Bangladesh",
+    "英文简称": "Bangladesh",
+    "英文缩写": "BGD",
+    "文件名": "BGD.png"
+  },
+  {
+    "中文名": "比利时王国",
+    "中文简称": "比利时",
+    "英文名": "Belgium",
+    "英文简称": "Belgium",
+    "英文缩写": "BEL",
+    "文件名": "BEL.png"
+  },
+  {
+    "中文名": "布基纳法索",
+    "中文简称": "布基纳法索",
+    "英文名": "Burkina Faso",
+    "英文简称": "Burkina Faso",
+    "英文缩写": "BFA",
+    "文件名": "BFA.png"
+  },
+  {
+    "中文名": "保加利亚共和国",
+    "中文简称": "保加利亚",
+    "英文名": "Bulgaria",
+    "英文简称": "Bulgaria",
+    "英文缩写": "BGR",
+    "文件名": "BGR.png"
+  },
+  {
+    "中文名": "巴林王国",
+    "中文简称": "巴林",
+    "英文名": "Bahrain",
+    "英文简称": "Bahrain",
+    "英文缩写": "BHR",
+    "文件名": "BHR.png"
+  },
+  {
+    "中文名": "布隆迪共和国",
+    "中文简称": "布隆迪",
+    "英文名": "Burundi",
+    "英文简称": "Burundi",
+    "英文缩写": "BDI",
+    "文件名": "BDI.png"
+  },
+  {
+    "中文名": "贝宁共和国",
+    "中文简称": "贝宁",
+    "英文名": "Benin",
+    "英文简称": "Benin",
+    "英文缩写": "BEN",
+    "文件名": "BEN.png"
+  },
+  {
+    "中文名": "Saint Barthélemy",
+    "中文简称": "Saint Barthélemy",
+    "英文名": "Saint Barthélemy",
+    "英文简称": "Saint Barthélemy",
+    "英文缩写": "BLM",
+    "文件名": "BLM.png"
+  },
+  {
+    "中文名": "Bermuda",
+    "中文简称": "Bermuda",
+    "英文名": "Bermuda",
+    "英文简称": "Bermuda",
+    "英文缩写": "BMU",
+    "文件名": "BMU.png"
+  },
+  {
+    "中文名": "文莱达鲁萨兰国",
+    "中文简称": "文莱",
+    "英文名": "Brunei",
+    "英文简称": "Brunei",
+    "英文缩写": "BRN",
+    "文件名": "BRN.png"
+  },
+  {
+    "中文名": "多民族玻利维亚国",
+    "中文简称": "玻利维亚",
+    "英文名": "Bolivia",
+    "英文简称": "Bolivia",
+    "英文缩写": "BOL",
+    "文件名": "BOL.png"
+  },
+  {
+    "中文名": "Caribbean Netherlands",
+    "中文简称": "Caribbean Netherlands",
+    "英文名": "Caribbean Netherlands",
+    "英文简称": "Caribbean Netherlands",
+    "英文缩写": "BES",
+    "文件名": "BES.png"
+  },
+  {
+    "中文名": "巴西联邦共和国",
+    "中文简称": "巴西",
+    "英文名": "Brazil",
+    "英文简称": "Brazil",
+    "英文缩写": "BRA",
+    "文件名": "BRA.png"
+  },
+  {
+    "中文名": "巴哈马联邦",
+    "中文简称": "巴哈马",
+    "英文名": "Bahamas",
+    "英文简称": "Bahamas",
+    "英文缩写": "BHS",
+    "文件名": "BHS.png"
+  },
+  {
+    "中文名": "不丹王国",
+    "中文简称": "不丹",
+    "英文名": "Bhutan",
+    "英文简称": "Bhutan",
+    "英文缩写": "BTN",
+    "文件名": "BTN.png"
+  },
+  {
+    "中文名": "Bouvet Island",
+    "中文简称": "Bouvet Island",
+    "英文名": "Bouvet Island",
+    "英文简称": "Bouvet Island",
+    "英文缩写": "BVT",
+    "文件名": "BVT.png"
+  },
+  {
+    "中文名": "博茨瓦纳共和国",
+    "中文简称": "博茨瓦纳",
+    "英文名": "Botswana",
+    "英文简称": "Botswana",
+    "英文缩写": "BWA",
+    "文件名": "BWA.png"
+  },
+  {
+    "中文名": "白俄罗斯共和国",
+    "中文简称": "白俄罗斯",
+    "英文名": "Belarus",
+    "英文简称": "Belarus",
+    "英文缩写": "BLR",
+    "文件名": "BLR.png"
+  },
+  {
+    "中文名": "伯利兹",
+    "中文简称": "伯利兹",
+    "英文名": "Belize",
+    "英文简称": "Belize",
+    "英文缩写": "BLZ",
+    "文件名": "BLZ.png"
+  },
+  {
+    "中文名": "加拿大",
+    "中文简称": "加拿大",
+    "英文名": "Canada",
+    "英文简称": "Canada",
+    "英文缩写": "CAN",
+    "文件名": "CAN.png"
+  },
+  {
+    "中文名": "Cocos (Keeling) Islands",
+    "中文简称": "Cocos (Keeling) Islands",
+    "英文名": "Cocos (Keeling) Islands",
+    "英文简称": "Cocos (Keeling) Islands",
+    "英文缩写": "CCK",
+    "文件名": "CCK.png"
+  },
+  {
+    "中文名": "刚果民主共和国",
+    "中文简称": "刚果(金)",
+    "英文名": "DR Congo",
+    "英文简称": "DR Congo",
+    "英文缩写": "COD",
+    "文件名": "COD.png"
+  },
+  {
+    "中文名": "中非共和国",
+    "中文简称": "中非",
+    "英文名": "Central African Republic",
+    "英文简称": "Central African",
+    "英文缩写": "CAF",
+    "文件名": "CAF.png"
+  },
+  {
+    "中文名": "刚果共和国",
+    "中文简称": "刚果",
+    "英文名": "Republic of the Congo",
+    "英文简称": "Republic of the Congo",
+    "英文缩写": "COG",
+    "文件名": "COG.png"
+  },
+  {
+    "中文名": "瑞士联邦",
+    "中文简称": "瑞士",
+    "英文名": "Switzerland",
+    "英文简称": "Switzerland",
+    "英文缩写": "CHE",
+    "文件名": "CHE.png"
+  },
+  {
+    "中文名": "科特迪瓦共和国",
+    "中文简称": "科特迪瓦",
+    "英文名": "Côte d'Ivoire (Ivory Coast)",
+    "英文简称": "Côte d'Ivoire (Ivory Coast)",
+    "英文缩写": "CIV",
+    "文件名": "CIV.png"
+  },
+  {
+    "中文名": "Cook Islands",
+    "中文简称": "Cook Islands",
+    "英文名": "Cook Islands",
+    "英文简称": "Cook Islands",
+    "英文缩写": "COK",
+    "文件名": "COK.png"
+  },
+  {
+    "中文名": "智利共和国",
+    "中文简称": "智利",
+    "英文名": "Chile",
+    "英文简称": "Chile",
+    "英文缩写": "CHL",
+    "文件名": "CHL.png"
+  },
+  {
+    "中文名": "喀麦隆共和国",
+    "中文简称": "喀麦隆",
+    "英文名": "Cameroon",
+    "英文简称": "Cameroon",
+    "英文缩写": "CMR",
+    "文件名": "CMR.png"
+  },
+  {
+    "中文名": "中华人民共和国",
+    "中文简称": "中国",
+    "英文名": "China",
+    "英文简称": "China",
+    "英文缩写": "CHN",
+    "文件名": "CHN.png"
+  },
+  {
+    "中文名": "哥伦比亚共和国",
+    "中文简称": "哥伦比亚",
+    "英文名": "Colombia",
+    "英文简称": "Colombia",
+    "英文缩写": "COL",
+    "文件名": "COL.png"
+  },
+  {
+    "中文名": "哥斯达黎加共和国",
+    "中文简称": "哥斯达黎加",
+    "英文名": "Costa Rica",
+    "英文简称": "Costa Rica",
+    "英文缩写": "CRI",
+    "文件名": "CRI.png"
+  },
+  {
+    "中文名": "古巴共和国",
+    "中文简称": "古巴",
+    "英文名": "Cuba",
+    "英文简称": "Cuba",
+    "英文缩写": "CUB",
+    "文件名": "CUB.png"
+  },
+  {
+    "中文名": "佛得角共和国",
+    "中文简称": "佛得角",
+    "英文名": "Cape Verde",
+    "英文简称": "Cape Verde",
+    "英文缩写": "CPV",
+    "文件名": "CPV.png"
+  },
+  {
+    "中文名": "Curaçao",
+    "中文简称": "Curaçao",
+    "英文名": "Curaçao",
+    "英文简称": "Curaçao",
+    "英文缩写": "CUW",
+    "文件名": "CUW.png"
+  },
+  {
+    "中文名": "Christmas Island",
+    "中文简称": "Christmas Island",
+    "英文名": "Christmas Island",
+    "英文简称": "Christmas Island",
+    "英文缩写": "CXR",
+    "文件名": "CXR.png"
+  },
+  {
+    "中文名": "塞浦路斯共和国",
+    "中文简称": "塞浦路斯",
+    "英文名": "Cyprus",
+    "英文简称": "Cyprus",
+    "英文缩写": "CYP",
+    "文件名": "CYP.png"
+  },
+  {
+    "中文名": "捷克共和国",
+    "中文简称": "捷克",
+    "英文名": "Czechia",
+    "英文简称": "Czechia",
+    "英文缩写": "CZE",
+    "文件名": "CZE.png"
+  },
+  {
+    "中文名": "德意志联邦共和国",
+    "中文简称": "德国",
+    "英文名": "Germany",
+    "英文简称": "Germany",
+    "英文缩写": "DEU",
+    "文件名": "DEU.png"
+  },
+  {
+    "中文名": "吉布提共和国",
+    "中文简称": "吉布提",
+    "英文名": "Djibouti",
+    "英文简称": "Djibouti",
+    "英文缩写": "DJI",
+    "文件名": "DJI.png"
+  },
+  {
+    "中文名": "丹麦王国",
+    "中文简称": "丹麦",
+    "英文名": "Denmark",
+    "英文简称": "Denmark",
+    "英文缩写": "DNK",
+    "文件名": "DNK.png"
+  },
+  {
+    "中文名": "多米尼克国",
+    "中文简称": "多米尼克",
+    "英文名": "Dominica",
+    "英文简称": "Dominica",
+    "英文缩写": "DMA",
+    "文件名": "DMA.png"
+  },
+  {
+    "中文名": "多米尼加共和国",
+    "中文简称": "多米尼加",
+    "英文名": "Dominican Republic",
+    "英文简称": "Dominican",
+    "英文缩写": "DOM",
+    "文件名": "DOM.png"
+  },
+  {
+    "中文名": "阿尔及利亚民主人民共和国",
+    "中文简称": "阿尔及利亚",
+    "英文名": "Algeria",
+    "英文简称": "Algeria",
+    "英文缩写": "DZA",
+    "文件名": "DZA.png"
+  },
+  {
+    "中文名": "厄瓜多尔共和国",
+    "中文简称": "厄瓜多尔",
+    "英文名": "Ecuador",
+    "英文简称": "Ecuador",
+    "英文缩写": "ECU",
+    "文件名": "ECU.png"
+  },
+  {
+    "中文名": "爱沙尼亚共和国",
+    "中文简称": "爱沙尼亚",
+    "英文名": "Estonia",
+    "英文简称": "Estonia",
+    "英文缩写": "EST",
+    "文件名": "EST.png"
+  },
+  {
+    "中文名": "阿拉伯埃及共和国",
+    "中文简称": "埃及",
+    "英文名": "Egypt",
+    "英文简称": "Egypt",
+    "英文缩写": "EGY",
+    "文件名": "EGY.png"
+  },
+  {
+    "中文名": "Western Sahara",
+    "中文简称": "Western Sahara",
+    "英文名": "Western Sahara",
+    "英文简称": "Western Sahara",
+    "英文缩写": "ESH",
+    "文件名": "ESH.png"
+  },
+  {
+    "中文名": "厄立特里亚国",
+    "中文简称": "厄立特里亚",
+    "英文名": "Eritrea",
+    "英文简称": "Eritrea",
+    "英文缩写": "ERI",
+    "文件名": "ERI.png"
+  },
+  {
+    "中文名": "Spain",
+    "中文简称": "Spain",
+    "英文名": "Spain",
+    "英文简称": "Spain",
+    "英文缩写": "ESP",
+    "文件名": "ESP.png"
+  },
+  {
+    "中文名": "埃塞俄比亚联邦民主共和国",
+    "中文简称": "埃塞俄比亚",
+    "英文名": "Ethiopia",
+    "英文简称": "Ethiopia",
+    "英文缩写": "ETH",
+    "文件名": "ETH.png"
+  },
+  {
+    "中文名": "European Union",
+    "中文简称": "European Union",
+    "英文名": "European Union",
+    "英文简称": "European",
+    "英文缩写": "EU",
+    "文件名": "EU.png"
+  },
+  {
+    "中文名": "芬兰共和国",
+    "中文简称": "芬兰",
+    "英文名": "Finland",
+    "英文简称": "Finland",
+    "英文缩写": "FIN",
+    "文件名": "FIN.png"
+  },
+  {
+    "中文名": "斐济共和国",
+    "中文简称": "斐济",
+    "英文名": "Fiji",
+    "英文简称": "Fiji",
+    "英文缩写": "FJI",
+    "文件名": "FJI.png"
+  },
+  {
+    "中文名": "Falkland Islands",
+    "中文简称": "Falkland Islands",
+    "英文名": "Falkland Islands",
+    "英文简称": "Falkland Islands",
+    "英文缩写": "FLK",
+    "文件名": "FLK.png"
+  },
+  {
+    "中文名": "密克罗尼西亚联邦",
+    "中文简称": "密克罗尼西亚",
+    "英文名": "Micronesia",
+    "英文简称": "Micronesia",
+    "英文缩写": "FSM",
+    "文件名": "FSM.png"
+  },
+  {
+    "中文名": "Faroe Islands",
+    "中文简称": "Faroe Islands",
+    "英文名": "Faroe Islands",
+    "英文简称": "Faroe Islands",
+    "英文缩写": "FRO",
+    "文件名": "FRO.png"
+  },
+  {
+    "中文名": "法兰西共和国",
+    "中文简称": "法国",
+    "英文名": "France",
+    "英文简称": "France",
+    "英文缩写": "FRA",
+    "文件名": "FRA.png"
+  },
+  {
+    "中文名": "加蓬共和国",
+    "中文简称": "加蓬",
+    "英文名": "Gabon",
+    "英文简称": "Gabon",
+    "英文缩写": "GAB",
+    "文件名": "GAB.png"
+  },
+  {
+    "中文名": "大不列颠及北爱尔兰联合王国",
+    "中文简称": "英国",
+    "英文名": "United Kingdom",
+    "英文简称": "United",
+    "英文缩写": "GBR",
+    "文件名": "GBR.png"
+  },
+  {
+    "中文名": "英格兰",
+    "中文简称": "英格兰",
+    "英文名": "England",
+    "英文简称": "England",
+    "英文缩写": "ENG",
+    "文件名": "ENG.png"
+  },
+  {
+    "中文名": "北爱尔兰",
+    "中文简称": "北爱尔兰",
+    "英文名": "Northern Ireland",
+    "英文简称": "Northern Ireland",
+    "英文缩写": "NIR",
+    "文件名": "NIR.png"
+  },
+  {
+    "中文名": "苏格兰",
+    "中文简称": "苏格兰",
+    "英文名": "Scotland",
+    "英文简称": "Scotland",
+    "英文缩写": "SCT",
+    "文件名": "SCT.png"
+  },
+  {
+    "中文名": "威尔士",
+    "中文简称": "威尔士",
+    "英文名": "Wales",
+    "英文简称": "Wales",
+    "英文缩写": "WLS",
+    "文件名": "WLS.png"
+  },
+  {
+    "中文名": "格林纳达",
+    "中文简称": "格林纳达",
+    "英文名": "Grenada",
+    "英文简称": "Grenada",
+    "英文缩写": "GRD",
+    "文件名": "GRD.png"
+  },
+  {
+    "中文名": "格鲁吉亚",
+    "中文简称": "格鲁吉亚",
+    "英文名": "Georgia",
+    "英文简称": "Georgia",
+    "英文缩写": "GEO",
+    "文件名": "GEO.png"
+  },
+  {
+    "中文名": "French Guiana",
+    "中文简称": "French Guiana",
+    "英文名": "French Guiana",
+    "英文简称": "French Guiana",
+    "英文缩写": "GUF",
+    "文件名": "GUF.png"
+  },
+  {
+    "中文名": "Guernsey",
+    "中文简称": "Guernsey",
+    "英文名": "Guernsey",
+    "英文简称": "Guernsey",
+    "英文缩写": "GGY",
+    "文件名": "GGY.png"
+  },
+  {
+    "中文名": "加纳共和国",
+    "中文简称": "加纳",
+    "英文名": "Ghana",
+    "英文简称": "Ghana",
+    "英文缩写": "GHA",
+    "文件名": "GHA.png"
+  },
+  {
+    "中文名": "Gibraltar",
+    "中文简称": "Gibraltar",
+    "英文名": "Gibraltar",
+    "英文简称": "Gibraltar",
+    "英文缩写": "GIB",
+    "文件名": "GIB.png"
+  },
+  {
+    "中文名": "Greenland",
+    "中文简称": "Greenland",
+    "英文名": "Greenland",
+    "英文简称": "Greenland",
+    "英文缩写": "GRL",
+    "文件名": "GRL.png"
+  },
+  {
+    "中文名": "冈比亚共和国",
+    "中文简称": "冈比亚",
+    "英文名": "Gambia",
+    "英文简称": "Gambia",
+    "英文缩写": "GMB",
+    "文件名": "GMB.png"
+  },
+  {
+    "中文名": "几内亚共和国",
+    "中文简称": "几内亚",
+    "英文名": "Guinea",
+    "英文简称": "Guinea",
+    "英文缩写": "GIN",
+    "文件名": "GIN.png"
+  },
+  {
+    "中文名": "Guadeloupe",
+    "中文简称": "Guadeloupe",
+    "英文名": "Guadeloupe",
+    "英文简称": "Guadeloupe",
+    "英文缩写": "GLP",
+    "文件名": "GLP.png"
+  },
+  {
+    "中文名": "赤道几内亚共和国",
+    "中文简称": "赤道几内亚",
+    "英文名": "Equatorial Guinea",
+    "英文简称": "Equatorial Guinea",
+    "英文缩写": "GNQ",
+    "文件名": "GNQ.png"
+  },
+  {
+    "中文名": "希腊共和国",
+    "中文简称": "希腊",
+    "英文名": "Greece",
+    "英文简称": "Greece",
+    "英文缩写": "GRC",
+    "文件名": "GRC.png"
+  },
+  {
+    "中文名": "South Georgia",
+    "中文简称": "South Georgia",
+    "英文名": "South Georgia",
+    "英文简称": "South Georgia",
+    "英文缩写": "SGS",
+    "文件名": "SGS.png"
+  },
+  {
+    "中文名": "危地马拉共和国",
+    "中文简称": "危地马拉",
+    "英文名": "Guatemala",
+    "英文简称": "Guatemala",
+    "英文缩写": "GTM",
+    "文件名": "GTM.png"
+  },
+  {
+    "中文名": "Guam",
+    "中文简称": "Guam",
+    "英文名": "Guam",
+    "英文简称": "Guam",
+    "英文缩写": "GUM",
+    "文件名": "GUM.png"
+  },
+  {
+    "中文名": "几内亚比绍共和国",
+    "中文简称": "几内亚比绍",
+    "英文名": "Guinea-Bissau",
+    "英文简称": "Guinea-Bissau",
+    "英文缩写": "GNB",
+    "文件名": "GNB.png"
+  },
+  {
+    "中文名": "圭亚那合作共和国",
+    "中文简称": "圭亚那",
+    "英文名": "Guyana",
+    "英文简称": "Guyana",
+    "英文缩写": "GUY",
+    "文件名": "GUY.png"
+  },
+  {
+    "中文名": "香港特别行政区",
+    "中文简称": "香港",
+    "英文名": "Hong Kong",
+    "英文简称": "Hong Kong",
+    "英文缩写": "HKG",
+    "文件名": "HKG.png"
+  },
+  {
+    "中文名": "Heard Island and McDonald Islands",
+    "中文简称": "Heard Island and McDonald Islands",
+    "英文名": "Heard Island and McDonald Islands",
+    "英文简称": "Heard Island and McDonald Islands",
+    "英文缩写": "HMD",
+    "文件名": "HMD.png"
+  },
+  {
+    "中文名": "洪都拉斯共和国",
+    "中文简称": "洪都拉斯",
+    "英文名": "Honduras",
+    "英文简称": "Honduras",
+    "英文缩写": "HND",
+    "文件名": "HND.png"
+  },
+  {
+    "中文名": "克罗地亚共和国",
+    "中文简称": "克罗地亚",
+    "英文名": "Croatia",
+    "英文简称": "Croatia",
+    "英文缩写": "HRV",
+    "文件名": "HRV.png"
+  },
+  {
+    "中文名": "海地共和国",
+    "中文简称": "海地",
+    "英文名": "Haiti",
+    "英文简称": "Haiti",
+    "英文缩写": "HTI",
+    "文件名": "HTI.png"
+  },
+  {
+    "中文名": "匈牙利",
+    "中文简称": "匈牙利",
+    "英文名": "Hungary",
+    "英文简称": "Hungary",
+    "英文缩写": "HUN",
+    "文件名": "HUN.png"
+  },
+  {
+    "中文名": "印度尼西亚共和国",
+    "中文简称": "印度尼西亚",
+    "英文名": "Indonesia",
+    "英文简称": "Indonesia",
+    "英文缩写": "IDN",
+    "文件名": "IDN.png"
+  },
+  {
+    "中文名": "爱尔兰",
+    "中文简称": "爱尔兰",
+    "英文名": "Ireland",
+    "英文简称": "Ireland",
+    "英文缩写": "IRL",
+    "文件名": "IRL.png"
+  },
+  {
+    "中文名": "以色列国",
+    "中文简称": "以色列",
+    "英文名": "Israel",
+    "英文简称": "Israel",
+    "英文缩写": "ISR",
+    "文件名": "ISR.png"
+  },
+  {
+    "中文名": "Isle of Man",
+    "中文简称": "Isle of Man",
+    "英文名": "Isle of Man",
+    "英文简称": "Isle of Man",
+    "英文缩写": "IMN",
+    "文件名": "IMN.png"
+  },
+  {
+    "中文名": "印度共和国",
+    "中文简称": "印度",
+    "英文名": "India",
+    "英文简称": "India",
+    "英文缩写": "IND",
+    "文件名": "IND.png"
+  },
+  {
+    "中文名": "British Indian Ocean Territory",
+    "中文简称": "British Indian Ocean Territory",
+    "英文名": "British Indian Ocean Territory",
+    "英文简称": "British Indian Ocean Territory",
+    "英文缩写": "IOT",
+    "文件名": "IOT.png"
+  },
+  {
+    "中文名": "伊拉克共和国",
+    "中文简称": "伊拉克",
+    "英文名": "Iraq",
+    "英文简称": "Iraq",
+    "英文缩写": "IRQ",
+    "文件名": "IRQ.png"
+  },
+  {
+    "中文名": "伊朗伊斯兰共和国",
+    "中文简称": "伊朗",
+    "英文名": "Iran",
+    "英文简称": "Iran",
+    "英文缩写": "IRN",
+    "文件名": "IRN.png"
+  },
+  {
+    "中文名": "冰岛共和国",
+    "中文简称": "冰岛",
+    "英文名": "Iceland",
+    "英文简称": "Iceland",
+    "英文缩写": "ISL",
+    "文件名": "ISL.png"
+  },
+  {
+    "中文名": "意大利共和国",
+    "中文简称": "意大利",
+    "英文名": "Italy",
+    "英文简称": "Italy",
+    "英文缩写": "ITA",
+    "文件名": "ITA.png"
+  },
+  {
+    "中文名": "Jersey",
+    "中文简称": "Jersey",
+    "英文名": "Jersey",
+    "英文简称": "Jersey",
+    "英文缩写": "JEY",
+    "文件名": "JEY.png"
+  },
+  {
+    "中文名": "牙买加",
+    "中文简称": "牙买加",
+    "英文名": "Jamaica",
+    "英文简称": "Jamaica",
+    "英文缩写": "JAM",
+    "文件名": "JAM.png"
+  },
+  {
+    "中文名": "约旦哈希姆王国",
+    "中文简称": "约旦",
+    "英文名": "Jordan",
+    "英文简称": "Jordan",
+    "英文缩写": "JOR",
+    "文件名": "JOR.png"
+  },
+  {
+    "中文名": "日本国",
+    "中文简称": "日本",
+    "英文名": "Japan",
+    "英文简称": "Japan",
+    "英文缩写": "JPN",
+    "文件名": "JPN.png"
+  },
+  {
+    "中文名": "肯尼亚共和国",
+    "中文简称": "肯尼亚",
+    "英文名": "Kenya",
+    "英文简称": "Kenya",
+    "英文缩写": "KEN",
+    "文件名": "KEN.png"
+  },
+  {
+    "中文名": "吉尔吉斯共和国",
+    "中文简称": "吉尔吉斯斯坦",
+    "英文名": "Kyrgyzstan",
+    "英文简称": "Kyrgyzstan",
+    "英文缩写": "KGZ",
+    "文件名": "KGZ.png"
+  },
+  {
+    "中文名": "柬埔寨王国",
+    "中文简称": "柬埔寨",
+    "英文名": "Cambodia",
+    "英文简称": "Cambodia",
+    "英文缩写": "KHM",
+    "文件名": "KHM.png"
+  },
+  {
+    "中文名": "基里巴斯共和国",
+    "中文简称": "基里巴斯",
+    "英文名": "Kiribati",
+    "英文简称": "Kiribati",
+    "英文缩写": "KIR",
+    "文件名": "KIR.png"
+  },
+  {
+    "中文名": "科摩罗联盟",
+    "中文简称": "科摩罗",
+    "英文名": "Comoros",
+    "英文简称": "Comoros",
+    "英文缩写": "COM",
+    "文件名": "COM.png"
+  },
+  {
+    "中文名": "圣基茨和尼维斯联邦",
+    "中文简称": "圣基茨和尼维斯",
+    "英文名": "Saint Kitts and Nevis",
+    "英文简称": "Saint Kitts and Nevis",
+    "英文缩写": "KNA",
+    "文件名": "KNA.png"
+  },
+  {
+    "中文名": "朝鲜民主主义人民共和国",
+    "中文简称": "朝鲜",
+    "英文名": "North Korea",
+    "英文简称": "North Korea",
+    "英文缩写": "PRK",
+    "文件名": "PRK.png"
+  },
+  {
+    "中文名": "大韩民国",
+    "中文简称": "韩国",
+    "英文名": "South Korea",
+    "英文简称": "South Korea",
+    "英文缩写": "KOR",
+    "文件名": "KOR.png"
+  },
+  {
+    "中文名": "科威特国",
+    "中文简称": "科威特",
+    "英文名": "Kuwait",
+    "英文简称": "Kuwait",
+    "英文缩写": "KWT",
+    "文件名": "KWT.png"
+  },
+  {
+    "中文名": "Cayman Islands",
+    "中文简称": "Cayman Islands",
+    "英文名": "Cayman Islands",
+    "英文简称": "Cayman Islands",
+    "英文缩写": "CYM",
+    "文件名": "CYM.png"
+  },
+  {
+    "中文名": "哈萨克斯坦共和国",
+    "中文简称": "哈萨克斯坦",
+    "英文名": "Kazakhstan",
+    "英文简称": "Kazakhstan",
+    "英文缩写": "KAZ",
+    "文件名": "KAZ.png"
+  },
+  {
+    "中文名": "老挝人民民主共和国",
+    "中文简称": "老挝",
+    "英文名": "Laos",
+    "英文简称": "Laos",
+    "英文缩写": "LAO",
+    "文件名": "LAO.png"
+  },
+  {
+    "中文名": "黎巴嫩共和国",
+    "中文简称": "黎巴嫩",
+    "英文名": "Lebanon",
+    "英文简称": "Lebanon",
+    "英文缩写": "LBN",
+    "文件名": "LBN.png"
+  },
+  {
+    "中文名": "圣卢西亚",
+    "中文简称": "圣卢西亚",
+    "英文名": "Saint Lucia",
+    "英文简称": "Saint Lucia",
+    "英文缩写": "LCA",
+    "文件名": "LCA.png"
+  },
+  {
+    "中文名": "列支敦士登公国",
+    "中文简称": "列支敦士登",
+    "英文名": "Liechtenstein",
+    "英文简称": "Liechtenstein",
+    "英文缩写": "LIE",
+    "文件名": "LIE.png"
+  },
+  {
+    "中文名": "斯里兰卡民主社会主义共和国",
+    "中文简称": "斯里兰卡",
+    "英文名": "Sri Lanka",
+    "英文简称": "Sri Lanka",
+    "英文缩写": "LKA",
+    "文件名": "LKA.png"
+  },
+  {
+    "中文名": "利比里亚共和国",
+    "中文简称": "利比里亚",
+    "英文名": "Liberia",
+    "英文简称": "Liberia",
+    "英文缩写": "LBR",
+    "文件名": "LBR.png"
+  },
+  {
+    "中文名": "莱索托王国",
+    "中文简称": "莱索托",
+    "英文名": "Lesotho",
+    "英文简称": "Lesotho",
+    "英文缩写": "LSO",
+    "文件名": "LSO.png"
+  },
+  {
+    "中文名": "立陶宛共和国",
+    "中文简称": "立陶宛",
+    "英文名": "Lithuania",
+    "英文简称": "Lithuania",
+    "英文缩写": "LTU",
+    "文件名": "LTU.png"
+  },
+  {
+    "中文名": "卢森堡大公国",
+    "中文简称": "卢森堡",
+    "英文名": "Luxembourg",
+    "英文简称": "Luxembourg",
+    "英文缩写": "LUX",
+    "文件名": "LUX.png"
+  },
+  {
+    "中文名": "拉脱维亚共和国",
+    "中文简称": "拉脱维亚",
+    "英文名": "Latvia",
+    "英文简称": "Latvia",
+    "英文缩写": "LVA",
+    "文件名": "LVA.png"
+  },
+  {
+    "中文名": "利比亚国",
+    "中文简称": "利比亚",
+    "英文名": "Libya",
+    "英文简称": "Libya",
+    "英文缩写": "LBY",
+    "文件名": "LBY.png"
+  },
+  {
+    "中文名": "摩洛哥王国",
+    "中文简称": "摩洛哥",
+    "英文名": "Morocco",
+    "英文简称": "Morocco",
+    "英文缩写": "MAR",
+    "文件名": "MAR.png"
+  },
+  {
+    "中文名": "摩纳哥公国",
+    "中文简称": "摩纳哥",
+    "英文名": "Monaco",
+    "英文简称": "Monaco",
+    "英文缩写": "MCO",
+    "文件名": "MCO.png"
+  },
+  {
+    "中文名": "摩尔多瓦共和国",
+    "中文简称": "摩尔多瓦",
+    "英文名": "Moldova",
+    "英文简称": "Moldova",
+    "英文缩写": "MDA",
+    "文件名": "MDA.png"
+  },
+  {
+    "中文名": "黑山",
+    "中文简称": "黑山",
+    "英文名": "Montenegro",
+    "英文简称": "Montenegro",
+    "英文缩写": "MNE",
+    "文件名": "MNE.png"
+  },
+  {
+    "中文名": "Saint Martin",
+    "中文简称": "Saint Martin",
+    "英文名": "Saint Martin",
+    "英文简称": "Saint Martin",
+    "英文缩写": "MAF",
+    "文件名": "MAF.png"
+  },
+  {
+    "中文名": "马达加斯加共和国",
+    "中文简称": "马达加斯加",
+    "英文名": "Madagascar",
+    "英文简称": "Madagascar",
+    "英文缩写": "MDG",
+    "文件名": "MDG.png"
+  },
+  {
+    "中文名": "马绍尔群岛共和国",
+    "中文简称": "马绍尔群岛",
+    "英文名": "Marshall Islands",
+    "英文简称": "Marshall Islands",
+    "英文缩写": "MHL",
+    "文件名": "MHL.png"
+  },
+  {
+    "中文名": "北马其顿共和国",
+    "中文简称": "北马其顿",
+    "英文名": "North Macedonia",
+    "英文简称": "North Macedonia",
+    "英文缩写": "MKD",
+    "文件名": "MKD.png"
+  },
+  {
+    "中文名": "马里共和国",
+    "中文简称": "马里",
+    "英文名": "Mali",
+    "英文简称": "Mali",
+    "英文缩写": "MLI",
+    "文件名": "MLI.png"
+  },
+  {
+    "中文名": "缅甸联邦共和国",
+    "中文简称": "缅甸",
+    "英文名": "Myanmar",
+    "英文简称": "Myanmar",
+    "英文缩写": "MMR",
+    "文件名": "MMR.png"
+  },
+  {
+    "中文名": "蒙古国",
+    "中文简称": "蒙古",
+    "英文名": "Mongolia",
+    "英文简称": "Mongolia",
+    "英文缩写": "MNG",
+    "文件名": "MNG.png"
+  },
+  {
+    "中文名": "澳门特别行政区",
+    "中文简称": "澳门",
+    "英文名": "Macau",
+    "英文简称": "Macau",
+    "英文缩写": "MAC",
+    "文件名": "MAC.png"
+  },
+  {
+    "中文名": "Northern Mariana Islands",
+    "中文简称": "Northern Mariana Islands",
+    "英文名": "Northern Mariana Islands",
+    "英文简称": "Northern Mariana Islands",
+    "英文缩写": "MNP",
+    "文件名": "MNP.png"
+  },
+  {
+    "中文名": "Martinique",
+    "中文简称": "Martinique",
+    "英文名": "Martinique",
+    "英文简称": "Martinique",
+    "英文缩写": "MTQ",
+    "文件名": "MTQ.png"
+  },
+  {
+    "中文名": "毛里塔尼亚伊斯兰共和国",
+    "中文简称": "毛里塔尼亚",
+    "英文名": "Mauritania",
+    "英文简称": "Mauritania",
+    "英文缩写": "MRT",
+    "文件名": "MRT.png"
+  },
+  {
+    "中文名": "Montserrat",
+    "中文简称": "Montserrat",
+    "英文名": "Montserrat",
+    "英文简称": "Montserrat",
+    "英文缩写": "MSR",
+    "文件名": "MSR.png"
+  },
+  {
+    "中文名": "马耳他共和国",
+    "中文简称": "马耳他",
+    "英文名": "Malta",
+    "英文简称": "Malta",
+    "英文缩写": "MLT",
+    "文件名": "MLT.png"
+  },
+  {
+    "中文名": "毛里求斯共和国",
+    "中文简称": "毛里求斯",
+    "英文名": "Mauritius",
+    "英文简称": "Mauritius",
+    "英文缩写": "MUS",
+    "文件名": "MUS.png"
+  },
+  {
+    "中文名": "马尔代夫共和国",
+    "中文简称": "马尔代夫",
+    "英文名": "Maldives",
+    "英文简称": "Maldives",
+    "英文缩写": "MDV",
+    "文件名": "MDV.png"
+  },
+  {
+    "中文名": "马拉维共和国",
+    "中文简称": "马拉维",
+    "英文名": "Malawi",
+    "英文简称": "Malawi",
+    "英文缩写": "MWI",
+    "文件名": "MWI.png"
+  },
+  {
+    "中文名": "墨西哥合众国",
+    "中文简称": "墨西哥",
+    "英文名": "Mexico",
+    "英文简称": "Mexico",
+    "英文缩写": "MEX",
+    "文件名": "MEX.png"
+  },
+  {
+    "中文名": "马来西亚",
+    "中文简称": "马来西亚",
+    "英文名": "Malaysia",
+    "英文简称": "Malaysia",
+    "英文缩写": "MYS",
+    "文件名": "MYS.png"
+  },
+  {
+    "中文名": "莫桑比克共和国",
+    "中文简称": "莫桑比克",
+    "英文名": "Mozambique",
+    "英文简称": "Mozambique",
+    "英文缩写": "MOZ",
+    "文件名": "MOZ.png"
+  },
+  {
+    "中文名": "纳米比亚共和国",
+    "中文简称": "纳米比亚",
+    "英文名": "Namibia",
+    "英文简称": "Namibia",
+    "英文缩写": "NAM",
+    "文件名": "NAM.png"
+  },
+  {
+    "中文名": "New Caledonia",
+    "中文简称": "New Caledonia",
+    "英文名": "New Caledonia",
+    "英文简称": "New Caledonia",
+    "英文缩写": "NCL",
+    "文件名": "NCL.png"
+  },
+  {
+    "中文名": "尼日尔共和国",
+    "中文简称": "尼日尔",
+    "英文名": "Niger",
+    "英文简称": "Niger",
+    "英文缩写": "NER",
+    "文件名": "NER.png"
+  },
+  {
+    "中文名": "Norfolk Island",
+    "中文简称": "Norfolk Island",
+    "英文名": "Norfolk Island",
+    "英文简称": "Norfolk Island",
+    "英文缩写": "NFK",
+    "文件名": "NFK.png"
+  },
+  {
+    "中文名": "尼日利亚联邦共和国",
+    "中文简称": "尼日利亚",
+    "英文名": "Nigeria",
+    "英文简称": "Nigeria",
+    "英文缩写": "NGA",
+    "文件名": "NGA.png"
+  },
+  {
+    "中文名": "尼加拉瓜共和国",
+    "中文简称": "尼加拉瓜",
+    "英文名": "Nicaragua",
+    "英文简称": "Nicaragua",
+    "英文缩写": "NIC",
+    "文件名": "NIC.png"
+  },
+  {
+    "中文名": "荷兰王国",
+    "中文简称": "荷兰",
+    "英文名": "Netherlands",
+    "英文简称": "Netherlands",
+    "英文缩写": "NLD",
+    "文件名": "NLD.png"
+  },
+  {
+    "中文名": "挪威王国",
+    "中文简称": "挪威",
+    "英文名": "Norway",
+    "英文简称": "Norway",
+    "英文缩写": "NOR",
+    "文件名": "NOR.png"
+  },
+  {
+    "中文名": "尼泊尔联邦民主共和国",
+    "中文简称": "尼泊尔",
+    "英文名": "Nepal",
+    "英文简称": "Nepal",
+    "英文缩写": "NPL",
+    "文件名": "NPL.png"
+  },
+  {
+    "中文名": "瑙鲁共和国",
+    "中文简称": "瑙鲁",
+    "英文名": "Nauru",
+    "英文简称": "Nauru",
+    "英文缩写": "NRU",
+    "文件名": "NRU.png"
+  },
+  {
+    "中文名": "Niue",
+    "中文简称": "Niue",
+    "英文名": "Niue",
+    "英文简称": "Niue",
+    "英文缩写": "NIU",
+    "文件名": "NIU.png"
+  },
+  {
+    "中文名": "新西兰",
+    "中文简称": "新西兰",
+    "英文名": "New Zealand",
+    "英文简称": "New Zealand",
+    "英文缩写": "NZL",
+    "文件名": "NZL.png"
+  },
+  {
+    "中文名": "阿曼苏丹国",
+    "中文简称": "阿曼",
+    "英文名": "Oman",
+    "英文简称": "Oman",
+    "英文缩写": "OMN",
+    "文件名": "OMN.png"
+  },
+  {
+    "中文名": "巴拿马共和国",
+    "中文简称": "巴拿马",
+    "英文名": "Panama",
+    "英文简称": "Panama",
+    "英文缩写": "PAN",
+    "文件名": "PAN.png"
+  },
+  {
+    "中文名": "秘鲁共和国",
+    "中文简称": "秘鲁",
+    "英文名": "Peru",
+    "英文简称": "Peru",
+    "英文缩写": "PER",
+    "文件名": "PER.png"
+  },
+  {
+    "中文名": "French Polynesia",
+    "中文简称": "French Polynesia",
+    "英文名": "French Polynesia",
+    "英文简称": "French Polynesia",
+    "英文缩写": "PYF",
+    "文件名": "PYF.png"
+  },
+  {
+    "中文名": "巴布亚新几内亚独立国",
+    "中文简称": "巴布亚新几内亚",
+    "英文名": "Papua New Guinea",
+    "英文简称": "Papua New Guinea",
+    "英文缩写": "PNG",
+    "文件名": "PNG.png"
+  },
+  {
+    "中文名": "菲律宾共和国",
+    "中文简称": "菲律宾",
+    "英文名": "Philippines",
+    "英文简称": "Philippines",
+    "英文缩写": "PHL",
+    "文件名": "PHL.png"
+  },
+  {
+    "中文名": "巴基斯坦伊斯兰共和国",
+    "中文简称": "巴基斯坦",
+    "英文名": "Pakistan",
+    "英文简称": "Pakistan",
+    "英文缩写": "PAK",
+    "文件名": "PAK.png"
+  },
+  {
+    "中文名": "波兰共和国",
+    "中文简称": "波兰",
+    "英文名": "Poland",
+    "英文简称": "Poland",
+    "英文缩写": "POL",
+    "文件名": "POL.png"
+  },
+  {
+    "中文名": "Saint Pierre and Miquelon",
+    "中文简称": "Saint Pierre and Miquelon",
+    "英文名": "Saint Pierre and Miquelon",
+    "英文简称": "Saint Pierre and Miquelon",
+    "英文缩写": "SPM",
+    "文件名": "SPM.png"
+  },
+  {
+    "中文名": "Pitcairn Islands",
+    "中文简称": "Pitcairn Islands",
+    "英文名": "Pitcairn Islands",
+    "英文简称": "Pitcairn Islands",
+    "英文缩写": "PCN",
+    "文件名": "PCN.png"
+  },
+  {
+    "中文名": "Puerto Rico",
+    "中文简称": "Puerto Rico",
+    "英文名": "Puerto Rico",
+    "英文简称": "Puerto Rico",
+    "英文缩写": "PRI",
+    "文件名": "PRI.png"
+  },
+  {
+    "中文名": "Palestine",
+    "中文简称": "Palestine",
+    "英文名": "Palestine",
+    "英文简称": "Palestine",
+    "英文缩写": "PSE",
+    "文件名": "PSE.png"
+  },
+  {
+    "中文名": "葡萄牙共和国",
+    "中文简称": "葡萄牙",
+    "英文名": "Portugal",
+    "英文简称": "Portugal",
+    "英文缩写": "PRT",
+    "文件名": "PRT.png"
+  },
+  {
+    "中文名": "帕劳共和国",
+    "中文简称": "帕劳",
+    "英文名": "Palau",
+    "英文简称": "Palau",
+    "英文缩写": "PLW",
+    "文件名": "PLW.png"
+  },
+  {
+    "中文名": "巴拉圭共和国",
+    "中文简称": "巴拉圭",
+    "英文名": "Paraguay",
+    "英文简称": "Paraguay",
+    "英文缩写": "PRY",
+    "文件名": "PRY.png"
+  },
+  {
+    "中文名": "卡塔尔国",
+    "中文简称": "卡塔尔",
+    "英文名": "Qatar",
+    "英文简称": "Qatar",
+    "英文缩写": "QAT",
+    "文件名": "QAT.png"
+  },
+  {
+    "中文名": "Réunion",
+    "中文简称": "Réunion",
+    "英文名": "Réunion",
+    "英文简称": "Réunion",
+    "英文缩写": "REU",
+    "文件名": "REU.png"
+  },
+  {
+    "中文名": "罗马尼亚",
+    "中文简称": "罗马尼亚",
+    "英文名": "Romania",
+    "英文简称": "Romania",
+    "英文缩写": "ROU",
+    "文件名": "ROU.png"
+  },
+  {
+    "中文名": "塞尔维亚共和国",
+    "中文简称": "塞尔维亚",
+    "英文名": "Serbia",
+    "英文简称": "Serbia",
+    "英文缩写": "SRB",
+    "文件名": "SRB.png"
+  },
+  {
+    "中文名": "俄罗斯联邦",
+    "中文简称": "俄罗斯",
+    "英文名": "Russia",
+    "英文简称": "Russia",
+    "英文缩写": "RUS",
+    "文件名": "RUS.png"
+  },
+  {
+    "中文名": "卢旺达共和国",
+    "中文简称": "卢旺达",
+    "英文名": "Rwanda",
+    "英文简称": "Rwanda",
+    "英文缩写": "RWA",
+    "文件名": "RWA.png"
+  },
+  {
+    "中文名": "沙特阿拉伯王国",
+    "中文简称": "沙特阿拉伯",
+    "英文名": "Saudi Arabia",
+    "英文简称": "Saudi Arabia",
+    "英文缩写": "SAU",
+    "文件名": "SAU.png"
+  },
+  {
+    "中文名": "所罗门群岛",
+    "中文简称": "所罗门群岛",
+    "英文名": "Solomon Islands",
+    "英文简称": "Solomon Islands",
+    "英文缩写": "SLB",
+    "文件名": "SLB.png"
+  },
+  {
+    "中文名": "塞舌尔共和国",
+    "中文简称": "塞舌尔",
+    "英文名": "Seychelles",
+    "英文简称": "Seychelles",
+    "英文缩写": "SYC",
+    "文件名": "SYC.png"
+  },
+  {
+    "中文名": "苏丹共和国",
+    "中文简称": "苏丹",
+    "英文名": "Sudan",
+    "英文简称": "Sudan",
+    "英文缩写": "SDN",
+    "文件名": "SDN.png"
+  },
+  {
+    "中文名": "瑞典王国",
+    "中文简称": "瑞典",
+    "英文名": "Sweden",
+    "英文简称": "Sweden",
+    "英文缩写": "SWE",
+    "文件名": "SWE.png"
+  },
+  {
+    "中文名": "新加坡共和国",
+    "中文简称": "新加坡",
+    "英文名": "Singapore",
+    "英文简称": "Singapore",
+    "英文缩写": "SGP",
+    "文件名": "SGP.png"
+  },
+  {
+    "中文名": "Saint Helena, Ascension and Tristan da Cunha",
+    "中文简称": "Saint Helena, Ascension and Tristan da Cunha",
+    "英文名": "Saint Helena, Ascension and Tristan da Cunha",
+    "英文简称": "Saint Helena, Ascension and Tristan da Cunha",
+    "英文缩写": "SHN",
+    "文件名": "SHN.png"
+  },
+  {
+    "中文名": "斯洛文尼亚共和国",
+    "中文简称": "斯洛文尼亚",
+    "英文名": "Slovenia",
+    "英文简称": "Slovenia",
+    "英文缩写": "SVN",
+    "文件名": "SVN.png"
+  },
+  {
+    "中文名": "Svalbard and Jan Mayen",
+    "中文简称": "Svalbard and Jan Mayen",
+    "英文名": "Svalbard and Jan Mayen",
+    "英文简称": "Svalbard and Jan Mayen",
+    "英文缩写": "SJM",
+    "文件名": "SJM.png"
+  },
+  {
+    "中文名": "斯洛伐克共和国",
+    "中文简称": "斯洛伐克",
+    "英文名": "Slovakia",
+    "英文简称": "Slovakia",
+    "英文缩写": "SVK",
+    "文件名": "SVK.png"
+  },
+  {
+    "中文名": "塞拉利昂共和国",
+    "中文简称": "塞拉利昂",
+    "英文名": "Sierra Leone",
+    "英文简称": "Sierra Leone",
+    "英文缩写": "SLE",
+    "文件名": "SLE.png"
+  },
+  {
+    "中文名": "圣马力诺共和国",
+    "中文简称": "圣马力诺",
+    "英文名": "San Marino",
+    "英文简称": "San Marino",
+    "英文缩写": "SMR",
+    "文件名": "SMR.png"
+  },
+  {
+    "中文名": "塞内加尔共和国",
+    "中文简称": "塞内加尔",
+    "英文名": "Senegal",
+    "英文简称": "Senegal",
+    "英文缩写": "SEN",
+    "文件名": "SEN.png"
+  },
+  {
+    "中文名": "索马里联邦共和国",
+    "中文简称": "索马里",
+    "英文名": "Somalia",
+    "英文简称": "Somalia",
+    "英文缩写": "SOM",
+    "文件名": "SOM.png"
+  },
+  {
+    "中文名": "苏里南共和国",
+    "中文简称": "苏里南",
+    "英文名": "Suriname",
+    "英文简称": "Suriname",
+    "英文缩写": "SUR",
+    "文件名": "SUR.png"
+  },
+  {
+    "中文名": "南苏丹共和国",
+    "中文简称": "南苏丹",
+    "英文名": "South Sudan",
+    "英文简称": "South Sudan",
+    "英文缩写": "SSD",
+    "文件名": "SSD.png"
+  },
+  {
+    "中文名": "圣多美和普林西比民主共和国",
+    "中文简称": "圣多美和普林西比",
+    "英文名": "São Tomé and Príncipe",
+    "英文简称": "São Tomé and Príncipe",
+    "英文缩写": "STP",
+    "文件名": "STP.png"
+  },
+  {
+    "中文名": "萨尔瓦多共和国",
+    "中文简称": "萨尔瓦多",
+    "英文名": "El Salvador",
+    "英文简称": "El Salvador",
+    "英文缩写": "SLV",
+    "文件名": "SLV.png"
+  },
+  {
+    "中文名": "Sint Maarten",
+    "中文简称": "Sint Maarten",
+    "英文名": "Sint Maarten",
+    "英文简称": "Sint Maarten",
+    "英文缩写": "SXM",
+    "文件名": "SXM.png"
+  },
+  {
+    "中文名": "阿拉伯叙利亚共和国",
+    "中文简称": "叙利亚",
+    "英文名": "Syria",
+    "英文简称": "Syria",
+    "英文缩写": "SYR",
+    "文件名": "SYR.png"
+  },
+  {
+    "中文名": "斯威士兰王国",
+    "中文简称": "斯威士兰",
+    "英文名": "Eswatini (Swaziland)",
+    "英文简称": "Eswatini (Swaziland)",
+    "英文缩写": "SWZ",
+    "文件名": "SWZ.png"
+  },
+  {
+    "中文名": "Turks and Caicos Islands",
+    "中文简称": "Turks and Caicos Islands",
+    "英文名": "Turks and Caicos Islands",
+    "英文简称": "Turks and Caicos Islands",
+    "英文缩写": "TCA",
+    "文件名": "TCA.png"
+  },
+  {
+    "中文名": "乍得共和国",
+    "中文简称": "乍得",
+    "英文名": "Chad",
+    "英文简称": "Chad",
+    "英文缩写": "TCD",
+    "文件名": "TCD.png"
+  },
+  {
+    "中文名": "French Southern and Antarctic Lands",
+    "中文简称": "French Southern and Antarctic Lands",
+    "英文名": "French Southern and Antarctic Lands",
+    "英文简称": "French Southern and Antarctic Lands",
+    "英文缩写": "ATF",
+    "文件名": "ATF.png"
+  },
+  {
+    "中文名": "多哥共和国",
+    "中文简称": "多哥",
+    "英文名": "Togo",
+    "英文简称": "Togo",
+    "英文缩写": "TGO",
+    "文件名": "TGO.png"
+  },
+  {
+    "中文名": "泰王国",
+    "中文简称": "泰国",
+    "英文名": "Thailand",
+    "英文简称": "Thailand",
+    "英文缩写": "THA",
+    "文件名": "THA.png"
+  },
+  {
+    "中文名": "塔吉克斯坦共和国",
+    "中文简称": "塔吉克斯坦",
+    "英文名": "Tajikistan",
+    "英文简称": "Tajikistan",
+    "英文缩写": "TJK",
+    "文件名": "TJK.png"
+  },
+  {
+    "中文名": "Tokelau",
+    "中文简称": "Tokelau",
+    "英文名": "Tokelau",
+    "英文简称": "Tokelau",
+    "英文缩写": "TKL",
+    "文件名": "TKL.png"
+  },
+  {
+    "中文名": "东帝汶民主共和国",
+    "中文简称": "东帝汶",
+    "英文名": "Timor-Leste",
+    "英文简称": "Timor-Leste",
+    "英文缩写": "TLS",
+    "文件名": "TLS.png"
+  },
+  {
+    "中文名": "土库曼斯坦",
+    "中文简称": "土库曼斯坦",
+    "英文名": "Turkmenistan",
+    "英文简称": "Turkmenistan",
+    "英文缩写": "TKM",
+    "文件名": "TKM.png"
+  },
+  {
+    "中文名": "突尼斯共和国",
+    "中文简称": "突尼斯",
+    "英文名": "Tunisia",
+    "英文简称": "Tunisia",
+    "英文缩写": "TUN",
+    "文件名": "TUN.png"
+  },
+  {
+    "中文名": "汤加王国",
+    "中文简称": "汤加",
+    "英文名": "Tonga",
+    "英文简称": "Tonga",
+    "英文缩写": "TON",
+    "文件名": "TON.png"
+  },
+  {
+    "中文名": "土耳其共和国",
+    "中文简称": "土耳其",
+    "英文名": "Turkey",
+    "英文简称": "Turkey",
+    "英文缩写": "TUR",
+    "文件名": "TUR.png"
+  },
+  {
+    "中文名": "特立尼达和多巴哥共和国",
+    "中文简称": "特立尼达和多巴哥",
+    "英文名": "Trinidad and Tobago",
+    "英文简称": "Trinidad and Tobago",
+    "英文缩写": "TTO",
+    "文件名": "TTO.png"
+  },
+  {
+    "中文名": "图瓦卢",
+    "中文简称": "图瓦卢",
+    "英文名": "Tuvalu",
+    "英文简称": "Tuvalu",
+    "英文缩写": "TUV",
+    "文件名": "TUV.png"
+  },
+  {
+    "中文名": "坦桑尼亚联合共和国",
+    "中文简称": "坦桑尼亚",
+    "英文名": "Tanzania",
+    "英文简称": "Tanzania",
+    "英文缩写": "TZA",
+    "文件名": "TZA.png"
+  },
+  {
+    "中文名": "乌克兰",
+    "中文简称": "乌克兰",
+    "英文名": "Ukraine",
+    "英文简称": "Ukraine",
+    "英文缩写": "UKR",
+    "文件名": "UKR.png"
+  },
+  {
+    "中文名": "乌干达共和国",
+    "中文简称": "乌干达",
+    "英文名": "Uganda",
+    "英文简称": "Uganda",
+    "英文缩写": "UGA",
+    "文件名": "UGA.png"
+  },
+  {
+    "中文名": "United States Minor Outlying Islands",
+    "中文简称": "United States Minor Outlying Islands",
+    "英文名": "United States Minor Outlying Islands",
+    "英文简称": "United States Minor Outlying Islands",
+    "英文缩写": "UMI",
+    "文件名": "UMI.png"
+  },
+  {
+    "中文名": "United Nations",
+    "中文简称": "United Nations",
+    "英文名": "United Nations",
+    "英文简称": "United Nations",
+    "英文缩写": "UN",
+    "文件名": "UN.png"
+  },
+  {
+    "中文名": "美利坚合众国",
+    "中文简称": "美国",
+    "英文名": "United States",
+    "英文简称": "United States",
+    "英文缩写": "USA",
+    "文件名": "USA.png"
+  },
+  {
+    "中文名": "阿尔巴尼亚共和国",
+    "中文简称": "阿尔巴尼亚",
+    "英文名": "Alabama",
+    "英文简称": "Alabama",
+    "英文缩写": "ALB",
+    "文件名": "ALB.png"
+  },
+  {
+    "中文名": "阿根廷共和国",
+    "中文简称": "阿根廷",
+    "英文名": "Arkansas",
+    "英文简称": "Arkansas",
+    "英文缩写": "ARG",
+    "文件名": "ARG.png"
+  },
+  {
+    "中文名": "阿塞拜疆共和国",
+    "中文简称": "阿塞拜疆",
+    "英文名": "Arizona",
+    "英文简称": "Arizona",
+    "英文缩写": "AZE",
+    "文件名": "AZE.png"
+  },
+  {
+    "中文名": "加拿大",
+    "中文简称": "加拿大",
+    "英文名": "California",
+    "英文简称": "California",
+    "英文缩写": "CAN",
+    "文件名": "CAN.png"
+  },
+  {
+    "中文名": "哥伦比亚共和国",
+    "中文简称": "哥伦比亚",
+    "英文名": "Colorado",
+    "英文简称": "Colorado",
+    "英文缩写": "COL",
+    "文件名": "COL.png"
+  },
+  {
+    "中文名": "加蓬共和国",
+    "中文简称": "加蓬",
+    "英文名": "Georgia",
+    "英文简称": "Georgia",
+    "英文缩写": "GAB",
+    "文件名": "GAB.png"
+  },
+  {
+    "中文名": "印度尼西亚共和国",
+    "中文简称": "印度尼西亚",
+    "英文名": "Idaho",
+    "英文简称": "Idaho",
+    "英文缩写": "IDN",
+    "文件名": "IDN.png"
+  },
+  {
+    "中文名": "以色列国",
+    "中文简称": "以色列",
+    "英文名": "Illinois",
+    "英文简称": "Illinois",
+    "英文缩写": "ISR",
+    "文件名": "ISR.png"
+  },
+  {
+    "中文名": "Kentucky",
+    "中文简称": "Kentucky",
+    "英文名": "Kentucky",
+    "英文简称": "Kentucky",
+    "英文缩写": "CYM",
+    "文件名": "CYM.png"
+  },
+  {
+    "中文名": "老挝人民民主共和国",
+    "中文简称": "老挝",
+    "英文名": "Louisiana",
+    "英文简称": "Louisiana",
+    "英文缩写": "LAO",
+    "文件名": "LAO.png"
+  },
+  {
+    "中文名": "摩洛哥王国",
+    "中文简称": "摩洛哥",
+    "英文名": "Massachusetts",
+    "英文简称": "Massachusetts",
+    "英文缩写": "MAR",
+    "文件名": "MAR.png"
+  },
+  {
+    "中文名": "摩尔多瓦共和国",
+    "中文简称": "摩尔多瓦",
+    "英文名": "Maryland",
+    "英文简称": "Maryland",
+    "英文缩写": "MDA",
+    "文件名": "MDA.png"
+  },
+  {
+    "中文名": "黑山",
+    "中文简称": "黑山",
+    "英文名": "Maine",
+    "英文简称": "Maine",
+    "英文缩写": "MNE",
+    "文件名": "MNE.png"
+  },
+  {
+    "中文名": "蒙古国",
+    "中文简称": "蒙古",
+    "英文名": "Minnesota",
+    "英文简称": "Minnesota",
+    "英文缩写": "MNG",
+    "文件名": "MNG.png"
+  },
+  {
+    "中文名": "澳门特别行政区",
+    "中文简称": "澳门",
+    "英文名": "Missouri",
+    "英文简称": "Missouri",
+    "英文缩写": "MAC",
+    "文件名": "MAC.png"
+  },
+  {
+    "中文名": "Mississippi",
+    "中文简称": "Mississippi",
+    "英文名": "Mississippi",
+    "英文简称": "Mississippi",
+    "英文缩写": "MSR",
+    "文件名": "MSR.png"
+  },
+  {
+    "中文名": "马耳他共和国",
+    "中文简称": "马耳他",
+    "英文名": "Montana",
+    "英文简称": "Montana",
+    "英文缩写": "MLT",
+    "文件名": "MLT.png"
+  },
+  {
+    "中文名": "North Carolina",
+    "中文简称": "North Carolina",
+    "英文名": "North Carolina",
+    "英文简称": "North Carolina",
+    "英文缩写": "NCL",
+    "文件名": "NCL.png"
+  },
+  {
+    "中文名": "尼日尔共和国",
+    "中文简称": "尼日尔",
+    "英文名": "Nebraska",
+    "英文简称": "Nebraska",
+    "英文缩写": "NER",
+    "文件名": "NER.png"
+  },
+  {
+    "中文名": "巴拿马共和国",
+    "中文简称": "巴拿马",
+    "英文名": "Pennsylvania",
+    "英文简称": "Pennsylvania",
+    "英文缩写": "PAN",
+    "文件名": "PAN.png"
+  },
+  {
+    "中文名": "塞舌尔共和国",
+    "中文简称": "塞舌尔",
+    "英文名": "South Carolina",
+    "英文简称": "South Carolina",
+    "英文缩写": "SYC",
+    "文件名": "SYC.png"
+  },
+  {
+    "中文名": "苏丹共和国",
+    "中文简称": "苏丹",
+    "英文名": "South Dakota",
+    "英文简称": "South Dakota",
+    "英文缩写": "SDN",
+    "文件名": "SDN.png"
+  },
+  {
+    "中文名": "突尼斯共和国",
+    "中文简称": "突尼斯",
+    "英文名": "Tennessee",
+    "英文简称": "Tennessee",
+    "英文缩写": "TUN",
+    "文件名": "TUN.png"
+  },
+  {
+    "中文名": "乌拉圭东岸共和国",
+    "中文简称": "乌拉圭",
+    "英文名": "Uruguay",
+    "英文简称": "Uruguay",
+    "英文缩写": "URY",
+    "文件名": "URY.png"
+  },
+  {
+    "中文名": "乌兹别克斯坦共和国",
+    "中文简称": "乌兹别克斯坦",
+    "英文名": "Uzbekistan",
+    "英文简称": "Uzbekistan",
+    "英文缩写": "UZB",
+    "文件名": "UZB.png"
+  },
+  {
+    "中文名": "梵蒂冈城国",
+    "中文简称": "梵蒂冈",
+    "英文名": "Vatican City (Holy See)",
+    "英文简称": "Vatican City (Holy See)",
+    "英文缩写": "VAT",
+    "文件名": "VAT.png"
+  },
+  {
+    "中文名": "圣文森特和格林纳丁斯",
+    "中文简称": "圣文森特和格林纳丁斯",
+    "英文名": "Saint Vincent and the Grenadines",
+    "英文简称": "Saint Vincent and the Grenadines",
+    "英文缩写": "VCT",
+    "文件名": "VCT.png"
+  },
+  {
+    "中文名": "委内瑞拉玻利瓦尔共和国",
+    "中文简称": "委内瑞拉",
+    "英文名": "Venezuela",
+    "英文简称": "Venezuela",
+    "英文缩写": "VEN",
+    "文件名": "VEN.png"
+  },
+  {
+    "中文名": "British Virgin Islands",
+    "中文简称": "British Virgin Islands",
+    "英文名": "British Virgin Islands",
+    "英文简称": "British Virgin Islands",
+    "英文缩写": "VGB",
+    "文件名": "VGB.png"
+  },
+  {
+    "中文名": "United States Virgin Islands",
+    "中文简称": "United States Virgin Islands",
+    "英文名": "United States Virgin Islands",
+    "英文简称": "United States Virgin Islands",
+    "英文缩写": "VIR",
+    "文件名": "VIR.png"
+  },
+  {
+    "中文名": "越南社会主义共和国",
+    "中文简称": "越南",
+    "英文名": "Vietnam",
+    "英文简称": "Vietnam",
+    "英文缩写": "VNM",
+    "文件名": "VNM.png"
+  },
+  {
+    "中文名": "瓦努阿图共和国",
+    "中文简称": "瓦努阿图",
+    "英文名": "Vanuatu",
+    "英文简称": "Vanuatu",
+    "英文缩写": "VUT",
+    "文件名": "VUT.png"
+  },
+  {
+    "中文名": "Wallis and Futuna",
+    "中文简称": "Wallis and Futuna",
+    "英文名": "Wallis and Futuna",
+    "英文简称": "Wallis and Futuna",
+    "英文缩写": "WLF",
+    "文件名": "WLF.png"
+  },
+  {
+    "中文名": "萨摩亚独立国",
+    "中文简称": "萨摩亚",
+    "英文名": "Samoa",
+    "英文简称": "Samoa",
+    "英文缩写": "WSM",
+    "文件名": "WSM.png"
+  },
+  {
+    "中文名": "科索沃共和国",
+    "中文简称": "科索沃",
+    "英文名": "Kosovo",
+    "英文简称": "Kosovo",
+    "英文缩写": "XKX",
+    "文件名": "XKX.png"
+  },
+  {
+    "中文名": "也门共和国",
+    "中文简称": "也门",
+    "英文名": "Yemen",
+    "英文简称": "Yemen",
+    "英文缩写": "YEM",
+    "文件名": "YEM.png"
+  },
+  {
+    "中文名": "Mayotte",
+    "中文简称": "Mayotte",
+    "英文名": "Mayotte",
+    "英文简称": "Mayotte",
+    "英文缩写": "MYT",
+    "文件名": "MYT.png"
+  },
+  {
+    "中文名": "南非共和国",
+    "中文简称": "南非",
+    "英文名": "South Africa",
+    "英文简称": "South Africa",
+    "英文缩写": "ZAF",
+    "文件名": "ZAF.png"
+  },
+  {
+    "中文名": "赞比亚共和国",
+    "中文简称": "赞比亚",
+    "英文名": "Zambia",
+    "英文简称": "Zambia",
+    "英文缩写": "ZMB",
+    "文件名": "ZMB.png"
+  },
+  {
+    "中文名": "津巴布韦共和国",
+    "中文简称": "津巴布韦",
+    "英文名": "Zimbabwe",
+    "英文简称": "Zimbabwe",
+    "英文缩写": "ZWE",
+    "文件名": "ZWE.png"
+  }
+]

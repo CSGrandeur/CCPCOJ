@@ -12,6 +12,21 @@ class Problemset extends Csgojbase
     }
     public function index()
     {
+        $this->assign([
+            'prolist_mode' => 'frontend',
+            'search_spj' => input('spj', -1),
+            'table_prefix' => 'problemset',
+            'table_id' => 'problemset_table',
+            'ajax_url' => '/csgoj/problemset/problemset_ajax',
+            'page_title' => '开放题目集',
+            'page_title_en' => 'Public Problems',
+            'search_placeholder' => '题号/标题/来源',
+            'page_size' => 25,
+            'cookie_expire' => '1m',
+            'cookie_suffix' => session('?user_id') ? '-'.session('user_id') : '',
+            'filter_selectors' => ['spj'],
+            'custom_handlers' => 'initUrlSearch'
+        ]);
         return $this->fetch();
     }
     public function problemset_ajax()
@@ -24,6 +39,9 @@ class Problemset extends Csgojbase
         $sort   = validate_item_range($sort, ['problem_id', 'accepted', 'submit']);
         $order  = input('order');
         $search = trim(input('search/s'));
+        
+        // 新增筛选参数
+        $spj_filter = input('spj', -1);
 
         $map = [];
         // 多个联合成一个条目的 or 关系('problem_id|title|source')与 and 关系('defunct')连用时候会自带括号，不需要加->query()
@@ -36,6 +54,11 @@ class Problemset extends Csgojbase
         // // 管理员可以在后台看problem，没必要前台给特权，这里 if 注释掉
         // if(!IsAdmin())
         $defunctmap['defunct'] = '0';
+        
+        // 添加spj筛选
+        if($spj_filter != -1) {
+            $defunctmap['spj'] = $spj_filter;
+        }
         $ret = [];
         $ordertype = [];
         if(strlen($sort) > 0)
@@ -100,22 +123,6 @@ class Problemset extends Csgojbase
                     $problemList[$key]['ac'] = $solutionStatus[$problem['problem_id']] == '0' ? 0 : 1;
             }
         }
-        // //无search的时候按每页固定的整百题号开头，不能设置defunct否则后面的页码不显示。有search的时候要设置defunct不然页码会多显示
-        // if(strlen($search) > 0) {
-        //     $ret['total'] = $Problem
-        //         ->where(function($query)use ($map) {
-        //             $query->whereOr($map);
-        //         })
-        //         ->where($defunctmap)
-        //         ->count();
-        // }
-        // else {
-        //     // 如果正常查询，“total”应该返回最大ID与1000的差值+1，这样前端table才能正常分页。
-        //     // 比如如果没有题号为1000的题，1001~1100是100个，前端则只显示 1 页，没法打开第2页
-        //     $maxProId = $Problem->where('defunct', '0')->field("max(problem_id) as max_pro_id")->select();
-        //     $ret['total'] = $maxProId[0]['max_pro_id'] - 999;
-        // }
-        // 不再以整百显示题目列表
         if(strlen($search) > 0) {
             $ret['total'] = $Problem
                 ->where(function($query)use ($map) {

@@ -41,46 +41,10 @@ class User extends Csgojbase
         $this->success('Login successful!<br/>Reloading data.', null, ['userinfo'=>$userinfo, 'privileges'=>$privileges]);
     }
     public function login_oper($userinfo) {
-        // 设置登录后的session
-        session('user_id', $userinfo['user_id']);
-        // 用户权限
-        $Privilege = db('privilege');
-        $privilegelist = $Privilege->where('user_id', $userinfo['user_id'])->field(['rightstr', 'defunct'])->select();
-        $ret = [];
-        $privilege_session = [];
-        foreach($privilegelist as $privilege) {
-            $privilege_session[$privilege['rightstr']] = $privilege['defunct'];
-            if(array_key_exists($privilege['rightstr'], $this->OJ_ADMIN['OJ_ADMIN_LIST'])) {
-                $ret[$privilege['rightstr']] = true;
-            }
-        }
-        // 用户信息
-        session('login_user_info', [
-            'team_id'   => $userinfo['user_id'],
-            'name'      => $userinfo['nick'],
-            'tmember'   => '',
-            'coach'     => '',
-            'school'    => $userinfo['school'],
-            'room'      => ''
-        ]);
-        session('login_user_privilege', $privilege_session);
-        return $ret;
+        return LoginOper($userinfo);
     }
-    public function add_loginlog($user_id, $success)
-    {
-        $ip = GetRealIp();
-        $time = date("Y-m-d H:i:s");
-        db('loginlog')->insert(
-            [
-                'user_id'=>$user_id,
-                //暂时用password字段作是否登录成功标记用。因为password计算依赖原密码salt，这里存储没有意义
-                'password' => $success,
-                'ip' => $ip,
-                'time'=> $time
-            ]);
-        db('users')
-            ->where('user_id', $user_id)
-            ->update(['ip'=>$ip, 'accesstime'=>$time]);
+    public function add_loginlog($user_id, $success){
+        AddLoginlog($user_id, $success);
     }
     public function logout_ajax()
     {
@@ -88,10 +52,7 @@ class User extends Csgojbase
             $this->error('User already logged out.');
         }
         $this->update_user_solved_submit(session('user_id'));
-        
-        session('login_user_privilege', null);
-        session('login_user_info', null);
-        session('user_id', null);
+        LogoutOper();
         $this->success('Logout Successful!<br/>Reloading data.');
     }
     public function userinfo()

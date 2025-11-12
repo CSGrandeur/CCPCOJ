@@ -1,6 +1,7 @@
 <?php
 namespace app\cpcsys\controller;
 use think\Db;
+use think\Validate;
 use app\csgoj\controller\Contest as Contestbase;
 use phpDocumentor\Reflection\Types\Null_;
 
@@ -21,8 +22,8 @@ class Contest extends Contestbase
     public function ContestInit()
     {
         $this->assign('pagetitle', 'Standard Contest');
-        $this->outsideContestAction = ['index', 'contest_list_ajax', 'contest_data_joint_ajax'];
-        $this->allowPublicVisitAction = ['contest_login', 'ranklist', 'ranklist_ajax', 'scorerank', 'scorerank_ajax', 'schoolrank', 'schoolrank_ajax', 'contest', 'contest_auth_ajax', 'team_auth_type_ajax', 'contest_data_ajax'];
+        $this->outsideContestAction = ['index', 'contest_list_ajax', 'contest_collect_team_ajax'];
+        $this->allowPublicVisitAction = ['contest_login', 'rank', 'ranklist_ajax', 'scorerank', 'scorerank_ajax', 'schoolrank', 'schoolrank_ajax', 'contest', 'contest_auth_ajax', 'contest_auth_passwordless_ajax', 'team_auth_type_ajax', 'contest_data_ajax'];
         $this->ojLang = config('CsgojConfig.OJ_LANGUAGE');
         $this->ojResults = config('CsgojConfig.OJ_RESULTS');
         $this->ojResultsHtml = config('CsgojConfig.OJ_RESULTS_HTML');
@@ -36,11 +37,51 @@ class Contest extends Contestbase
         if($this->controller == 'contest' && !in_array($this->request->action(), $this->outsideContestAction) || $this->controller == 'admin' || $this->controller == 'contestadmin') {
             $this->GetContestInfo();
             $this->teamSessionName = '#cpcteam' . $this->contest['contest_id']; // 先获取contest，后组合teamSessionName，最后计算rankUseCache
-            $this->rankUseCache = !$this->IsContestAdmin() && !$this->IsContestAdmin('balloon_manager') && !$this->IsContestAdmin('balloon_sender') && !$this->IsContestAdmin('admin') && !$this->IsContestAdmin('watcher') ? 1 : 0;
-            $this->isContestAdmin = $this->IsContestAdmin();
+            $this->rankUseCache = !$this->IsContestAdmin('admin') && !$this->IsContestAdmin('balloon_manager') && !$this->IsContestAdmin('balloon_sender') && !$this->IsContestAdmin('admin') && !$this->IsContestAdmin('watcher') ? 1 : 0;
+            $this->isContestAdmin = $this->IsContestAdmin('admin');
             $this->GetVars();
             $this->ContestAuthentication();
             $this->SetAssign();
+            
+            // 为contest_login.php模板准备变量
+            $clientIp = GetRealIp();
+            $this->assign('client_ip', $clientIp);
+            
+            // 查询该IP对应的client的team_id_bind
+            $team_id_bind = null;
+            if (!empty($clientIp)) {
+                $client = db('cpc_client')->where([
+                    'contest_id' => $this->contest['contest_id'],
+                    'ip_bind' => $clientIp
+                ])->find();
+                
+                if ($client && !empty($client['team_id_bind'])) {
+                    $team_id_bind = $client['team_id_bind'];
+                }
+            }
+            $this->assign('team_id_bind', $team_id_bind);
+            
+            // 计算收集模式相关变量
+            $addition = [];
+            if (!empty($this->contest['addition'])) {
+                $addition = Json2Array($this->contest['addition']);
+                if (!$addition || !is_array($addition)) {
+                    $addition = [];
+                }
+            }
+            $flg_collect_team_id = isset($addition['flg_collect_team_id']) ? intval($addition['flg_collect_team_id']) : 0;
+            
+            // 判断是否在比赛前10分钟
+            $now = time();
+            $startTime = strtotime($this->contest['start_time']);
+            $timeDiff = $startTime - $now;
+            $isBefore10Min = $timeDiff >= 600; // 600秒 = 10分钟
+            
+            // 判断是否是收集模式
+            $isCollectMode = ($flg_collect_team_id == 1 && $isBefore10Min);
+            
+            $this->assign('flg_collect_team_id', $flg_collect_team_id);
+            $this->assign('isCollectMode', $isCollectMode);
         }
         $this->assign('contest_controller', 'contest');
     }
@@ -112,9 +153,11 @@ class Contest extends Contestbase
         session($this->teamSessionName, [
             'team_id'   => $teamInfo['team_id'],
             'name'      => $teamInfo['name'],
+            'name_en'   => $teamInfo['name_en'],
             'tmember'   => $teamInfo['tmember'],
             'coach'     => $teamInfo['coach'],
             'school'    => $teamInfo['school'],
+            'region'    => $teamInfo['region'],
             'room'      => $teamInfo['room'],
             'privilege' => $teamInfo['privilege'],
         ]);
@@ -127,10 +170,30 @@ class Contest extends Contestbase
             [
                 'user_id'=>'#cpc' . $this->contest['contest_id'] . '_' . $team_id,
                 //暂时用password字段作是否登录成功标记用。因为password计算依赖原密码salt，这里存储没有意义
-                'password' => $success,
+                'password' => '',
                 'ip' => $ip,
-                'time'=> $time
+                'time'=> $time,
+                'success'=> $success,
             ]);
+    }
+    
+    /**
+     * 根据用户权限获取登录后的重定向URL
+     * @return string 重定向URL
+     */
+    protected function getContestLoginRedirectUrl()
+    {
+        $redirect_action = "problemset";
+        if($this->IsContestAdmin('admin')) {
+            $redirect_action = "ranklist";
+        } else if($this->IsContestAdmin('balloon_manager')) {
+            $redirect_action = "balloon_queue";
+        } else if($this->IsContestAdmin('balloon_sender')) {
+            $redirect_action = "balloon_queue";
+        } else if($this->IsContestAdmin('printer')) {
+            $redirect_action = "print_status";
+        }
+        return "/" . $this->module . "/contest/" . $redirect_action . "?cid=" . $this->contest['contest_id'];
     }
     public function contest_logout_ajax()
     {
@@ -140,16 +203,16 @@ class Contest extends Contestbase
         session($this->teamSessionName, null);
         $this->success('Logout Contest ' . $this->contest['contest_id'] . ' Successful!<br/>Reloading data.');
     }
-    public function contest_auth_ajax()
-    {
+    public function contest_auth_ajax(){
         // 比赛账号（非OJ账号）登录验证
         if($this->GetSession('?')){
             $this->error('Already logged in. Try refreshing the page.');
         }
         $team_id = trim(input('team_id/s'));
         $password = trim(input('password/s'));
-        if($team_id == null || strlen($team_id) == 0)
+        if($team_id == null || strlen($team_id) == 0) {
             $this->error('Query Data Invalid!');
+        }
         $Team = db('cpc_team');
         $map = array(
             'contest_id' => $this->contest['contest_id'],
@@ -158,7 +221,7 @@ class Contest extends Contestbase
         $teamInfo = $Team->where($map)->find();
         // 如果比赛已结束，则不允许选手账号再登录
         if($this->contestStatus == 2 && ($teamInfo == null || $teamInfo['privilege'] == null || strlen(trim($teamInfo['privilege'])) == 0)) {
-            $this->error('Ended!');
+            $this->error('比赛结束 / Ended!');
         }
         if($teamInfo == null) {
             $this->error('No such team');
@@ -175,20 +238,171 @@ class Contest extends Contestbase
             $this->contest_loginlog($teamInfo['team_id'], 0);
             $this->error('Password Error!');
         }
-        $redirect_action = "problemset";
-        if($this->IsContestAdmin()) {
-            $redirect_action = "ranklist";
-        } else if($this->IsContestAdmin('balloon_manager')) {
-            $redirect_action = "balloon";
-        } else if($this->IsContestAdmin('balloon_sender')) {
-            $redirect_action = "balloon_queue";
-        } else if($this->IsContestAdmin('printer')) {
-            $redirect_action = "print_status";
-        }
-        $this->success('Verification passed', null, ['redirect_url' => "/" . $this->module . "/contest/" . $redirect_action . "?cid=" . $this->contest['contest_id']]);
+        $this->success('ok', null, ['redirect_url' => $this->getContestLoginRedirectUrl()]);
     }
-    public function SolutionUser($user_id, $appearprefix=null)
-    {
+    
+    /**
+     * 免密登录接口（通过IP查询team_id_bind）
+     */
+    public function contest_auth_passwordless_ajax() {
+        // 比赛账号免密登录验证（通过IP）
+        if($this->GetSession('?')){
+            $this->error('Already logged in. Try refreshing the page.');
+        }
+        
+        $ip = GetRealIp();
+        if (empty($ip)) {
+            $this->error('无法获取IP地址 / Unable to get IP address');
+        }
+        
+        // 查询该IP对应的client
+        $client = db('cpc_client')->where([
+            'contest_id' => $this->contest['contest_id'],
+            'ip_bind' => $ip
+        ])->find();
+        
+        if (!$client || empty($client['team_id_bind'])) {
+            $this->error('该IP未绑定队伍，请联系管理员 / This IP is not bound to a team, please contact administrator');
+        }
+        
+        $team_id = $client['team_id_bind'];
+        
+        // 查询team是否存在
+        $Team = db('cpc_team');
+        $map = array(
+            'contest_id' => $this->contest['contest_id'],
+            'team_id' => $team_id,
+        );
+        $teamInfo = $Team->where($map)->find();
+        
+        if($teamInfo == null) {
+            $this->error('队伍不存在，请联系管理员 / Team not found, please contact administrator');
+        }
+        
+        // 如果比赛已结束，则不允许选手账号再登录
+        if($this->contestStatus == 2 && ($teamInfo['privilege'] == null || strlen(trim($teamInfo['privilege'])) == 0)) {
+            $this->error('比赛结束 / Ended!');
+        }
+        
+        // 执行登录
+        $this->contest_login_oper($teamInfo);
+        $this->contest_loginlog($teamInfo['team_id'], 1);
+        
+        $this->success('ok', null, ['redirect_url' => $this->getContestLoginRedirectUrl()]);
+    }
+    
+    /**
+     * 收集账号接口
+     */
+    public function contest_collect_team_ajax() {
+        // 判断是否是收集模式
+        $contest = db('contest')->where('contest_id', input('cid/d'))->find();
+        $addition = [];
+        if (!empty($contest['addition'])) {
+            $addition = Json2Array($contest['addition']);
+            if (!$addition || !is_array($addition)) {
+                $addition = [];
+            }
+        }
+        
+        $flg_collect_team_id = isset($addition['flg_collect_team_id']) ? intval($addition['flg_collect_team_id']) : 0;
+        if ($flg_collect_team_id != 1) {
+            $this->error('当前不是收集模式 / Not in collect mode');
+        }
+        
+        // 判断是否在比赛前10分钟
+        $now = time();
+        $startTime = strtotime($contest['start_time']);
+        $timeDiff = $startTime - $now;
+        if ($timeDiff < 600) { // 600秒 = 10分钟
+            $this->error('收集模式已自动关闭（比赛前10分钟） / Collect mode automatically disabled (10 minutes before contest)');
+        }
+        
+        $team_id = trim(input('team_id/s'));
+        if (empty($team_id)) {
+            $this->error('队伍ID不能为空 / Team ID cannot be empty');
+        }
+        
+        // 验证team_id合法性（参考teamgen的验证逻辑）
+        $validate = new Validate(config('CpcSysConfig.teaminfo_rule'), config('CpcSysConfig.teaminfo_msg'));
+        $teamData = [
+            'team_id' => $team_id,
+            'contest_id' => $contest['contest_id']
+        ];
+        
+        if (!$validate->check($teamData)) {
+            $this->error('队伍ID格式不正确：' . $validate->getError() . ' / Invalid Team ID format: ' . $validate->getError());
+        }
+        
+        // 验证team_id是否存在
+        $teamInfo = db('cpc_team')->where([
+            'contest_id' => $contest['contest_id'],
+            'team_id' => $team_id
+        ])->find();
+                
+        $ip = GetRealIp();
+        if (empty($ip)) {
+            $this->error('无法获取IP地址 / Unable to get IP address');
+        }
+        
+        // 查询该IP是否已有client记录
+        $client = db('cpc_client')->where([
+            'contest_id' => $contest['contest_id'],
+            'ip_bind' => $ip
+        ])->find();
+        
+        if ($client) {
+            // 更新现有的client记录
+            db('cpc_client')->where('client_id', $client['client_id'])->update([
+                'team_id_bind' => $team_id
+            ]);
+        } else {
+            // 新建client记录
+            db('cpc_client')->insert([
+                'contest_id' => $contest['contest_id'],
+                'team_id_bind' => $team_id,
+                'ip_bind' => $ip,
+                'ssh_config' => null
+            ]);
+        }
+        $rep_data = [
+            'team_id' => $team_id,
+            'ip' => $ip
+        ];
+        if (!$teamInfo) {
+            $rep_data['team_warning_cn'] = '队伍 ' . $team_id . ' 尚未录入比赛，但仍然已完成绑定，如不是预期行为，请在客户端管理处处理';
+            $rep_data['team_warning_en'] = 'Team ' . $team_id . ' has not been entered into the contest, but has already been bound. If this is not the expected behavior, please handle it in the client management';
+        }
+        $this->success('账号收集成功 / Account collected successfully', null, $rep_data);
+    }
+    
+    /**
+     * 比赛首页
+     */
+    public function contest() {
+        // 获取客户端IP
+        $clientIp = GetRealIp();
+        $this->assign('client_ip', $clientIp);
+        
+        // 查询该IP对应的client的team_id_bind
+        $team_id_bind = null;
+        if (!empty($clientIp)) {
+            $client = db('cpc_client')->where([
+                'contest_id' => $this->contest['contest_id'],
+                'ip_bind' => $clientIp
+            ])->find();
+            
+            if ($client && !empty($client['team_id_bind'])) {
+                $team_id_bind = $client['team_id_bind'];
+            }
+        }
+        
+        $this->assign('team_id_bind', $team_id_bind);
+        
+        return $this->fetch();
+    }
+    
+    protected function SolutionUser($user_id, $appearprefix=null){
         // 针对 cpcsys 的 solution 用户名前缀处理
         if($appearprefix === null) {
             if($user_id != '' && $user_id[0] == '#') $user_id = substr(strrchr($user_id, "_"), 1);
@@ -298,7 +512,7 @@ class Contest extends Contestbase
             $this->error('Permission denied to see this code.');
 
         if($type == 'show')
-            $printinfo['source'] = htmlentities(str_replace("\n\r","\n",$printinfo['source']),ENT_QUOTES,"utf-8");
+            $printinfo['source'] = htmlentities(str_replace("\r\n","\n",$printinfo['source']),ENT_QUOTES,"utf-8");
         $printinfo['auth'] =
             "\n/**********************************************************************".
             "\n\tContest: " . $this->contest['contest_id'] . '-' . $this->contest['title'].
@@ -339,13 +553,10 @@ class Contest extends Contestbase
         $ret = '';
         if(array_key_exists($printReq['print_status'], $oj_print_status_html))
         {
-            if($this->if_can_see_print($printReq))
-                $ret = "<span showcode=1 print_id='" . $printReq['print_id'] . "' id='print_status_".$printReq['print_id']."' class='print-" . $oj_print_status_html[$printReq['print_status']][1] . " btn btn-" . $oj_print_status_html[$printReq['print_status']][0] . "'>" . $oj_print_status_html[$printReq['print_status']][1] . "</span>";
-            else
-                $ret = "<div showres=0 class='text-" . $oj_print_status_html[$printReq['print_status']][0] . "'>" . $oj_print_status_html[$printReq['print_status']][1] . "</div>";
+            $ret = $oj_print_status_html[$printReq['print_status']][1];
         }
         else
-            $ret = "<div showres=0 class='text-default'>Unknown</div>";
+            $ret = 'Unknown';
         return $ret;
     }
     public function print_status() {
@@ -377,16 +588,19 @@ class Contest extends Contestbase
         } else {
             cookie('room_ids_c' . $this->contest['contest_id'], $room_ids);
         }
+
         $team_id        = trim(input('team_id'));
         $print_status     = input('print_status');
         $map = [];
 
-        if($team_id != null && strlen($team_id) > 0)
+        if($team_id != null && strlen($team_id) > 0) {
             $map['team_id'] = $this->SolutionUser($team_id, true);
+        }
         // else if(!$this->IsContestAdmin('printer'))
         //     $map['team_id'] = $this->SolutionUser($this->contest_user, true);
-        if($print_status != null && $print_status != -1)
+        if($print_status != null && $print_status != -1) {
             $map['print_status'] = $print_status;
+        }
         if(strlen($room_ids) > 0)
         {
             $roomIdList = explode(",", $room_ids);
@@ -417,26 +631,18 @@ class Contest extends Contestbase
         foreach($printList as &$printReq)
         {
             $printReq['team_id'] = $this->SolutionUser($printReq['team_id'], false);
-            if($this->contest_user != $printReq['team_id'] && !$this->IsContestAdmin() && !$this->IsContestAdmin('printer') && $this->contestStatus != 2)
+            if($this->contest_user != $printReq['team_id'] && !$this->IsContestAdmin('admin') && !$this->IsContestAdmin('printer') && $this->contestStatus != 2)
             {
                 //不是该用户，不是管理员，且比赛没结束，不可以查看别人的code length
                 $printReq['code_length'] = '-';
             }
 
-
+            // 只返回数据，不返回HTML
             $printReq['print_status_show'] = $this->GetPrintStatusShow($printReq);
-
-            $printReq['team_id_show'] = "<a href='" . $this->UserInfoUrl($printReq['team_id'], $this->contest['contest_id']) . "'>" . $printReq['team_id'] . "</a>";
-            $printReq['do_print'] = '-';
-            $printReq['do_deny'] = '-';
-            if($this->IsContestAdmin() || $this->IsContestAdmin('printer'))
-            {
-                $printReq['do_print'] = "<span id='do_print_".$printReq['print_id']."' class='btn btn-success do_print'>Print</span>";
-                if($printReq['print_status'] == 0)
-                    $printReq['do_deny'] = "<span id='do_deny_".$printReq['print_id']."' class='btn btn-danger do_deny'>Deny</span>";
-                else
-                    $printReq['do_deny'] = "-";
-            }
+            $printReq['user_info_url'] = $this->UserInfoUrl($printReq['team_id'], $this->contest['contest_id']);
+            $printReq['flg_can_print'] = ($this->IsContestAdmin('admin') || $this->IsContestAdmin('printer')) ? 1 : 0;
+            $printReq['flg_can_deny'] = (($this->IsContestAdmin('admin') || $this->IsContestAdmin('printer')) && $printReq['print_status'] == 0) ? 1 : 0;
+            $printReq['flg_showcode'] = $this->if_can_see_print($printReq) ? 1 : 0;
         }
         $ret['total'] = $Print->where($map)->count();
         $ret['order'] = $order;
@@ -487,121 +693,123 @@ class Contest extends Contestbase
             $this->error('Permission denied to manage balloon', '/', '', 1);
         }
     }
-    public function balloon() {
+    public function balloon_manager() {
         $this->BalloonAuth();
         return $this->fetch();
     }
-    public function balloon_task_ajax() {
+    public function balloon_queue() {
         $this->BalloonAuth();
-        $map = ['contest_id' => $this->contest['contest_id']];
-        $FILTER_KEY_LIST = ['problem_id', 'room', 'balloon_sender'];
-        foreach($FILTER_KEY_LIST as $key) {
-            if(($item = input($key . '/s')) !== null && ($item = trim($item)) !== '') {
-                $map[$key] = ['in', explode(',', $item)];
-            }
+        // 获取当前用户信息（如果是balloonSender）
+        if($this->balloonSender && $this->contest_user) {
+            $teaminfo = db('cpc_team')->where(['contest_id' => $this->contest['contest_id'], 'team_id' => $this->contest_user])->find();
+            $this->assign('teaminfo', $teaminfo ? $teaminfo : null);
         }
-        $team_start = input('team_start/s');
-        if($team_start !== null && ($team_start = trim($team_start)) !== '') {
-            $map['team_id'] = ['egt', $team_start];
-        }
-        $team_end = input('team_end/s');
-        if($team_end !== null && ($team_end = trim($team_end)) !== '') {
-            $map['team_id'] = ['elt', $team_end];
-        }
-        $ContestBalloon = db('contest_balloon');
-        $res = $ContestBalloon->where($map)->select();
-        $this->success('ok', null, [
-            'balloon_task_list'     => $res,
-            'problem_id_map'        => $this->problemIdMap,
-            'contest_problem_list'  => $this->contest_problem_list
-        ]);
+        return $this->fetch();
     }
-    public function balloon_sender_list_ajax() {
+    public function balloon_data_ajax() {
         $this->BalloonAuth();
-        if(!$this->balloonManager && !$this->balloonSender && !$this->proctorAdmin && !$this->isContestAdmin) {
-            $this->error("No permission to view balloon senders");
-        }
-        return db('cpc_team')->where(['contest_id' => $this->contest['contest_id'], 'privilege' => ['in', ['balloon_sender', 'balloon_manager']]])->field('password', true)->select();
+        $contest_data = $this->GetContestData4Rank([
+            'info_need' => null,    // 表示所有信息都需要
+            'solution_result' => 4, // 只查询 AC 的题目
+        ]);
+        $this->success("ok", null, $contest_data);
     }
     public function balloon_change_status_ajax() {
         $this->BalloonAuth();
-        $team_id        = trim(input('team_id/s', ''));
-        $apid           = trim(input('apid/s', ''));
-        if($team_id == '' || $apid == '') {
-            $this->error("需要提供队伍ID与字母题号", null, 'need_teamid_apid');
+        // 将气球分配给 balloon sender
+        $balloon_sender = trim(input('balloon_sender/s'));
+        $contest_id = $this->contest['contest_id']; // 由 get 参数的 cid 提供，controller 会自动赋值
+        $solution_id = trim(input('solution_id/d'));
+        $balloon_sender = $this->SolutionUser($balloon_sender, false);
+        $op = trim(input('op/s')); // set_sender / grab， 区分 管理员设置 和 配送员抢任务
+        $pst = trim(input('pst/d'));
+        $bst = trim(input('bst/d'));
+        if($pst === null) {
+            $this->error('首答状态不能为空\nFirst blood status cannot be empty.');
         }
-        $task_new = ['bst'=> input('bst/d')];
-        if($task_new['bst'] === null) {
-            $this->error("需要提供参数：气球状态bst", null, 'need_bst');
+        if(!in_array($pst, [0, 10, 20])) {
+            $this->error('不存在的首答状态\nNo such first blood status.');
         }
-        if(!array_key_exists($apid, $this->problemIdMap['abc2id'])) {
-            $this->error('没有这个题目', null, 'pro_not_exists');
+        if($bst === null) {
+            $this->error('气球状态不能为空\nBalloon status cannot be empty.');
         }
-        $pid = $this->problemIdMap['abc2id'][$apid];
-        $ContestBalloon = db('contest_balloon');
-        $map = [
-            'contest_id'    => $this->contest['contest_id'],
-            'problem_id'    => $pid,
-            'team_id'       => $team_id
+        if(!in_array($bst, [0, 10, 20, 30])) {
+            $this->error('不存在的气球状态\nNo such balloon status.');
+        }
+        // 处理 solution 信息
+        $solution = db('solution')->where(['solution_id' => $solution_id])->find();
+        if(!$solution) {
+            $this->error('不存在的提交\nNo such solution.');
+        }
+        if($solution['contest_id'] != $contest_id) {
+            $this->error('提交不属于当前比赛\nSolution does not belong to current contest.');
+        }
+        if($solution['result'] != 4 && $bst !== 0) { // 没AC且行为不是退回
+            $this->error('提交不是 AC\nSolution is not AC.');
+        }
+        $team_id = $this->SolutionUser($solution['user_id'], false);
+        $problem_id = $solution['problem_id'];
+
+        if($op == 'grab') {
+            if(!$this->balloonSender && !$this->balloonManager) {
+                $this->error('没有权限抢任务\nNo permission to grab task.');
+            }
+            $balloon_sender = $this->SolutionUser($this->contest_user, false);
+            $bst = 20; // grab 模式只能设为"已分配"
+        } else if($op == 'set_sender') {
+            // set_sender 模式：只有管理员将状态设为20时才是set_sender
+            if(!$this->IsContestAdmin('balloon_manager')) {
+                $this->error('没有权限设置配送员\nNo permission to set sender.');
+            }
+            if($bst != 20) {
+                $this->error('set_sender 模式只能将状态设为20（已分配）\nset_sender mode can only set status to 20 (Assigned).');
+            }
+            if(!$balloon_sender) {
+                $this->error('配送员不能为空\nBalloon sender cannot be empty.');
+            }
+        }
+        $new_contest_balloon = [
+            'contest_id' => $contest_id,
+            'problem_id' => $problem_id,
+            'team_id' => $team_id,
+            'room' => '',
+            'ac_time' => strtotime($solution['in_date']),
+            'pst' => $pst,
+            'bst' => $bst,
         ];
-        $item = $ContestBalloon->where($map)->find();
-        if(!$item) {
-            // 新增任务
-            $task_new['pst']                = input('pst/d');
-            $task_new['room']               = input('room/s');
-            $task_new['ac_time']            = input('ac_time/d');
-            if($task_new['bst'] == 4) {
-                $task_new['balloon_sender']     = input('balloon_sender/s');
-                if(!$task_new['balloon_sender'] || trim($task_new['balloon_sender']) == '') {
-                    $this->error("需要设置气球配送员balloon_sender", null, 'need_balloon_sender');
-                }
+        if($balloon_sender) {
+            // 确认 balloon_sender 身份合法性
+            $sender = db('cpc_team')->where([
+                    'contest_id' => $contest_id, 
+                    'team_id' => $balloon_sender, 
+                    'privilege' => ['in', ['balloon_sender', 'balloon_manager']]])
+                ->find();
+            if(!$sender) {
+                $this->error($balloon_sender . ' 不是气球配送员\n"' . $balloon_sender . '" is not a balloon sender.');
             }
-            if($task_new['pst'] === null || $task_new['ac_time'] === null) {
-                $this->error("需要提供参数：题目状态pst，ac时间 ac_time", null, 'need_pst_actime');
-            }
-            $ContestBalloon->insert(array_merge($map, $task_new));
-        } else {
-            // 更新任务
-            if($item['balloon_sender'] != $this->contest_user && !$this->IsContestAdmin('balloon_manager')) {
-                $this->error("没有权限更改此任务", null, 'no_privilege');
-            }
-            if(trim(input('new_query/s', '')) === '1') {
-                $this->error("已分配的任务", null, 'no_privilege'); // 避免其它指令因前端信息不同步而覆盖
-            }
-            if($this->IsContestAdmin('balloon_manager')) {
-                if(input('?pst')) {
-                    $task_new['pst'] = input('pst/d');
-                }
-                if(input('?room')) {
-                    $task_new['room'] = input('room/s');
-                }
-                if(input('?ac_time')) {
-                    $task_new['ac_time'] = input('ac_time/d');
-                }
-                if(input('?balloon_sender')) {
-                    $task_new['balloon_sender'] = input('balloon_sender/s');
-                }
-            }
-            if($task_new['bst'] < 4) {
-                $ContestBalloon->where($map)->delete();
-            } else {
-                $update_ret = $ContestBalloon->where($map)->update($task_new);
-                if($update_ret === 0) {
-                    return $this->error("0 updated", null, 'nothing_changed');
-                }
-            }
+            $new_contest_balloon['balloon_sender'] = $balloon_sender;
         }
-        $this->success('ok', null, 'ok');
+        $contest_balloon = db('contest_balloon')->where(['contest_id' => $contest_id, 'problem_id' => $problem_id, 'team_id' => $team_id])->find();
+        if($contest_balloon) {
+            // 已存在的 balloon 记录
+            if(!$this->IsContestAdmin('balloon_manager')) {
+                // 非气球管理员情况
+                if($contest_balloon['balloon_sender'] != $this->contest_user) {
+                    $this->error('没有权限处理此气球.\nNo permission to handle this balloon.');
+                }
+                if($new_contest_balloon['bst'] == 10) {
+                    $this->error('不能将气球状态设为“已通知”.\nCannot set balloon status to “Printed/Issued”.');
+                }
+            }
+            db('contest_balloon')->where([
+                    'contest_id' => $contest_balloon['contest_id'],
+                    'problem_id' => $contest_balloon['problem_id'],
+                    'team_id' => $contest_balloon['team_id']
+                ])->update($new_contest_balloon);
+        } else {
+            db('contest_balloon')->insert($new_contest_balloon);
+        }
+        return $this->success('ok', null, $new_contest_balloon);
     }
-    public function balloon_queue() {
-        return $this->fetch();
-    }
-    public function balloon_team_list_ajax() {
-        $this->BalloonAuth();
-        return db('cpc_team')->where(['contest_id' => $this->contest['contest_id'], 'privilege' => ['exp', Db::raw('is null')]])->field(['team_id', 'room'])->select();
-    }
-    public function balloon_queue_get_ajax() {
-        $this->BalloonAuth();
-        
-    }
+    
 }
