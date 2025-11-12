@@ -9,19 +9,21 @@ A:系统 Ubuntu Server 24.04. 参数如下
 |Python:|python3 -m py_compile Main.py <br/> python3 Main.py|
 
 **参数说明：**
+
 - `-Wall -Wextra`: 启用所有常见警告和额外警告，帮助发现潜在问题
 - `-static`: 静态链接，生成独立的可执行文件，不依赖动态库
 - `-Wl,--no-relax -Wl,--no-pie -mcmodel=medium`: 解决静态链接时的重定位问题，确保编译稳定性
 - `-DONLINE_JUDGE`: 定义预处理宏，可用于条件编译
 
 **运行时限制：**
+
 - Java、Python 有额外的内存和时间限制用于运行与评测（具体数值由后端配置决定）
 
 **编译器版本：**
+
 - C/C++： gcc version 14.2.0 (Ubuntu 24.04)
 - Python： 3.12.x
 - Java： openjdk 21.x
-- Go： 最新稳定版
 
 ### Q:输入输出的形式
 A:输入为`stdin`(`Standard Input`)，输出为`stdout`(`Standard Output`). 例如，你可以用`C`语言的`scanf`或`C++`的`cin`从`stdin`中读取数据，并使用`C`语言的`printf`或`C++`的`cout`向`stdout`输出.
@@ -102,4 +104,5 @@ A:全部评测结果:
 - <strong class="text-warning">Output Limit Exceeded</strong>:  程序输出远远超出了评测数据答案的长度，通常为 3 倍以上，请检查程序逻辑，可能是输出了不正确的内容，或陷入死循环.
 - <strong class="text-warning">Runtime Error</strong>:          程序运行错误，包括不限于以下情况：段错误、浮点异常、尝试读写禁止的内存区域、调用了禁止的函数等.
 - <strong class="text-info">Compile Error</strong>:             评测机无法编译你的程序，请检查语法，以及所用本地编译器与评测机编译器的版本差异.
+- <strong class="text-info">Judge Error</strong>:               评测机遇到非预期情况，管理员将进一步处理.
 
