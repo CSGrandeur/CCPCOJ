@@ -93,78 +93,60 @@ class MonitorSyscall(MonitorBase):
             self.logger.debug(f"允许的系统调用列表: {sorted_syscalls}")
     
     def _add_strict_rule(self, filter, syscall):
-        """为strict级别添加带参数过滤的seccomp规则
-        
-        渐进式方案 - 第二步：
-        - 限制 read/write 操作标准文件描述符（第一步已完成）
-        - 限制 tgkill 只能向当前线程发送信号
-        - 限制 dup/dup2/close/fstat/lseek 只能操作标准文件描述符
-        - 区分选手程序和 TPJ 程序
-        - 编译任务不限制
-        """
+        """为选手程序运行任务添加带参数过滤的seccomp规则"""
         from tools import status_constants as sc
         
-        # 判断是否为选手程序运行任务（需要严格限制）
         is_player_run = self.task_type == sc.TASK_TYPE_PLAYER_RUN
         
-        # TPJ 程序需要文件操作，不限制
-        # 编译任务需要文件操作，不限制
-        
-        # 第一步：限制 read/write 操作标准文件描述符（仅对选手程序）
         if is_player_run:
             if syscall in ["read", "readv", "pread64"]:
-                # 选手程序：只允许读取标准输入（fd 0）
-                filter.add_rule(seccomp.ALLOW, syscall,
-                              seccomp.Arg(0, seccomp.EQ, 0))  # fd == 0 (stdin)
+                # 允许读取任何文件描述符（Python解释器需要，安全由chroot保证）
+                filter.add_rule(seccomp.ALLOW, syscall)
             elif syscall in ["write", "writev", "pwrite64"]:
-                # 选手程序：只允许写入标准输出和标准错误（fd 1, 2）
-                # 需要为每个条件添加单独的规则
+                # 只允许写入stdout/stderr
                 filter.add_rule(seccomp.ALLOW, syscall,
-                              seccomp.Arg(0, seccomp.EQ, 1))  # fd == 1 (stdout)
+                              seccomp.Arg(0, seccomp.EQ, 1))  # stdout
                 filter.add_rule(seccomp.ALLOW, syscall,
-                              seccomp.Arg(0, seccomp.EQ, 2))  # fd == 2 (stderr)
+                              seccomp.Arg(0, seccomp.EQ, 2))  # stderr
             elif syscall == "tgkill":
-                # tgkill(tgid, tid, sig): 限制只能向当前线程发送信号
-                # 注意：seccomp 不支持参数间直接比较（Arg(0) == Arg(1)）
-                # 采用折中方案：限制 tgid 和 tid 必须在合理范围内（> 0）
-                # 这样可以防止明显的滥用，同时允许标准库的正常使用
-                # 在单线程程序中，tgid == tid == getpid()，所以限制两者都 > 0 是合理的
-                # 更严格的限制需要在运行时通过其他机制实现（如 ptrace）
+                # 限制tgid和tid > 0（seccomp不支持参数间比较）
                 filter.add_rule(seccomp.ALLOW, syscall,
-                              seccomp.Arg(0, seccomp.GT, 0),  # tgid > 0
-                              seccomp.Arg(1, seccomp.GT, 0))   # tid > 0
+                              seccomp.Arg(0, seccomp.GT, 0),
+                              seccomp.Arg(1, seccomp.GT, 0))
             elif syscall in ["dup", "dup2", "dup3"]:
-                # 限制只能复制标准文件描述符
+                # 只允许复制标准文件描述符
                 if syscall == "dup":
-                    # dup(oldfd) -> 只允许复制标准文件描述符
                     filter.add_rule(seccomp.ALLOW, syscall,
-                                  seccomp.Arg(0, seccomp.LE, 2))  # oldfd <= 2
+                                  seccomp.Arg(0, seccomp.LE, 2))
                 elif syscall == "dup2":
-                    # dup2(oldfd, newfd) -> 只允许复制标准文件描述符到标准文件描述符
                     filter.add_rule(seccomp.ALLOW, syscall,
-                                  seccomp.Arg(0, seccomp.LE, 2),  # oldfd <= 2
-                                  seccomp.Arg(1, seccomp.LE, 2))  # newfd <= 2
+                                  seccomp.Arg(0, seccomp.LE, 2),
+                                  seccomp.Arg(1, seccomp.LE, 2))
                 else:  # dup3
-                    # dup3(oldfd, newfd, flags) -> 只允许复制标准文件描述符到标准文件描述符
                     filter.add_rule(seccomp.ALLOW, syscall,
-                                  seccomp.Arg(0, seccomp.LE, 2),  # oldfd <= 2
-                                  seccomp.Arg(1, seccomp.LE, 2))  # newfd <= 2
-            elif syscall in ["close", "fstat", "lseek", "fcntl"]:
-                # 限制只能操作标准文件描述符
-                filter.add_rule(seccomp.ALLOW, syscall,
-                              seccomp.Arg(0, seccomp.LE, 2))  # fd <= 2
+                                  seccomp.Arg(0, seccomp.LE, 2),
+                                  seccomp.Arg(1, seccomp.LE, 2))
+            elif syscall == "openat":
+                # 允许打开文件（Python解释器需要，安全由chroot保证）
+                filter.add_rule(seccomp.ALLOW, syscall)
+            elif syscall == "close":
+                # 允许关闭任何文件描述符
+                filter.add_rule(seccomp.ALLOW, syscall)
+            elif syscall == "fstat":
+                # 允许检查任何文件描述符（Python解释器需要，安全由chroot保证）
+                filter.add_rule(seccomp.ALLOW, syscall)
+            elif syscall in ["lseek", "fcntl"]:
+                # 允许操作任何文件描述符（Python解释器需要，安全由chroot保证）
+                filter.add_rule(seccomp.ALLOW, syscall)
             elif syscall == "close_range":
-                # close_range(first, last, flags): 限制只能关闭非标准文件描述符（fd >= 3）
-                # 标准库可能会使用 close_range(3, UINT_MAX, 0) 来关闭所有非标准文件描述符
-                # 我们允许这个操作，但禁止关闭标准文件描述符（fd <= 2）
-                # 限制 first >= 3，确保不会关闭 stdin/stdout/stderr
+                # 只允许关闭非标准文件描述符（fd >= 3）
                 filter.add_rule(seccomp.ALLOW, syscall,
-                              seccomp.Arg(0, seccomp.GE, 3))  # first >= 3 (不允许关闭标准文件描述符)
+                              seccomp.Arg(0, seccomp.GE, 3))
             else:
-                # 其他系统调用：无条件允许（后续步骤会逐步添加限制）
+                # 其他系统调用：无条件允许
                 filter.add_rule(seccomp.ALLOW, syscall)
         else:
-            # TPJ 程序、编译任务：无条件允许（需要文件操作）
+            # TPJ程序、编译任务：无条件允许
             filter.add_rule(seccomp.ALLOW, syscall)
     
     def _setup_cgroup_limits(self):

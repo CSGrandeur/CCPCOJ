@@ -190,6 +190,9 @@ PYTHON_PLAYER_BASE = GLOBAL_BASE_WHITELIST | PYTHON_PLAYER_EXTEND
 # Python 最终白名单组合
 PYTHON_COMPILE_WHITELIST = PYTHON_PLAYER_BASE | PYTHON_PLAYER_COMPILE
 # 运行白名单需要包含一些编译白名单中的关键系统调用
+# 注意：openat 需要保留，因为 Python 解释器需要打开文件（如 /dev/urandom）
+# 虽然允许 openat，但通过 chroot 和文件系统权限，选手程序无法访问工作目录外的文件
+# 评测机应确保工作目录内没有 *.in 或 *.out 文件（这些文件应在 chroot 外）
 PYTHON_RUN_WHITELIST = PYTHON_PLAYER_BASE | {"read", "write", "openat", "close", "fstat", "lseek", "getrusage"}
 
 # =============================================================================

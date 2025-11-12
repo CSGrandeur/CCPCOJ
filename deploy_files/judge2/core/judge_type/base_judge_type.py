@@ -11,7 +11,7 @@ import time
 import logging
 import subprocess
 import shutil
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Tuple
 from abc import ABC, abstractmethod
 
 # 将当前目录和父目录添加到Python路径
@@ -25,6 +25,7 @@ if parent_dir not in sys.path:
 from tools.debug_manager import is_debug_enabled, log_error_with_context, setup_unified_logging
 from monitor.run_monitor import create_run_monitor
 from tools import status_constants as sc
+from tools.work_dir_manager import WorkDirManager
 
 
 class JudgeSysErr(Exception):
@@ -132,22 +133,29 @@ class BaseJudgeType(ABC):
             "cpu_compensation": self.config.get("evaluation", {}).get("cpu_compensation", 1.0)
         }
     
-    def convert_to_chroot_path(self, file_path: str) -> str:
+    def convert_to_chroot_path(self, file_path: str, work_dir: str = None) -> str:
         """将绝对路径转换为 chroot 环境下的相对路径
         
         统一规则：
         - 绝对路径：转换为相对于工作目录的路径，统一加上 ./ 前缀
         - 相对路径：统一加上 ./ 前缀（如果还没有）
         - 返回的路径格式统一为 ./path/to/file 的形式
+        
+        Args:
+            file_path: 要转换的文件路径
+            work_dir: 工作目录（可选，默认使用 self.work_dir）
         """
         if not file_path:
             return file_path
+        
+        # 使用指定的工作目录或默认工作目录
+        target_work_dir = work_dir if work_dir is not None else self.work_dir
             
         # 如果是绝对路径，转换为相对于工作目录的路径
         if os.path.isabs(file_path):
             # 检查文件是否在工作目录内
             try:
-                rel_path = os.path.relpath(file_path, self.work_dir)
+                rel_path = os.path.relpath(file_path, target_work_dir)
                 # 如果相对路径不包含 '..'，说明文件在工作目录内
                 if not rel_path.startswith('..'):
                     # 确保有 ./ 前缀
@@ -166,7 +174,7 @@ class BaseJudgeType(ABC):
                 return f"./{file_path}"
             return file_path
     
-    def convert_cmd_for_chroot(self, cmd: list) -> list:
+    def convert_cmd_for_chroot(self, cmd: list, work_dir: str = None) -> list:
         """转换命令中的路径为 chroot 环境下的路径
         
         规则：
@@ -176,9 +184,16 @@ class BaseJudgeType(ABC):
         2. 系统目录中的绝对路径（/usr/bin/python3 等）不转换
         3. 工作目录内的可执行文件（如 ./Main, Main.py 等）需要转换为 ./path 格式
         4. 其他参数中的文件路径需要转换
+        
+        Args:
+            cmd: 要转换的命令列表
+            work_dir: 工作目录（可选，默认使用 self.work_dir）
         """
         if not cmd:
             return cmd
+        
+        # 使用指定的工作目录或默认工作目录
+        target_work_dir = work_dir if work_dir is not None else self.work_dir
         
         converted_cmd = []
         
@@ -200,14 +215,14 @@ class BaseJudgeType(ABC):
             if is_system_command:
                 converted_cmd.append(first_arg)  # 系统命令，不转换
             else:
-                converted_cmd.append(self.convert_to_chroot_path(first_arg))
+                converted_cmd.append(self.convert_to_chroot_path(first_arg, target_work_dir))
         elif '/' not in first_arg and not first_arg.startswith('./'):
             # 纯命令名（无路径分隔符，且不是 ./ 开头）
             # 检查文件是否在工作目录中存在
-            file_path = os.path.join(self.work_dir, first_arg)
+            file_path = os.path.join(target_work_dir, first_arg)
             if os.path.exists(file_path) and os.path.isfile(file_path):
                 # 文件存在于工作目录，视为可执行文件，转换为 ./filename
-                converted_cmd.append(self.convert_to_chroot_path(first_arg))
+                converted_cmd.append(self.convert_to_chroot_path(first_arg, target_work_dir))
             else:
                 # 文件不存在，视为系统命令
                 # 对于解释型语言，转换为绝对路径以确保在 chroot 环境中能找到
@@ -221,7 +236,7 @@ class BaseJudgeType(ABC):
                     converted_cmd.append(first_arg)
         else:
             # 包含路径的相对路径（./Main, Main.py, subdir/file.py 等），需要转换
-            converted_cmd.append(self.convert_to_chroot_path(first_arg))
+            converted_cmd.append(self.convert_to_chroot_path(first_arg, target_work_dir))
         
         # 对于其他参数，只转换看起来像文件路径的参数
         for arg in cmd[1:]:
@@ -230,7 +245,7 @@ class BaseJudgeType(ABC):
                 converted_cmd.append(arg)
             # 如果参数包含路径分隔符或看起来像文件路径，则转换
             elif ('/' in arg or arg.endswith(('.in', '.out', '.txt', '.cc', '.cpp', '.c', '.py', '.java', '.go', '.class'))):
-                converted_cmd.append(self.convert_to_chroot_path(arg))
+                converted_cmd.append(self.convert_to_chroot_path(arg, target_work_dir))
             else:
                 # 不转换其他参数（如数字、字符串参数等）
                 converted_cmd.append(arg)
@@ -298,14 +313,32 @@ class BaseJudgeType(ABC):
     
     def run_process_with_atomic_monitoring(self, cmd: List[str], time_limit: float, memory_limit: int, 
                                          stdin_file=None, stdout_file=None, stderr_file=None, test_case_name: str = None, 
-                                         task_type: str = "player_run", language: str = None, out_file: str = None) -> Dict[str, Any]:
-        """使用运行监控器运行进程"""
+                                         task_type: str = "player_run", language: str = None, out_file: str = None,
+                                         work_dir: str = None) -> Dict[str, Any]:
+        """使用运行监控器运行进程
+        
+        Args:
+            cmd: 要执行的命令列表
+            time_limit: 时间限制（秒）
+            memory_limit: 内存限制（MB）
+            stdin_file: 标准输入文件路径
+            stdout_file: 标准输出文件路径
+            stderr_file: 标准错误文件路径
+            test_case_name: 测试用例名称
+            task_type: 任务类型（player_run, tpj_run等）
+            language: 编程语言
+            out_file: 输出文件路径
+            work_dir: 工作目录（如果为None，使用self.work_dir）
+        """
         try:
+            # 使用传入的 work_dir，如果没有则使用 self.work_dir
+            target_work_dir = work_dir if work_dir else self.work_dir
+            
             # 转换命令路径为 chroot 环境下的路径
-            chroot_cmd = self.convert_cmd_for_chroot(cmd)
+            chroot_cmd = self.convert_cmd_for_chroot(cmd, work_dir=target_work_dir)
             
             # 创建运行监控器
-            run_monitor = create_run_monitor(self.logger, memory_limit, time_limit, self.work_dir, test_case_name, language, out_file)
+            run_monitor = create_run_monitor(self.logger, memory_limit, time_limit, target_work_dir, test_case_name, language, out_file, task_type)
             
             # 使用运行监控器运行进程并获取监控结果
             monitoring_result = run_monitor.run_program_with_monitoring(
@@ -313,7 +346,7 @@ class BaseJudgeType(ABC):
                 stdin_file=stdin_file,
                 stdout_file=stdout_file,
                 stderr_file=stderr_file,
-                cwd=self.work_dir
+                cwd=target_work_dir
             )
             
             # 验证时间值的合理性
@@ -739,14 +772,25 @@ class BaseJudgeType(ABC):
         """运行单个测试用例 - 子类必须实现此方法"""
         pass
     
-    def compile_solution(self, language: str, source_file: str, output_file: str, task_type: str = None) -> bool:
-        """编译解决方案（使用语言处理器）"""
+    def compile_solution(self, language: str, source_file: str, output_file: str, task_type: str = None, work_dir: str = None) -> bool:
+        """编译解决方案（使用语言处理器）
+        
+        Args:
+            language: 编程语言
+            source_file: 源文件路径（相对于 work_dir）
+            output_file: 输出文件路径（相对于 work_dir）
+            task_type: 任务类型（player_compile, tpj_compile等）
+            work_dir: 工作目录（如果为None，使用self.work_dir）
+        """
         try:
             self.logger.info(f"开始编译 {language} 代码")
             
+            # 使用传入的 work_dir，如果没有则使用 self.work_dir
+            target_work_dir = work_dir if work_dir else self.work_dir
+            
             # 使用语言工厂创建语言处理器
             from lang.lang_factory import LanguageFactory
-            lang_handler = LanguageFactory.create_language_handler(language, self.config, self.work_dir)
+            lang_handler = LanguageFactory.create_language_handler(language, self.config, target_work_dir)
             
             if not lang_handler:
                 supported_langs = LanguageFactory.get_supported_languages()
@@ -858,4 +902,104 @@ class BaseJudgeType(ABC):
         except Exception as e:
             self.logger.warning(f"缓存 TPJ 可执行文件失败: {e}")
             return False
+    
+    def _prepare_tpj_work_dir(self) -> Tuple[str, WorkDirManager]:
+        """准备 TPJ 工作目录
+        
+        Returns:
+            tuple[str, WorkDirManager]: (TPJ工作目录路径, WorkDirManager实例)
+        
+        Raises:
+            RuntimeError: 如果无法找到可用的 TPJ 工作目录
+        """
+        base_work_dir = os.path.dirname(self.work_dir)
+        tpj_work_dir_manager = WorkDirManager(base_work_dir, self.logger)
+        tpj_work_dir, status_info = tpj_work_dir_manager.find_available_tpj_work_dir()
+        
+        if not tpj_work_dir:
+            raise RuntimeError(f"无法找到可用的 TPJ 工作目录: {status_info.get('error_message', '未知错误')}")
+        
+        # 确保 TPJ 工作目录存在
+        os.makedirs(tpj_work_dir, exist_ok=True)
+        os.chmod(tpj_work_dir, 0o755)
+        
+        if is_debug_enabled():
+            self.logger.debug(f"已准备 TPJ 工作目录: {tpj_work_dir}")
+        
+        return tpj_work_dir, tpj_work_dir_manager
+    
+    def _copy_files_to_work_dir(self, work_dir: str, files: Dict[str, str]) -> Dict[str, str]:
+        """复制文件到工作目录（通用方法）
+        
+        Args:
+            work_dir: 工作目录路径（可以是 runX 或 tpjrunX）
+            files: 文件映射字典 {目标文件名: 源文件路径}
+        
+        Returns:
+            Dict[str, str]: chroot 内的文件路径字典 {目标文件名: chroot内路径}
+        """
+        chroot_files = {}
+        
+        for dst_name, src_path in files.items():
+            chroot_path = os.path.join(work_dir, dst_name)
+            shutil.copy2(src_path, chroot_path)
+            
+            # 可执行文件需要设置执行权限（Linux 系统：检查源文件是否有执行权限或目标文件名为 tpj）
+            if dst_name == "tpj" or (os.path.exists(src_path) and os.access(src_path, os.X_OK)):
+                os.chmod(chroot_path, 0o755)
+            
+            chroot_files[dst_name] = chroot_path
+        
+        if is_debug_enabled():
+            self.logger.debug(f"复制文件到工作目录 ({work_dir}):")
+            for dst_name, src_path in files.items():
+                self.logger.debug(f"  {src_path} -> {chroot_files[dst_name]}")
+        
+        return chroot_files
+    
+    def _copy_files_to_tpj_work_dir(self, tpj_work_dir: str, files: Dict[str, str]) -> Dict[str, str]:
+        """复制文件到 TPJ 工作目录（兼容性方法，内部调用通用方法）
+        
+        Args:
+            tpj_work_dir: TPJ 工作目录路径
+            files: 文件映射字典 {目标文件名: 源文件路径}
+        
+        Returns:
+            Dict[str, str]: chroot 内的文件路径字典 {目标文件名: chroot内路径}
+        """
+        return self._copy_files_to_work_dir(tpj_work_dir, files)
+    
+    
+    def _cleanup_tpj_work_dir(self, tpj_work_dir: str) -> None:
+        """清理 TPJ 工作目录（支持 debug 模式保留）
+        
+        Args:
+            tpj_work_dir: TPJ 工作目录路径
+        """
+        if not tpj_work_dir or not os.path.exists(tpj_work_dir):
+            return
+        
+        # Debug 模式：保留 TPJ 工作目录，不进行清理
+        if is_debug_enabled():
+            self.logger.info("调试模式：保留 TPJ 工作目录，不进行清理")
+            self.logger.info(f"TPJ 工作目录保留在：{tpj_work_dir}")
+            # 在保留前归档日志
+            from tools.debug_manager import DebugManager
+            DebugManager.archive_logs_to_work_dir(tpj_work_dir, "TPJ 工作目录", self.logger)
+            return
+        
+        try:
+            # 使用 WorkDirManager 的清理方法
+            base_work_dir = os.path.dirname(self.work_dir)
+            work_dir_manager = WorkDirManager(base_work_dir, self.logger)
+            success, info = work_dir_manager.clean_work_dir(tpj_work_dir)
+            
+            if success:
+                if is_debug_enabled():
+                    self.logger.debug(f"已清理 TPJ 工作目录: {tpj_work_dir}")
+            else:
+                self.logger.warning(f"清理 TPJ 工作目录失败: {info}")
+        except Exception as e:
+            # 清理失败不应该影响评测结果，只记录警告
+            self.logger.warning(f"清理 TPJ 工作目录失败: {e}")
     

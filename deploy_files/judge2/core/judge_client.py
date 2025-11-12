@@ -423,25 +423,6 @@ class JudgeClient:
         except Exception as e:
             self.logger.error(f"清理工作环境时发生错误：{e}")
 
-    def _archive_logs_to_work_dir(self, work_dir: str):
-        """在调试模式下将日志拷贝到 run0 目录，便于复现与排查"""
-        try:
-            if not work_dir or not os.path.isdir(work_dir):
-                return
-            from tools.debug_manager import DebugManager
-            log_dir = DebugManager.get_log_dir()
-            if not log_dir or not os.path.isdir(log_dir):
-                return
-            # 将 tmp.log 放置到 run0 根目录，便于快速查看
-            tmp_src = os.path.join(log_dir, "tmp.log")
-            tmp_dst = os.path.join(work_dir, "tmp.log")
-            if os.path.isfile(tmp_src):
-                try:
-                    shutil.copy2(tmp_src, tmp_dst)
-                except Exception:
-                    pass
-        except Exception:
-            pass
     
     def judge_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """评测任务 - 主评测流程（带读锁保护）"""
@@ -634,9 +615,8 @@ class JudgeClient:
             
             # 9. 清理工作环境
             if work_dir:
-                # 调试模式：先归档日志到 run0
-                if is_debug_enabled():
-                    self._archive_logs_to_work_dir(work_dir)
+                # 调试模式：先归档日志到工作目录
+                DebugManager.archive_logs_to_work_dir(work_dir, "工作目录", self.logger)
                 self.cleanup_work_environment(work_dir)
             
             # 10. 关闭 WebClient Session（释放连接池资源）

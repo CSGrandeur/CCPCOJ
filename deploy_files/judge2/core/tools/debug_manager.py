@@ -75,6 +75,37 @@ class DebugManager:
         return cls._log_dir
     
     @classmethod
+    def archive_logs_to_work_dir(cls, work_dir: str, work_dir_type: str = "工作目录", logger: logging.Logger = None) -> None:
+        """在调试模式下将日志拷贝到工作目录，便于复现与排查
+        
+        Args:
+            work_dir: 工作目录路径（可以是 run100 或 tpjrun100）
+            work_dir_type: 工作目录类型描述（用于日志）
+            logger: 日志记录器（可选，用于记录归档信息）
+        """
+        if not cls.is_debug_mode() or not work_dir or not os.path.isdir(work_dir):
+            return
+        
+        try:
+            log_dir = cls.get_log_dir()
+            if not log_dir or not os.path.isdir(log_dir):
+                return
+            
+            # 将 tmp.log 放置到工作目录根目录，便于快速查看
+            import shutil
+            tmp_src = os.path.join(log_dir, "tmp.log")
+            tmp_dst = os.path.join(work_dir, "tmp.log")
+            if os.path.isfile(tmp_src):
+                try:
+                    shutil.copy2(tmp_src, tmp_dst)
+                    if logger:
+                        logger.debug(f"已归档日志到 {work_dir_type}: {tmp_dst}")
+                except Exception:
+                    pass
+        except Exception:
+            pass
+    
+    @classmethod
     def setup_logging(cls, module_name: str, config: Dict[str, Any] = None) -> logging.Logger:
         """为模块设置统一的日志系统"""
         logger = logging.getLogger(module_name)

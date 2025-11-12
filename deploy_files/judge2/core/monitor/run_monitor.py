@@ -202,9 +202,9 @@ class RunMonitor(TaskMonitorBase):
                 if memory_used >= memory_limit_kb:
                     return {
                         "program_status": sc.PROGRAM_MEMORY_LIMIT_EXCEEDED,
-                        "message": f"程序内存超限，使用: {memory_used}KB，限制: {self.memory_limit_mb}MB",
+                        "message": f"程序内存超限，使用: {memory_used}KB（杀死进程时的内存），限制: {self.memory_limit_mb}MB",
                         "time": int(cpu_time_used),
-                        "memory": max(memory_used, memory_limit_kb)
+                        "memory": memory_limit_kb # max(memory_used, memory_limit_kb)
                     }
                 else:
                     return process_result_tle("程序运行超时", self.time_limit, cpu_time_used, memory_used)

@@ -46,6 +46,75 @@ class WorkDirManager:
         # 初始化共享内存管理器
         self.shm_manager = get_shm_manager(self.logger)
         
+    def _find_available_work_dir_internal(self, dir_prefix: str, dir_type_name: str, 
+                                          error_type: str, max_retries: int = 3, 
+                                          retry_delay: float = 1.0, 
+                                          update_current: bool = False) -> Tuple[str, Dict[str, Any]]:
+        """
+        查找可用工作目录的内部实现 - 通用方法
+        
+        Args:
+            dir_prefix: 目录名前缀（如 "run" 或 "tpjrun"）
+            dir_type_name: 目录类型名称（用于日志，如 "工作目录" 或 "TPJ 工作目录"）
+            error_type: 错误类型标识（如 "NoAvailableWorkDir" 或 "NoAvailableTpjWorkDir"）
+            max_retries: 最大重试次数
+            retry_delay: 重试间隔（秒）
+            update_current: 是否更新 self.current_work_dir
+            
+        Returns:
+            Tuple[str, Dict[str, Any]]: (工作目录绝对路径, 详细信息)
+        """
+        # 确保基础工作目录是绝对路径
+        base_work_dir = os.path.abspath(self.base_work_dir)
+        
+        # Debug 模式：从 100 开始查找（run100-run109 或 tpjrun100-tpjrun109）
+        # 正常模式：从 0 开始查找（run0-run9 或 tpjrun0-tpjrun9）
+        start_index = 100 if is_debug_enabled() else 0
+        end_index = start_index + 10  # 查找 10 个目录
+        
+        for retry in range(max_retries):
+            self.logger.info(f"第 {retry + 1} 次尝试查找可用 {dir_type_name}...")
+            
+            for i in range(start_index, end_index):
+                work_dir = os.path.join(base_work_dir, f"{dir_prefix}{i}")
+                
+                # 检查目录状态
+                status_info = self._check_dir_status(work_dir)
+                
+                if status_info["is_available"]:
+                    if update_current:
+                        self.current_work_dir = work_dir
+                    self.logger.info(f"找到可用 {dir_type_name}：{work_dir}")
+                    return work_dir, status_info
+                else:
+                    self.logger.warning(f"{dir_type_name} {work_dir} 不可用：{status_info['reason']}")
+            
+            # 如果所有目录都不可用，等待一段时间后重试
+            if retry < max_retries - 1:
+                self.logger.warning(f"所有 {dir_type_name}都不可用，等待 {retry_delay} 秒后重试...")
+                time.sleep(retry_delay)
+                
+                # 尝试强制清理一些目录
+                self._force_cleanup_stale_dirs()
+        
+        # 所有重试都失败
+        checked_dirs = [f"{dir_prefix}{i}" for i in range(start_index, end_index)]
+        error_info = {
+            "error_type": error_type,
+            "error_message": f"经过 {max_retries} 次重试，所有 {dir_type_name}({checked_dirs[0]}-{checked_dirs[-1]})都不可用",
+            "details": {
+                "base_work_dir": base_work_dir,
+                "checked_dirs": checked_dirs,
+                "max_retries": max_retries,
+                "retry_delay": retry_delay,
+                "start_index": start_index,
+                "end_index": end_index
+            }
+        }
+        
+        self.logger.error(f"所有 {dir_type_name}都不可用：{error_info}")
+        return None, error_info
+    
     def find_available_work_dir(self, max_retries: int = 3, retry_delay: float = 1.0) -> Tuple[str, Dict[str, Any]]:
         """
         查找可用的工作目录 - 带重试机制
@@ -57,47 +126,34 @@ class WorkDirManager:
         Returns:
             Tuple[str, Dict[str, Any]]: (工作目录绝对路径, 详细信息)
         """
-        # 确保基础工作目录是绝对路径
-        base_work_dir = os.path.abspath(self.base_work_dir)
+        return self._find_available_work_dir_internal(
+            dir_prefix="run",
+            dir_type_name="工作目录",
+            error_type="NoAvailableWorkDir",
+            max_retries=max_retries,
+            retry_delay=retry_delay,
+            update_current=True
+        )
+    
+    def find_available_tpj_work_dir(self, max_retries: int = 3, retry_delay: float = 1.0) -> Tuple[str, Dict[str, Any]]:
+        """
+        查找可用的 TPJ 工作目录 - 带重试机制
         
-        for retry in range(max_retries):
-            self.logger.info(f"第 {retry + 1} 次尝试查找可用工作目录...")
+        Args:
+            max_retries: 最大重试次数
+            retry_delay: 重试间隔（秒）
             
-            for i in range(10):  # run0 到 run9
-                work_dir = os.path.join(base_work_dir, f"run{i}")
-                
-                # 检查目录状态
-                status_info = self._check_dir_status(work_dir)
-                
-                if status_info["is_available"]:
-                    self.current_work_dir = work_dir
-                    self.logger.info(f"找到可用工作目录：{work_dir}")
-                    return work_dir, status_info
-                else:
-                    self.logger.warning(f"工作目录 {work_dir} 不可用：{status_info['reason']}")
-            
-            # 如果所有目录都不可用，等待一段时间后重试
-            if retry < max_retries - 1:
-                self.logger.warning(f"所有工作目录都不可用，等待 {retry_delay} 秒后重试...")
-                time.sleep(retry_delay)
-                
-                # 尝试强制清理一些目录
-                self._force_cleanup_stale_dirs()
-        
-        # 所有重试都失败
-        error_info = {
-            "error_type": "NoAvailableWorkDir",
-            "error_message": f"经过 {max_retries} 次重试，所有工作目录(run0-run9)都不可用",
-            "details": {
-                "base_work_dir": base_work_dir,
-                "checked_dirs": [f"run{i}" for i in range(10)],
-                "max_retries": max_retries,
-                "retry_delay": retry_delay
-            }
-        }
-        
-        self.logger.error(f"所有工作目录都不可用：{error_info}")
-        return None, error_info
+        Returns:
+            Tuple[str, Dict[str, Any]]: (TPJ工作目录绝对路径, 详细信息)
+        """
+        return self._find_available_work_dir_internal(
+            dir_prefix="tpjrun",
+            dir_type_name="TPJ 工作目录",
+            error_type="NoAvailableTpjWorkDir",
+            max_retries=max_retries,
+            retry_delay=retry_delay,
+            update_current=False
+        )
     
     def _check_dir_status(self, work_dir: str) -> Dict[str, Any]:
         """

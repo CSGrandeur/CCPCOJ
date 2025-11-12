@@ -397,7 +397,7 @@ let DEFAULT_REJUDGE_RES = new Set(["5", "6", "7", "8", "9", "10", "11", "90", "1
                         message: ret.msg,
                         message_en: ret.msg_en || ret.msg
                     });
-                    button_delay(submit_button, 3, '重判', null, submit_en_text);
+                    button_delay(submit_button, 1, '重判', null, submit_en_text);
 
                     // 检查是否需要打开状态窗口
                     if ($('#open_status_window_check').is(':checked')) {
@@ -410,7 +410,7 @@ let DEFAULT_REJUDGE_RES = new Set(["5", "6", "7", "8", "9", "10", "11", "90", "1
                         message: ret.msg,
                         message_en: ret.msg_en || ret.msg
                     });
-                    button_delay(submit_button, 3, submit_text, null, submit_en_text);
+                    button_delay(submit_button, 1, submit_text, null, submit_en_text);
                 }
                 return false;
             },

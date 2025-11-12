@@ -99,7 +99,8 @@ OJ 配置:
 端口配置:
   --PORT_OJ=<端口>               OJ Web 服务端口（默认: 20080）
   --PORT_MYADMIN=<端口>          PHPMyAdmin Web 端口（默认: 20050）
-  --NGINX_PORT_RANGES=<映射>      额外的 Nginx 端口映射，如 "-p 80-89:80-89"
+  --NGINX_PORT_RANGES=<映射>      额外的 Nginx 端口映射，支持多段，如 "-p 80-89:80-89 -p 443:443 -p 40030-40099:40030-40099"
+  --NGINX_PORT_RANGE=<映射>      同上（兼容单数形式，建议使用 NGINX_PORT_RANGES）
 
 其他配置:
   --PASS_MYADMIN_PAGE=<密码>     PHPMyAdmin 页面访问密码（默认: 987654321）
@@ -196,6 +197,7 @@ parse_args() {
         PORT_DB:,
         BELONG_TO:,
         NGINX_PORT_RANGES:,
+        NGINX_PORT_RANGE:,
         SECRET_KEY:,
         DOCKER_PULL_NEW:,
         DOCKER_NET_NAME:,
@@ -310,6 +312,10 @@ parse_args() {
                 shift 2
                 ;;
             --NGINX_PORT_RANGES)             # 额外的 Nginx 端口映射
+                NGINX_PORT_RANGES="$2"
+                shift 2
+                ;;
+            --NGINX_PORT_RANGE)              # 额外的 Nginx 端口映射（兼容单数形式）
                 NGINX_PORT_RANGES="$2"
                 shift 2
                 ;;
