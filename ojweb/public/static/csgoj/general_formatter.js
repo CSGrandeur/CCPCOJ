@@ -73,6 +73,8 @@ if (typeof window.makeQueryParams === 'undefined') {
  * @param {string} config.searchInputId - 搜索框ID
  * @param {Function} config.customQueryParams - 自定义查询参数处理函数
  * @param {Object} config.customHandlers - 自定义事件处理器
+ * @param {boolean} config.enableAnchorSync - 是否启用锚参数同步（默认false）
+ * @param {string} config.anchorKey - 锚参数键名（默认'search'）
  */
 function initBootstrapTableToolbar(config) {
     const {
@@ -81,7 +83,9 @@ function initBootstrapTableToolbar(config) {
         filterSelectors = [],
         searchInputId,
         customQueryParams = null,
-        customHandlers = {}
+        customHandlers = {},
+        enableAnchorSync = false,
+        anchorKey = 'search'
     } = config;
     
     const table = $(`#${tableId}`);
@@ -103,6 +107,13 @@ function initBootstrapTableToolbar(config) {
             if (searchInputId) {
                 $(`#${searchInputId}`).val('');
             }
+            // 如果启用了锚参数同步，清空时也清除锚参数和缓存
+            if (enableAnchorSync && searchInputId) {
+                // 清除 URL hash
+                csg.SetAnchor('', anchorKey);
+                // 清除缓存
+                csg.DelStore('anchor_' + anchorKey);
+            }
             table.bootstrapTable('refresh');
         });
         
@@ -119,11 +130,85 @@ function initBootstrapTableToolbar(config) {
         // 搜索框实时搜索（防抖处理）
         if (searchInputId) {
             let searchTimeout;
-            $(`#${searchInputId}`).on('input', function() {
+            const searchInput = $(`#${searchInputId}`);
+            
+            // 锚参数同步辅助函数：读取（优先从 URL hash，其次从缓存）
+            const getAnchorValue = function(key) {
+                const urlValue = csg.GetAnchor(key);
+                if (urlValue !== null && urlValue !== '') {
+                    return urlValue;
+                }
+                // 如果 URL hash 中没有，尝试从缓存读取
+                const cacheKey = 'anchor_' + key;
+                const cachedValue = csg.store(cacheKey);
+                if (cachedValue !== null && cachedValue !== '') {
+                    return cachedValue;
+                }
+                return null;
+            };
+            
+            // 锚参数同步辅助函数：写入（同时写入 URL hash 和缓存）
+            const setAnchorValue = function(key, value) {
+                // 写入 URL hash
+                csg.SetAnchor(value, key);
+                // 写入缓存（1小时 = 3600000毫秒）
+                const cacheKey = 'anchor_' + key;
+                if (value === null || value === '') {
+                    // 清空缓存
+                    csg.DelStore(cacheKey);
+                } else {
+                    csg.store(cacheKey, value, 3600000); // 1小时缓存
+                }
+            };
+            
+            // 锚参数同步：页面加载时从 URL hash 或缓存读取并设置搜索框
+            if (enableAnchorSync) {
+                const anchorValue = getAnchorValue(anchorKey);
+                if (anchorValue !== null && anchorValue !== '') {
+                    searchInput.val(anchorValue);
+                    // 如果是从缓存读取的，同步到 URL hash
+                    if (csg.GetAnchor(anchorKey) === null) {
+                        setAnchorValue(anchorKey, anchorValue);
+                    }
+                    // 延迟触发刷新，确保表格已初始化
+                    setTimeout(function() {
+                        table.bootstrapTable('refresh');
+                    }, 100);
+                }
+            }
+            
+            searchInput.on('input', function() {
+                const searchValue = searchInput.val();
+                
+                // 锚参数同步：搜索框变化时更新 URL hash 和缓存
+                if (enableAnchorSync) {
+                    setAnchorValue(anchorKey, searchValue);
+                }
+                
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(function() {
                     table.bootstrapTable('refresh');
                 }, 500); // 500ms 防抖
+            });
+        }
+        
+        // 锚参数同步：监听 hashchange 事件，从 URL hash 恢复搜索框
+        if (enableAnchorSync && searchInputId) {
+            $(window).on('hashchange', function() {
+                const searchInput = $(`#${searchInputId}`);
+                // 优先从 URL hash 读取
+                const anchorValue = csg.GetAnchor(anchorKey);
+                if (anchorValue !== null) {
+                    searchInput.val(anchorValue || '');
+                    // 同步到缓存
+                    const cacheKey = 'anchor_' + anchorKey;
+                    if (anchorValue === null || anchorValue === '') {
+                        csg.DelStore(cacheKey);
+                    } else {
+                        csg.store(cacheKey, anchorValue, 3600000);
+                    }
+                    table.bootstrapTable('refresh');
+                }
             });
         }
         

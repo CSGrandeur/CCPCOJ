@@ -120,34 +120,75 @@ var csg = {
         return this.DateFormat(new Date(), fmt);
     },
     GetAnchor: function(key=null) {
-        let anchor_str = window.location.hash.substr(1);
+        // 使用 slice 替代已废弃的 substr
+        let anchor_str = window.location.hash.slice(1);
         if(key === null) return anchor_str;
-        var reg = new RegExp("(^|#)" + key + "=([^#]*?)(#|$)");
-        var r = anchor_str.match(reg);
-        if (r != null) return decodeURI(r[2]); return null;
-    },
-    SetAnchor: function(val, key=null) {
-        let anchor_str = "";
-        if(key === null) anchor_str = val;
-        else {
-            anchor_str = window.location.hash.substr(1);
-            var reg = new RegExp("(^|#)" + key + "=([^#]*?)(#|$)");
-            var r = anchor_str.match(reg);
-            if(val === null || val === "") {
-                if(r !== null) {
-                    anchor_str = anchor_str.replace(reg, "");
-                }
-            } else {
-                if (r != null) {
-                    anchor_str = anchor_str.replace(reg, "$1" + key + "=" + val + "$3");
-                }
-                else {
-                    if(anchor_str === "") anchor_str = key + '=' + val;
-                    else anchor_str += '#' + key + '=' + val;
+        // 转义 key 中的特殊字符，防止正则表达式注入
+        const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const reg = new RegExp("(^|#)" + escapedKey + "=([^#]*?)(#|$)");
+        const r = anchor_str.match(reg);
+        if (r != null) {
+            try {
+                return decodeURIComponent(r[2]);
+            } catch (e) {
+                // 如果解码失败，尝试使用 decodeURI
+                try {
+                    return decodeURI(r[2]);
+                } catch (e2) {
+                    // 如果都失败，返回原始值
+                    return r[2];
                 }
             }
         }
-        window.location.hash = '#' + anchor_str;
+        return null;
+    },
+    SetAnchor: function(val, key=null) {
+        // 处理 null 和 undefined
+        if (val === null || val === undefined) {
+            val = '';
+        }
+        
+        let anchor_str = "";
+        if(key === null) {
+            // 如果 key 为 null，直接设置整个 hash
+            anchor_str = val || '';
+        } else {
+            // 使用 slice 替代已废弃的 substr
+            anchor_str = window.location.hash.slice(1);
+            // 转义 key 中的特殊字符，防止正则表达式注入
+            const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const reg = new RegExp("(^|#)" + escapedKey + "=([^#]*?)(#|$)");
+            const r = anchor_str.match(reg);
+            
+            if(val === null || val === "") {
+                // 删除参数
+                if(r !== null) {
+                    anchor_str = anchor_str.replace(reg, "");
+                    // 清理多余的分隔符：移除开头的 #，以及连续的 ##
+                    anchor_str = anchor_str.replace(/^#+/, '').replace(/#+/g, '#');
+                    // 如果结果为空，设置为空字符串
+                    if (anchor_str === '') {
+                        anchor_str = '';
+                    }
+                }
+            } else {
+                // 设置或更新参数值，对值进行 URL 编码
+                const encodedVal = encodeURIComponent(val);
+                if(r != null) {
+                    // 更新现有参数
+                    anchor_str = anchor_str.replace(reg, "$1" + key + "=" + encodedVal + "$3");
+                } else {
+                    // 添加新参数
+                    if(anchor_str === "") {
+                        anchor_str = key + '=' + encodedVal;
+                    } else {
+                        anchor_str += '#' + key + '=' + encodedVal;
+                    }
+                }
+            }
+        }
+        // 设置 hash，如果为空则设置为空字符串而不是 #
+        window.location.hash = anchor_str === '' ? '' : '#' + anchor_str;
     },
     GetUrlParam: function() {
         const searchURL = location.search; // 获取到URL中的参数串

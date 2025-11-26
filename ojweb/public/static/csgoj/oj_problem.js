@@ -136,22 +136,8 @@ function OneSample(i, sample_in_item, sample_out_item, hlevel=4, is_input_dom=fa
 // 题目列表表格 Formatter 函数
 // ========================================
 
-// 前台题目列表标题formatter - 带自适应宽度和spj配色
+// 前台题目列表标题formatter - 带spj配色，宽度由CSS控制
 function FormatterProblemTitle(value, row, index, field) {
-    // 根据窗口宽度计算合理的标题宽度
-    let windowWidth = window.innerWidth;
-    let titleWidth;
-    
-    if (windowWidth >= 1200) {
-        titleWidth = Math.min(850, Math.max(550, (windowWidth - 300) * 0.5));
-    } else if (windowWidth >= 992) {
-        titleWidth = Math.min(300, Math.max(150, (windowWidth - 300) * 0.3));
-    } else if (windowWidth >= 768) {
-        titleWidth = Math.min(250, Math.max(120, (windowWidth - 200) * 0.4));
-    } else {
-        titleWidth = Math.min(200, Math.max(100, windowWidth * 0.4));
-    }
-    
     // 根据spj值确定颜色类
     let colorClass = '';
     if (row['spj'] == '1') {
@@ -162,11 +148,11 @@ function FormatterProblemTitle(value, row, index, field) {
         colorClass = 'text-primary';
     }
     
-    return `<a class="text-decoration-none ${colorClass}" title="${value}" href="/csgoj/problemset/problem?pid=${row['problem_id']}" style="max-width: ${titleWidth}px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${value}</a>`;
+    return `<a class="text-decoration-none problem-title-link ${colorClass}" title="${value}" href="/csgoj/problemset/problem?pid=${row['problem_id']}">${value}</a>`;
 }
 
 
-// 来源formatter - 通用
+// 来源formatter - 通用，宽度由CSS控制
 function FormatterSource(value, row, index) {
     // 如果值为空或不是字符串，直接返回
     if (!value || typeof value !== 'string') {
@@ -202,7 +188,7 @@ function FormatterSource(value, row, index) {
     }
     // 其他情况创建搜索链接
     const search_url = "/csgoj/problemset#search=" + encodeURIComponent(cleanText);
-    return `<div style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${cleanText}"><a href="${search_url}">${cleanText}</a></div>`;
+    return `<div class="problem-source-link" title="${cleanText}"><a href="${search_url}">${cleanText}</a></div>`;
 }
 
 
@@ -330,35 +316,15 @@ function initProblemList() {
             tableId: PROBLEM_LIST_CONFIG.tableId,
             prefix: PROBLEM_LIST_CONFIG.prefix,
             filterSelectors: PROBLEM_LIST_CONFIG.filterSelectors,
-            searchInputId: PROBLEM_LIST_CONFIG.searchInputId
+            searchInputId: PROBLEM_LIST_CONFIG.searchInputId,
+            // 前台模式启用锚参数同步
+            enableAnchorSync: PROBLEM_LIST_CONFIG.scene === 'frontend',
+            anchorKey: 'search'
         };
         
-        // 前台特有功能：URL搜索同步
-        if (PROBLEM_LIST_CONFIG.scene === 'frontend' && PROBLEM_LIST_CONFIG.customHandlers) {
-            toolbarConfig.customHandlers = {
-                initUrlSearch: function() {
-                    let problemset_table = $('#' + PROBLEM_LIST_CONFIG.tableId);
-                    let search_cookie_name = problemset_table.attr('data-cookie-id-table') + ".bs.table.searchText";
-                    let search_input = $('#' + PROBLEM_LIST_CONFIG.searchInputId);
-                    
-                    // 使用全局的 GetAnchor/SetAnchor 函数
-                    let search_str = GetAnchor("search");
-                    if(search_str !== null) {
-                        document.cookie = [
-                            search_cookie_name, '=', search_str
-                        ].join('');
-                    }
-                    
-                    search_input.on('input', function() {
-                        SetAnchor(search_input.val(), 'search');
-                    });
-                    
-                    $(window).on('hashchange', function(e) {
-                        let search_str = GetAnchor("search");
-                        search_input.val(search_str).trigger('keyup');
-                    });
-                }
-            };
+        // 保留自定义处理器支持（向后兼容）
+        if (PROBLEM_LIST_CONFIG.customHandlers) {
+            toolbarConfig.customHandlers = PROBLEM_LIST_CONFIG.customHandlers;
         }
         
         initBootstrapTableToolbar(toolbarConfig);
