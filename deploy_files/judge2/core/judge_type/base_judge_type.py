@@ -553,8 +553,14 @@ class BaseJudgeType(ABC):
         except Exception as e:
             self.logger.warning(f"清理共享内存临时文件失败: {e}")
     
-    def discover_test_cases(self, problem_id: int, data_dir: str) -> List[tuple]:
-        """发现测试用例 - 公共逻辑"""
+    def discover_test_cases(self, problem_id: int, data_dir: str, flg_require_out_file: bool = True) -> List[tuple]:
+        """发现测试用例 - 公共逻辑
+        
+        Args:
+            problem_id: 题目ID
+            data_dir: 测试数据目录
+            flg_require_out_file: 是否要求必须有对应的 .out 文件（默认True，特判题和交互题设为False）
+        """
         try:
             if data_dir is None:
                 raise JudgeSysErrTestData("data_dir 不能为 None")
@@ -570,8 +576,19 @@ class BaseJudgeType(ABC):
                     base_name = file[:-3]
                     in_file = os.path.join(data_dir, file)
                     out_file = os.path.join(data_dir, f"{base_name}.out")
-                    if os.path.exists(out_file):
-                        test_cases.append((in_file, out_file, base_name))
+                    
+                    if flg_require_out_file:
+                        # 默认评测：必须有 .out 文件
+                        if os.path.exists(out_file):
+                            test_cases.append((in_file, out_file, base_name))
+                    else:
+                        # 特判题/交互题：允许没有 .out 文件
+                        # 如果不存在，使用空字符串作为占位符
+                        if os.path.exists(out_file):
+                            test_cases.append((in_file, out_file, base_name))
+                        else:
+                            # 没有 .out 文件时，使用空字符串作为占位符
+                            test_cases.append((in_file, "", base_name))
             
             if not test_cases:
                 raise JudgeSysErrTestData(f"没有找到测试用例，目录：{data_dir}")
@@ -933,7 +950,7 @@ class BaseJudgeType(ABC):
         
         Args:
             work_dir: 工作目录路径（可以是 runX 或 tpjrunX）
-            files: 文件映射字典 {目标文件名: 源文件路径}
+            files: 文件映射字典 {目标文件名: 源文件路径}，如果源文件路径为空字符串或不存在，则跳过
         
         Returns:
             Dict[str, str]: chroot 内的文件路径字典 {目标文件名: chroot内路径}
@@ -941,6 +958,12 @@ class BaseJudgeType(ABC):
         chroot_files = {}
         
         for dst_name, src_path in files.items():
+            # 跳过空路径或不存在的文件
+            if not src_path or not os.path.exists(src_path):
+                if is_debug_enabled():
+                    self.logger.debug(f"跳过不存在的文件: {dst_name} (源路径: {src_path})")
+                continue
+            
             chroot_path = os.path.join(work_dir, dst_name)
             shutil.copy2(src_path, chroot_path)
             
@@ -953,7 +976,8 @@ class BaseJudgeType(ABC):
         if is_debug_enabled():
             self.logger.debug(f"复制文件到工作目录 ({work_dir}):")
             for dst_name, src_path in files.items():
-                self.logger.debug(f"  {src_path} -> {chroot_files[dst_name]}")
+                if dst_name in chroot_files:
+                    self.logger.debug(f"  {src_path} -> {chroot_files[dst_name]}")
         
         return chroot_files
     

@@ -561,26 +561,74 @@ class WorkDirManager:
             # 清理对应的共享内存目录
             shm_cleanup_info = self._cleanup_shm_work_dir(work_dir)
             
-            # 尝试删除目录内容
-            try:
-                shutil.rmtree(work_dir)
-                os.makedirs(work_dir, exist_ok=True)
-                os.chmod(work_dir, 0o755)
-            except Exception as e:
-                # 如果rmtree失败，尝试逐个删除文件
+            # 关键安全检查：在删除目录之前，确保所有挂载点都已卸载
+            # 如果仍有挂载点，使用安全的逐个删除方法（会跳过挂载点）
+            remaining_mounts = self._check_remaining_mounts(work_dir)
+            if remaining_mounts:
+                self.logger.warning(f"警告：工作目录 {work_dir} 仍有 {len(remaining_mounts)} 个挂载点未卸载，使用安全删除方法")
                 if is_debug_enabled():
-                    self.logger.debug(f"rmtree失败，尝试逐个删除文件: {e}")
+                    self.logger.debug(f"残留挂载点: {remaining_mounts}")
                 
+                # 强制卸载残留挂载点
+                self._force_unmount_all(work_dir, remaining_mounts)
+                
+                # 再次检查
+                remaining_mounts = self._check_remaining_mounts(work_dir)
+                if remaining_mounts:
+                    self.logger.error(f"错误：工作目录 {work_dir} 仍有 {len(remaining_mounts)} 个挂载点无法卸载，使用安全删除方法避免删除系统文件")
+                    # 使用安全的逐个删除方法，会跳过挂载点
+                    try:
+                        self._force_remove_directory_contents(work_dir)
+                        os.makedirs(work_dir, exist_ok=True)
+                        os.chmod(work_dir, 0o755)
+                    except Exception as e2:
+                        return False, {
+                            "error": f"清理目录失败（存在未卸载挂载点）：{str(e2)}",
+                            "remaining_mounts": remaining_mounts,
+                            "files_before": files_before,
+                            "shm_cleanup_info": shm_cleanup_info
+                        }
+                else:
+                    # 挂载点已全部卸载，可以使用 rmtree
+                    try:
+                        shutil.rmtree(work_dir)
+                        os.makedirs(work_dir, exist_ok=True)
+                        os.chmod(work_dir, 0o755)
+                    except Exception as e:
+                        # 如果rmtree失败，回退到安全删除方法
+                        if is_debug_enabled():
+                            self.logger.debug(f"rmtree失败，尝试逐个删除文件: {e}")
+                        try:
+                            self._force_remove_directory_contents(work_dir)
+                            os.makedirs(work_dir, exist_ok=True)
+                            os.chmod(work_dir, 0o755)
+                        except Exception as e2:
+                            return False, {
+                                "error": f"清理目录失败：{str(e)}，逐个删除也失败：{str(e2)}",
+                                "files_before": files_before,
+                                "shm_cleanup_info": shm_cleanup_info
+                            }
+            else:
+                # 没有挂载点，可以安全使用 rmtree
                 try:
-                    self._force_remove_directory_contents(work_dir)
+                    shutil.rmtree(work_dir)
                     os.makedirs(work_dir, exist_ok=True)
                     os.chmod(work_dir, 0o755)
-                except Exception as e2:
-                    return False, {
-                        "error": f"清理目录失败：{str(e)}，逐个删除也失败：{str(e2)}",
-                        "files_before": files_before,
-                        "shm_cleanup_info": shm_cleanup_info
-                    }
+                except Exception as e:
+                    # 如果rmtree失败，尝试逐个删除文件
+                    if is_debug_enabled():
+                        self.logger.debug(f"rmtree失败，尝试逐个删除文件: {e}")
+                    
+                    try:
+                        self._force_remove_directory_contents(work_dir)
+                        os.makedirs(work_dir, exist_ok=True)
+                        os.chmod(work_dir, 0o755)
+                    except Exception as e2:
+                        return False, {
+                            "error": f"清理目录失败：{str(e)}，逐个删除也失败：{str(e2)}",
+                            "files_before": files_before,
+                            "shm_cleanup_info": shm_cleanup_info
+                        }
             
             # 验证清理结果
             files_after = os.listdir(work_dir)
@@ -632,20 +680,51 @@ class WorkDirManager:
     def _check_remaining_mounts(self, work_dir: str) -> list:
         """检查工作目录下是否还有残留的挂载点"""
         try:
-            result = subprocess.run(["mount"], capture_output=True, text=True, check=True)
-            mount_lines = result.stdout.split('\n')
-            
-            remaining = []
-            for line in mount_lines:
-                if work_dir in line:
+            # 优先使用 findmnt 命令（更准确）
+            try:
+                result = subprocess.run(
+                    ["findmnt", "-n", "-o", "TARGET"],
+                    capture_output=True, 
+                    text=True, 
+                    check=True,
+                    timeout=5
+                )
+                remaining = []
+                for line in result.stdout.split('\n'):
+                    line = line.strip()
+                    if line and line.startswith(work_dir):
+                        remaining.append(line)
+                return remaining
+            except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
+                # fallback 到 mount 命令
+                result = subprocess.run(["mount"], capture_output=True, text=True, check=True)
+                mount_lines = result.stdout.split('\n')
+                
+                remaining = []
+                for line in mount_lines:
+                    if work_dir not in line:
+                        continue
+                    
+                    # 解析 mount 命令输出格式
                     parts = line.split()
-                    if len(parts) >= 3:
-                        mount_point = parts[2]
-                        if mount_point.startswith(work_dir):
-                            remaining.append(mount_point)
+                    # 查找 "on" 关键字后面的挂载点
+                    try:
+                        on_index = parts.index("on")
+                        if on_index + 1 < len(parts):
+                            mount_point = parts[on_index + 1]
+                            if mount_point.startswith(work_dir):
+                                remaining.append(mount_point)
+                    except ValueError:
+                        # 没有找到 "on" 关键字，尝试使用第三个字段（旧格式）
+                        if len(parts) >= 3:
+                            mount_point = parts[2]
+                            if mount_point.startswith(work_dir):
+                                remaining.append(mount_point)
             
-            return remaining
-        except Exception:
+                return remaining
+        except Exception as e:
+            if is_debug_enabled():
+                self.logger.debug(f"检查残留挂载点时发生错误: {e}")
             return []
     
     def _force_unmount_all(self, work_dir: str, mount_points: list):
@@ -789,6 +868,11 @@ class WorkDirManager:
             # 获取当前系统的挂载点信息，避免删除挂载点
             mounted_paths = self._get_mounted_paths()
             
+            # 安全检查：如果工作目录本身是挂载点，直接返回
+            if self._is_mounted_path(work_dir, mounted_paths) or os.path.ismount(work_dir):
+                self.logger.error(f"错误：工作目录 {work_dir} 本身是挂载点，跳过删除以避免删除系统文件")
+                return
+            
             # 获取目录中的所有文件和子目录
             for root, dirs, files in os.walk(work_dir, topdown=False):
                 # 先删除文件
@@ -818,6 +902,12 @@ class WorkDirManager:
                             if is_debug_enabled():
                                 self.logger.debug(f"跳过挂载点目录: {dir_path}")
                             continue
+                        
+                        # 额外检查：使用 os.path.ismount 检查目录本身是否是挂载点
+                        if os.path.ismount(dir_path):
+                            if is_debug_enabled():
+                                self.logger.debug(f"跳过挂载点目录（os.path.ismount）: {dir_path}")
+                            continue
                             
                         os.rmdir(dir_path)
                         if is_debug_enabled():
@@ -839,14 +929,39 @@ class WorkDirManager:
         """获取当前系统的挂载点路径"""
         mounted_paths = set()
         try:
-            result = subprocess.run(["mount"], capture_output=True, text=True, check=True)
-            mount_lines = result.stdout.split('\n')
-            
-            for line in mount_lines:
-                parts = line.split()
-                if len(parts) >= 3:
-                    mount_point = parts[2]  # 挂载点通常在第三个字段
-                    mounted_paths.add(mount_point)
+            # 优先使用 findmnt 命令（更准确）
+            try:
+                result = subprocess.run(
+                    ["findmnt", "-n", "-o", "TARGET"],
+                    capture_output=True, 
+                    text=True, 
+                    check=True,
+                    timeout=5
+                )
+                for line in result.stdout.split('\n'):
+                    line = line.strip()
+                    if line:
+                        mounted_paths.add(line)
+            except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
+                # fallback 到 mount 命令
+                result = subprocess.run(["mount"], capture_output=True, text=True, check=True)
+                mount_lines = result.stdout.split('\n')
+                
+                for line in mount_lines:
+                    if not line.strip():
+                        continue
+                    parts = line.split()
+                    # 查找 "on" 关键字后面的挂载点
+                    try:
+                        on_index = parts.index("on")
+                        if on_index + 1 < len(parts):
+                            mount_point = parts[on_index + 1]
+                            mounted_paths.add(mount_point)
+                    except ValueError:
+                        # 没有找到 "on" 关键字，尝试使用第三个字段（旧格式）
+                        if len(parts) >= 3:
+                            mount_point = parts[2]
+                            mounted_paths.add(mount_point)
                     
         except Exception as e:
             if is_debug_enabled():

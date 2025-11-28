@@ -65,15 +65,32 @@ class JudgeTypeTpj(BaseJudgeType):
             # 只复制测试数据文件，TPJ 可执行文件已经在工作目录中
             files_to_copy = {
                 "input.in": in_file,
-                "output.out": out_file,
                 "user_output.out": user_output
             }
+            
+            # 只有当 out_file 存在且非空时才复制
+            if out_file and os.path.exists(out_file):
+                files_to_copy["output.out"] = out_file
+            
             chroot_files = self._copy_files_to_tpj_work_dir(self.tpj_work_dir, files_to_copy)
             
             # 构建命令（TPJ 可执行文件已经在工作目录中，使用相对路径）
             # testlib 标准参数顺序：in_file, user_output, out_file
             cmd = ["./tpj", chroot_files["input.in"], 
-                   chroot_files["user_output.out"], chroot_files["output.out"]]
+                   chroot_files["user_output.out"]]
+            
+            # 如果 out_file 存在，添加到命令中；否则创建一个空文件作为占位符
+            # 根据 testlib，checker 模式需要 3 个参数
+            if out_file and os.path.exists(out_file):
+                cmd.append(chroot_files["output.out"])
+            else:
+                # 如果 out_file 不存在，创建一个空文件作为占位符
+                empty_out_file = os.path.join(self.tpj_work_dir, "empty.out")
+                if not os.path.exists(empty_out_file):
+                    open(empty_out_file, 'w').close()
+                cmd.append("./empty.out")
+                if is_debug_enabled():
+                    self.logger.debug(f"注意：测试用例没有 .out 文件，使用空文件占位符")
             
             if is_debug_enabled():
                 self.logger.debug(f"运行 TPJ 程序: {' '.join(cmd)}")
@@ -140,7 +157,8 @@ class JudgeTypeTpj(BaseJudgeType):
             data_dir = os.path.join(self.config["judge"]["data_dir"], str(problem_id))
             
             # 使用基类的公共方法发现测试用例（会自动检查data_dir和测试用例）
-            test_cases = self.discover_test_cases(problem_id, data_dir)
+            # 特判题允许没有 .out 文件
+            test_cases = self.discover_test_cases(problem_id, data_dir, flg_require_out_file=False)
             
             # 查找 TPJ 程序
             data_dir = os.path.join(self.config["judge"]["data_dir"], str(problem_id))
