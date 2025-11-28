@@ -187,7 +187,11 @@ function FormatterNewsTitle(value, row, index, field) {
         colorClass = 'text-primary'; // 公开状态用蓝色
     }
     
-    return `<a class="text-decoration-none ${colorClass}" title="${value}" href="/admin/news/news_edit?id=${row['news_id']}" style="max-width: ${titleWidth}px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${value}</a>`;
+    // 构建查看页面的链接，根据分类确定路径
+    const category = row['category'] || 'news';
+    const detailUrl = `/index/${category}/detail?nid=${row['news_id']}`;
+    
+    return `<a class="text-decoration-none ${colorClass}" title="${value}" href="${detailUrl}" target="_blank" style="max-width: ${titleWidth}px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${value}</a>`;
 }
 
 // 文章分类formatter
@@ -209,6 +213,29 @@ function FormatterNewsCategory(value, row, index, field) {
     } else {
         return `<span class="badge bg-secondary">${value}<span class="en-text">Unknown</span></span>`;
     }
+}
+
+// 文章标签formatter
+function FormatterNewsTags(value, row, index, field) {
+    if (!value || value.trim() === '') {
+        return '<span class="text-muted">-</span>';
+    }
+    
+    // 标签用分号分隔
+    const tags = value.split(';').map(tag => tag.trim()).filter(tag => tag.length > 0);
+    
+    if (tags.length === 0) {
+        return '<span class="text-muted">-</span>';
+    }
+    
+    // 生成标签徽章
+    let html = '';
+    tags.forEach((tag, idx) => {
+        if (idx > 0) html += ' ';
+        html += `<span class="badge bg-secondary" title="${tag}">${tag}</span>`;
+    });
+    
+    return html;
 }
 
 // 文章状态formatter
@@ -293,9 +320,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // 如果是管理后台文章页面，初始化分类选项
-    if (window.location.pathname.includes('/admin/news')) {
-        const categorySelect = document.querySelector('select[name="category"]');
+    // 如果是管理后台文章列表页面（不是编辑页面），初始化分类筛选选项
+    if (window.location.pathname.includes('/admin/news') && 
+        !window.location.pathname.includes('/news_edit') && 
+        !window.location.pathname.includes('/news_add')) {
+        const categorySelect = document.getElementById('category_filter_select');
         if (categorySelect && window.generateCategoryOptions) {
             categorySelect.innerHTML = generateCategoryOptions();
         }

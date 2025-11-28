@@ -45,11 +45,12 @@ class Problemset extends Csgojbase
 
         $map = [];
         // 多个联合成一个条目的 or 关系('problem_id|title|source')与 and 关系('defunct')连用时候会自带括号，不需要加->query()
-        if(strlen($search) > 0)
+        if(strlen($search) > 0) {
             $map = [
                 'problem_id'   => $search,
                 'title|source' => ['like', "%$search%"]
             ];
+        }
         $defunctmap = [];
         // // 管理员可以在后台看problem，没必要前台给特权，这里 if 注释掉
         // if(!IsAdmin())

@@ -83,7 +83,7 @@ $prolist_mode = $prolist_mode ?? 'frontend';
         data-method="get"
         data-search="false"
         data-sort-name="problem_id"
-        data-sort-order="asc"
+        data-sort-order="desc"
         data-pagination-v-align="{if $prolist_mode === 'admin'}both{else}bottom{/if}"
         data-pagination-h-align="left"
         data-pagination-detail-h-align="right"

@@ -4,9 +4,6 @@
     <div class="bg-white border border-primary border-opacity-25 rounded-3 px-3 py-2 mb-3 shadow-sm">
         <div class="d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-2">
-                <div class="bg-primary bg-gradient rounded-circle p-1">
-                    <i class="bi bi-newspaper text-white" style="font-size: 0.9rem;"></i>
-                </div>
                 <h1 class="page-title mb-0 text-dark fs-4">
                     团队文章<span class="en-text text-muted fs-6">Team Articles</span>
                 </h1>

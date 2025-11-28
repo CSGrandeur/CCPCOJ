@@ -48,19 +48,19 @@
 {/if}
 
 <div class="container">
-    {if(!isset($special_page))}
-    <form id="news_edit_form" class="admin-form" method='post' action="__ADMIN__/news/{$action}_ajax">
-    {else /}
-    <form id="news_edit_form" class="admin-form" method='post' action="__ADMIN__/news/news_edit_ajax">
-    {/if}
-
-        {if !isset($special_page)}
-        {include file="admin/co_editor_input" /}
-        {/if}
+    <?php 
+    $action_url = '/admin/news/';
+    if(isset($special_page) && $special_page) {
+        $action_url .= 'news_edit_ajax';
+    } else {
+        $action_url .= ($edit_mode ? 'news_edit_ajax' : 'news_add_ajax');
+    }
+    ?>
+    <form id="news_edit_form" class="admin-form" method='post' action="{$action_url}">
         
-        <div class="form-group">
-            <label for="title" class="bilingual-label">文章标题<span class="en-text">Article Title</span></label>
-            {if(isset($special_page))}
+        <div class="form-group mb-3">
+            <label for="title" class="bilingual-label">文章标题：<span class="en-text">Article Title</span></label>
+            {if(isset($special_page) && $special_page)}
             <input type="hidden" name="title" value="{if $edit_mode}{$news['title']}{/if}">
             <input type="text" class="form-control" id="title" placeholder="文章标题..." value="{if $edit_mode}{$news['title']}{/if}" disabled>
             {else/}
@@ -68,9 +68,9 @@
             {/if}
         </div>
         
-        {if(!isset($special_page))}
-        <div class="form-group">
-            <label for="category" class="bilingual-label">分类<span class="en-text">Category</span></label>
+        {if(!isset($special_page) || !$special_page)}
+        <div class="form-group mb-3">
+            <label for="category" class="bilingual-label">分类：<span class="en-text">Category</span></label>
             <select name="category" class="form-select" id="category_select">
                 <option value="news" {if $edit_mode && $news['category'] == 'news'} selected {/if}>团队新闻</option>
                 <option value="notification" {if $edit_mode && $news['category'] == 'notification'} selected {/if}>通知公告</option>
@@ -79,8 +79,8 @@
             </select>
         </div>
         
-        <div class="form-group">
-            <label for="tags" class="bilingual-label">标签<span class="en-text">Tags</span></label>
+        <div class="form-group mb-3">
+            <label for="tags" class="bilingual-label">标签：<span class="en-text">Tags</span></label>
             <input type="text" class="form-control" id="tags" placeholder="Contest;Solution;Changsha..." name="tags" value="{if $edit_mode}{$news['tags']}{/if}">
             <div class="form-text">
                 用分号分隔，最多5个标签，每个不超过32个字符
@@ -89,8 +89,8 @@
         </div>
         {/if}
         
-        <div class="form-group">
-            <label for="content" class="bilingual-label">内容 (Markdown)<span class="en-text">Content (Markdown)</span> </label>
+        <div class="form-group mb-3">
+            <label for="content" class="bilingual-label">内容 (支持 Markdown)：<span class="en-text">Content (Markdown supported)</span></label>
             <textarea id="news_content" class="form-control" placeholder="内容..." rows="15" name="content">{if $edit_mode}{$news['content']|htmlspecialchars}{/if}</textarea>
         </div>
         

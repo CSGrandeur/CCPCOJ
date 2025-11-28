@@ -554,11 +554,13 @@ function createDefunctFormatter(config) {
                 (`<span class='en-text'>${config.hiddenTextEn}</span>`);
             
             return `
-                <button type='button' field='defunct' itemid='${row[config.idField] ?? ""}' 
-                    class='change_status btn btn-sm ${row.defunct == '0' ? "btn-success" : "btn-warning"}' 
-                    status='${row.defunct}' title="点击更改为${nextStatus}状态(Click to change to ${nextStatusEn})">
-                    <i class="${iconClass}"></i>${textContent}
-                </button>
+                <div class="d-flex justify-content-center">
+                    <button type='button' field='defunct' itemid='${row[config.idField] ?? ""}' 
+                        class='change_status btn btn-sm ${row.defunct == '0' ? "btn-success" : "btn-warning"}' 
+                        status='${row.defunct}' title="点击更改为${nextStatus}状态(Click to change to ${nextStatusEn})">
+                        <i class="${iconClass}"></i>${textContent}
+                    </button>
+                </div>
             `;
         } else {
             const iconClass = row.defunct == '0' ? 'bi bi-unlock-fill ' : 'bi bi-lock-fill ';
@@ -567,8 +569,8 @@ function createDefunctFormatter(config) {
                 (`<span class='en-text'>${config.hiddenTextEn}</span>`);
             
             return row.defunct == '0' ? 
-                `<span class='text-success'><i class="${iconClass}"></i>${textContent}</span>` : 
-                `<span class='text-warning'><i class="${iconClass}"></i>${textContent}</span>`;
+                `<div class="d-flex justify-content-center"><span class='text-success'><i class="${iconClass}"></i>${textContent}</span></div>` : 
+                `<div class="d-flex justify-content-center"><span class='text-warning'><i class="${iconClass}"></i>${textContent}</span></div>`;
         }
     };
 }
