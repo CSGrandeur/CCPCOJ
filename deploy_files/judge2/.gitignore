@@ -65,3 +65,4 @@ core/test*.py
 
 !debug/
 !debug/*.sh
+!debug/local_test*.py
