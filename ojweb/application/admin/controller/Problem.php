@@ -27,7 +27,7 @@ class Problem extends Adminbase
             'page_title' => '',
             'page_title_en' => '',
             'search_placeholder' => '题号/标题/来源/作者',
-            'page_size' => 100,
+            'page_size' => 50,
             'cookie_expire' => '5mi',
             'cookie_suffix' => '',
             'filter_selectors' => ['spj', 'defunct'],
@@ -35,8 +35,7 @@ class Problem extends Adminbase
         ]);
         return $this->fetch();
     }
-    public function problem_list_ajax()
-    {
+    public function problem_list_ajax() {
         $columns = ['problem_id', 'title', 'in_date', 'source', 'author', 'defunct', 'spj'];
         if ($this->OJ_OPEN_ARCHIVE) {
             $columns[] = 'archived';
@@ -51,14 +50,12 @@ class Problem extends Adminbase
         // 新增筛选参数
         $spj_filter = input('spj', -1);
         $defunct_filter = input('defunct', -1);
-
-        $map = [
-            'problem_id' => ['between', [1000 + $offset, 1000 + $offset + $limit - 1]]
-        ];
-        if (strlen($search) > 0)
+        $map = [];
+        if (strlen($search) > 0) {
             $map = [
                 'problem_id|title|source|author' =>  ['like', "%$search%"]
             ];
+        }
 
         // 添加spj筛选
         if ($spj_filter != -1) {
@@ -78,8 +75,9 @@ class Problem extends Adminbase
         }
         $Problem = db('problem');
         $problemList = $Problem
-            ->field(implode(",", $columns))
+            ->field($columns)
             ->where($map)
+            ->limit($offset, $limit)
             ->order($ordertype)
             ->select();
         foreach ($problemList as &$problem) {
@@ -97,15 +95,27 @@ class Problem extends Adminbase
             // $problem['author'] = htmlspecialchars($problem['author']);
         }
         $total_map = [];
+        // 添加search筛选条件
         if (strlen($search) > 0) {
             $total_map['problem_id|title|source|author'] = ['like', "%$search%"];
-            $ret['total'] = $Problem->where($total_map)->count();
-        } else {
-            // 如果正常查询，“total”应该返回最大ID与1000的差值+1，这样前端table才能正常分页。
-            // 比如如果没有题号为1000的题，1001~1100是100个，前端则只显示 1 页，没法打开第2页
-            $maxProId = $Problem->field("max(problem_id) as max_pro_id")->select();
-            $ret['total'] = $maxProId[0]['max_pro_id'] - 999;
         }
+        // 添加spj筛选条件
+        if ($spj_filter != -1) {
+            $total_map['spj'] = $spj_filter;
+        }
+        // 添加defunct筛选条件
+        if ($defunct_filter != -1) {
+            $total_map['defunct'] = $defunct_filter;
+        }
+        
+        // 如果有任何筛选条件，使用count计算total；否则使用最大ID计算
+        // if (!empty($total_map)) {
+        //     $ret['total'] = $Problem->where($total_map)->count();
+        // } else {
+        //     // 比如如果没有题号为1000的题，1001~1100是100个，前端则只显示 1 页，没法打开第2页
+        //     $maxProId = $Problem->field("max(problem_id) as max_pro_id")->select();
+        //     $ret['total'] = $maxProId[0]['max_pro_id'] - 999;
+        // }
         $ret['total'] = $Problem->where($total_map)->count();
         $ret['order'] = $order;
         $ret['rows'] = $problemList;

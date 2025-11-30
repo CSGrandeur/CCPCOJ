@@ -1,7 +1,141 @@
 /**
- * 文章模块样式
- * Article Module Styles
+ * News Module CSS样式文件
+ * 包含新闻列表、详情页等样式
+ * 参考 oj_problem.css 保持 UI 风格一致
  */
+
+/* ==================== 新闻详情页头部样式 ==================== */
+/* 参考 problem-header-row 和 problem-info-inline 的样式 */
+
+/* 新闻标题样式 - 更有高级感 */
+.news-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #212529;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+    letter-spacing: -0.02em;
+    word-wrap: break-word;
+}
+
+.problem-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0.75rem 0;
+    padding: 0.5rem 0;
+    flex-wrap: wrap;
+}
+
+.problem-info-inline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.5rem;
+    flex: 1;
+}
+
+.problem-info-inline .info-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    min-width: 0;
+    flex-shrink: 0;
+}
+
+/* 当有足够空间时，水平排列（需要足够宽才能容纳所有信息项） */
+@media (min-width: 1400px) {
+    .problem-info-inline .info-item {
+        flex-direction: row;
+        align-items: center;
+        white-space: nowrap;
+    }
+}
+
+.problem-info-inline .info-label {
+    font-size: 0.85rem;
+    color: #6c757d;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.problem-info-inline .info-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #495057;
+    margin: 0;
+    word-break: break-word;
+    word-wrap: break-word;
+}
+
+/* 水平排列时添加左边距 */
+@media (min-width: 1400px) {
+    .problem-info-inline .info-value {
+        margin: 0 0.25rem;
+    }
+}
+
+.problem-info-inline .info-unit {
+    font-size: 0.8rem;
+    color: #6c757d;
+    line-height: 1.2;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .news-title {
+        font-size: 1.75rem;
+        letter-spacing: -0.01em;
+    }
+    
+    .problem-header-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .problem-info-inline {
+        gap: 1rem;
+        flex-wrap: wrap;
+        width: 100%;
+    }
+    
+    .problem-info-inline .info-item {
+        gap: 0.2rem;
+    }
+    
+    .problem-info-inline .info-label {
+        font-size: 0.8rem;
+    }
+    
+    .problem-info-inline .info-value {
+        font-size: 0.9rem;
+    }
+    
+    .problem-info-inline .info-unit {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 575px) {
+    .news-title {
+        font-size: 1.5rem;
+    }
+    
+    .problem-info-inline {
+        gap: 1rem;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .problem-info-inline .info-item {
+        width: 100%;
+    }
+}
+
+/* ==================== 新闻列表样式 ==================== */
 
 /* Carousel Styles */
 .carousel-control.left {
@@ -14,17 +148,6 @@
     color: red;
 }
 
-
-/* 文章详情页样式 */
-.article-title {
-    color: #222222;
-}
-
-.news_detail_div {
-    max-width: 900px;
-}
-
-/* 新闻列表样式 */
 .news-list-container {
     margin-top: 1rem;
 }
@@ -38,7 +161,7 @@
     border-bottom: none;
 }
 
-.news-title {
+.news-item-title {
     font-size: 1.1rem;
     font-weight: 500;
     color: #212529;
@@ -46,7 +169,7 @@
     transition: color 0.2s ease;
 }
 
-.news-title:hover {
+.news-item-title:hover {
     color: #0d6efd;
     text-decoration: none;
 }
@@ -78,20 +201,9 @@
     text-decoration: none;
 }
 
-/* 文章详情样式 - 使用Bootstrap 5和basecss.css的全局样式 */
-.news-detail-container {
-    max-width: 900px;
-    margin: 0 auto;
-}
+/* ==================== 其他样式 ==================== */
 
-.news-detail-meta {
-    background-color: #f8f9fa;
-    padding: 1rem;
-    border-radius: 0.375rem;
-    margin-bottom: 2rem;
-}
-
-/* 分类文章卡片样式 - 简化设计 */
+/* 分类文章卡片样式 */
 .category-news-card {
     transition: box-shadow 0.2s ease;
 }
@@ -100,7 +212,7 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* 空状态 - 使用Bootstrap 5样式 */
+/* 空状态 */
 .news-empty {
     text-align: center;
     padding: 3rem 1rem;

@@ -285,17 +285,6 @@ CREATE TABLE IF NOT EXISTS `news_md` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `news_tag`
---
-
-CREATE TABLE IF NOT EXISTS `news_tag` (
-  `news_id` int DEFAULT NULL,
-  `tag` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
 -- 表的结构 `privilege`
 --
 

@@ -68,26 +68,41 @@ class JudgeClient:
             if solution_id:
                 self.logger.debug(f"解决方案ID: {solution_id}")
         
-        # 根据错误类型确定程序状态
+        # 根据错误类型确定程序状态和消息
         if isinstance(error, JudgeSysErrTestData):
             program_status = sc.PROGRAM_SYSTEM_ERROR
             message = f"测试数据错误: {error.message}"
+            error_category = "测试数据错误"
         elif isinstance(error, JudgeSysErrCompile):
             program_status = sc.PROGRAM_SYSTEM_ERROR
             message = f"评测系统编译错误: {error.message}"
+            error_category = "评测系统编译错误"
         elif isinstance(error, JudgeSysErrProgram):
             program_status = sc.PROGRAM_SYSTEM_ERROR
             message = f"评测程序错误: {error.message}"
+            error_category = "评测程序错误"
         else:
             program_status = sc.PROGRAM_SYSTEM_ERROR
             message = f"评测系统错误: {error.message}"
+            error_category = "评测系统错误"
+        
+        # 构造错误信息结构，用于保存到 runtimeinfo 表
+        reinfo = {
+            "error_summary": {
+                "error_type": error_category,
+                "error_code": error_code,
+                "error_message": error.message,
+                "detail": message
+            }
+        }
         
         return {
             "program_status": program_status,
             "judge_result": sc.get_judge_result_from_program_status(program_status),
             "time": 0,
             "memory": 0,
-            "message": message
+            "message": message,
+            "reinfo": reinfo  # 添加错误信息结构，供 feedback_result 保存到数据库
         }
     
     def load_config(self, config_path: str) -> Dict[str, Any]:
@@ -303,12 +318,19 @@ class JudgeClient:
                 "memory_limit": memory_limit,
                 "language": language
             })
+            error_message = str(e)
             return {
                 "program_status": sc.PROGRAM_SYSTEM_ERROR,
                 "judge_result": sc.get_judge_result_from_program_status(sc.PROGRAM_SYSTEM_ERROR),
                 "time": 0,
                 "memory": 0,
-                "message": str(e)
+                "message": error_message,
+                "reinfo": {
+                    "error_summary": {
+                        "error_type": "评测系统错误",
+                        "error_message": error_message
+                    }
+                }
             }
     
     def feedback_result(self, solution_id: int, result: Dict[str, Any]) -> bool:
@@ -384,15 +406,31 @@ class JudgeClient:
                         }
                         self.web_client.add_compile_error(solution_id, structured_ce_info)
                 elif judge_result != sc.JUDGE_ACCEPTED:
-                    # 其它错误
+                    # 其它错误（包括系统错误、运行时错误等）
                     reinfo = result.get("reinfo", {})
                     if reinfo:
+                        # 如果有结构化的错误信息，使用它
                         structured_re_info = {
                             "data_type": "json",
                             "data": reinfo
                         }
                         self.web_client.add_runtime_error(solution_id, structured_re_info)
                         self.logger.info(f"累积错误信息已发送到reinfo：{len(str(reinfo))} 字符")
+                    elif message:
+                        # 如果没有结构化的错误信息，但有消息，创建一个简单的错误信息结构
+                        # 这确保系统错误（如"没有找到测试用例"）也能被保存
+                        simple_reinfo = {
+                            "error_summary": {
+                                "error_type": "评测系统错误",
+                                "error_message": message
+                            }
+                        }
+                        structured_re_info = {
+                            "data_type": "json",
+                            "data": simple_reinfo
+                        }
+                        self.web_client.add_runtime_error(solution_id, structured_re_info)
+                        self.logger.info(f"系统错误信息已发送到reinfo：{message}")
                 
                 
                 return True
@@ -517,35 +555,56 @@ class JudgeClient:
             local_data_dir = os.path.join(self.config["judge"]["data_dir"], str(problem_id))
             self.logger.info(f"获取题目 {problem_id} 数据目录读锁...")
             if not self.lock_manager.acquire_read_lock(local_data_dir, timeout=300):
+                error_message = f"获取题目 {problem_id} 数据目录读锁失败"
                 return {
                     "program_status": sc.PROGRAM_SYSTEM_ERROR,
                     "judge_result": sc.get_judge_result_from_program_status(sc.PROGRAM_SYSTEM_ERROR),
                     "time": 0,
                     "memory": 0,
-                    "message": f"获取题目 {problem_id} 数据目录读锁失败"
+                    "message": error_message,
+                    "reinfo": {
+                        "error_summary": {
+                            "error_type": "评测系统错误",
+                            "error_message": error_message
+                        }
+                    }
                 }
             read_lock_acquired = True
             self.logger.info(f"成功获取题目 {problem_id} 数据目录读锁")
             
             # 3. 同步题目数据（data_sync内部会处理写锁）
             if not self.sync_problem_data(problem_id):
+                error_message = f"同步题目 {problem_id} 数据失败"
                 return {
                     "program_status": sc.PROGRAM_SYSTEM_ERROR,
                     "judge_result": sc.get_judge_result_from_program_status(sc.PROGRAM_SYSTEM_ERROR),
                     "time": 0,
                     "memory": 0,
-                    "message": f"同步题目 {problem_id} 数据失败"
+                    "message": error_message,
+                    "reinfo": {
+                        "error_summary": {
+                            "error_type": "评测系统错误",
+                            "error_message": error_message
+                        }
+                    }
                 }
             
             # 4. 准备源代码（传入后端语言配置）
             success, source_file, executable = self.prepare_source_code(solution_id, language, work_dir, handler_config)
             if not success:
+                error_message = "无法获取源代码"
                 return {
                     "program_status": sc.PROGRAM_COMPILE_ERROR,
                     "judge_result": sc.get_judge_result_from_program_status(sc.PROGRAM_COMPILE_ERROR),
                     "time": 0,
                     "memory": 0,
-                    "message": "无法获取源代码"
+                    "message": error_message,
+                    "reinfo": {
+                        "error_summary": {
+                            "error_type": "评测系统错误",
+                            "error_message": error_message
+                        }
+                    }
                 }
             
             # 5. 编译解决方案（选手程序）
@@ -593,12 +652,19 @@ class JudgeClient:
                 "problem_id": task.get("problem_id"),
                 "language": task.get("language")
             })
+            error_message = str(e)
             error_result = {
                 "program_status": sc.PROGRAM_SYSTEM_ERROR,
                 "judge_result": sc.get_judge_result_from_program_status(sc.PROGRAM_SYSTEM_ERROR),
                 "time": 0,
                 "memory": 0,
-                "message": str(e)
+                "message": error_message,
+                "reinfo": {
+                    "error_summary": {
+                        "error_type": "评测系统错误",
+                        "error_message": error_message
+                    }
+                }
             }
             # 反馈错误结果到后端
             if solution_id:

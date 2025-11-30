@@ -57,13 +57,28 @@ class JudgeTypeInteractive(BaseJudgeType):
             # 直接使用 self.tpj_work_dir（已经在 run_interactive_judge_mode 中设置）
             # 只复制测试数据文件，TPJ 可执行文件已经在工作目录中
             files_to_copy = {
-                "input.in": in_file,
-                "output.out": out_file
+                "input.in": in_file
             }
+            
+            # 只有当 out_file 存在且非空时才复制
+            if out_file and os.path.exists(out_file):
+                files_to_copy["output.out"] = out_file
+            
             chroot_files = self._copy_files_to_tpj_work_dir(self.tpj_work_dir, files_to_copy)
             
             chroot_input_file = chroot_files["input.in"]
-            chroot_output_file = chroot_files["output.out"]
+            # 如果 out_file 不存在，创建一个空文件作为占位符
+            # 即使没有 .out 文件，也要传递空文件给 TPJ（保持参数数量一致）
+            if out_file and os.path.exists(out_file):
+                chroot_output_file = chroot_files["output.out"]
+            else:
+                # 如果 out_file 不存在，创建一个空文件作为占位符
+                empty_out_file = os.path.join(self.tpj_work_dir, "empty.out")
+                if not os.path.exists(empty_out_file):
+                    open(empty_out_file, 'w').close()
+                chroot_output_file = "./empty.out"
+                if is_debug_enabled():
+                    self.logger.debug(f"注意：测试用例没有 .out 文件，使用空文件占位符")
             
             # 创建交互进程管道（返回进程和监控器）
             user_process, tpj_process, user_monitor, tpj_monitor = self._create_interactive_processes(
@@ -241,6 +256,7 @@ class JudgeTypeInteractive(BaseJudgeType):
         # argv[1] = input-file (问题输入数据，inf.init)
         # argv[2] = output-file (TPJ 通过 tout 写入，临时文件)
         # argv[3] = answer-file (答案数据，ans.init)
+        # 即使没有答案文件，也传递空文件作为第三个参数（保持参数数量一致）
         tpj_cmd = ["./tpj", chroot_input_file, tpj_tout_file, chroot_output_file]
         
         # 统一使用 convert_cmd_for_chroot 转换命令路径
@@ -309,7 +325,8 @@ class JudgeTypeInteractive(BaseJudgeType):
             data_dir = os.path.join(self.config["judge"]["data_dir"], str(problem_id))
             
             # 使用基类的公共方法发现测试用例（会自动检查data_dir和测试用例）
-            test_cases = self.discover_test_cases(problem_id, data_dir)
+            # 交互题允许没有 .out 文件（根据 testlib，answer-file 是可选的）
+            test_cases = self.discover_test_cases(problem_id, data_dir, flg_require_out_file=False)
             
             # 查找 TPJ 程序
             tpj_program = os.path.join(data_dir, "tpj.cc")

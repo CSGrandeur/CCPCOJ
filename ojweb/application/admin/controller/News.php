@@ -29,7 +29,7 @@ class News extends Adminbase
 	}
 	public function news_list_ajax()
 	{
-		$columns = ['news_id', 'user_id', 'category', 'title', 'time', 'defunct'];
+		$columns = ['news_id', 'user_id', 'category', 'title', 'time', 'defunct', 'tags'];
 		$offset		= intval(input('offset'));
 		$limit		= intval(input('limit'));
 		$sort		= trim(input('sort'));
@@ -70,6 +70,7 @@ class News extends Adminbase
 			->field(implode(",", $columns))
 			->where($map)
 			->order($ordertype)
+			->limit($offset, $limit)
 			->select();
 		foreach($newsList as &$news) {
 			if(IsAdmin($this->privilegeStr, $news['news_id'])) {
@@ -80,8 +81,17 @@ class News extends Adminbase
 			}
 		}
 		$total_map = [];
+		// 添加search筛选条件
 		if(strlen($search) > 0) {
 			$total_map['news_id|user_id|title|category'] = ['like', "%$search%"];
+		}
+		// 添加category筛选条件
+		if($category_filter != -1) {
+			$total_map['category'] = $category_filter;
+		}
+		// 添加defunct筛选条件
+		if($defunct_filter != -1) {
+			$total_map['defunct'] = $defunct_filter;
 		}
 		$total_map['news_id'] = ['egt', 1000];
 		$ret['total'] = $News->where($total_map)->count();
@@ -119,46 +129,74 @@ class News extends Adminbase
 		}
 		return $ret;
 	}
-	public function InsertTagList($news_id, $tagList)
+	public function news_addedit_ajax_process()
 	{
-		$insertTag = [];
-		foreach($tagList as $tag) {
-			$insertTag[] = [
-				'news_id' => $news_id,
-				'tag' => $tag,
-			];
+		$postData = input('post.');
+		unset($postData['cooperator']); // cooperator需要额外处理，这里先排除
+		$news_info = [];
+		
+		// 验证并处理分类（仅在添加时需要）
+		if(array_key_exists('category', $postData) && !empty($postData['category'])) {
+			$validCategories = ['news', 'notification', 'answer', 'cpcinfo'];
+			if(!in_array($postData['category'], $validCategories))
+				$this->error("Not a valid category");
+			$news_info['category'] = $postData['category'];
 		}
-		$NewsTag = db('news_tag');
-		$NewsTag->where('news_id', $news_id)->delete();
-		$NewsTag->insertAll($insertTag);
+		
+		// 处理标题
+		if(array_key_exists('title', $postData)) {
+			$news_info['title'] = trim($postData['title']);
+		}
+		
+		// 处理标签
+		if(array_key_exists('tags', $postData)) {
+			$tags = trim($postData['tags'], "; \0\x0B\r\t\n");
+			// 验证标签格式
+			$this->GetTagList($tags);
+			$news_info['tags'] = $tags;
+		}
+		
+		// 验证内容
+		if(!array_key_exists('content', $postData))
+			$this->error("Content is required.");
+		
+		$news_md_info = [
+			'content'	=> 	$postData['content'],
+		];
+		
+		// 插入news表，描述字段为md编译的html
+		$news_info['content'] = ParseMarkdown($news_md_info['content']);
+		
+		return [$news_info, $news_md_info];
 	}
+	
 	public function news_add_ajax()
 	{
-		$news_add = input('post.');
+		$ret = $this->news_addedit_ajax_process();
+		$news_add = $ret[0];
+		$news_md_add = $ret[1];
+		
+		// 验证分类（添加时必须）
+		if(!array_key_exists('category', $news_add) || empty($news_add['category']))
+			$this->error("Category is required.");
+		
+		// 验证标题（添加时必须）
+		if(!array_key_exists('title', $news_add) || empty($news_add['title']))
+			$this->error("Title is required.");
+		
 		$news_add['defunct'] = '1'; //默认隐藏防泄漏
 		$news_add['time'] = date('Y-m-d H:i:s');
 		$news_add['user_id'] = session('user_id');
 		$news_add['modify_time'] = $news_add['time'];
 		$news_add['modify_user_id'] = $news_add['user_id'];
-		//tag
-		$news_add['tags'] = trim($news_add['tags'], "; \0\x0B\r\t\n");
-		$tagList = $this->GetTagList($news_add['tags']);
-		// 验证分类是否有效（现在在前端配置中定义）
-		$validCategories = ['news', 'notification', 'answer', 'cpcinfo'];
-		if(!in_array($news_add['category'], $validCategories))
-			$this->error("Not a valid category");
-		$news_md_add = [
-			'content'	=> 	$news_add['content'],
-		];
-		//插入news表，描述字段为md编译的html
-		$news_add['content'] = ParseMarkdown($news_md_add['content']);
-		$news_add['attach']	 = $this->AttachFolderCalculation(session('user_id')); // 计算附件文件夹名称，固定后导入导出题目不会有路径变化问题
+		$news_add['attach'] = $this->AttachFolderCalculation(session('user_id')); // 计算附件文件夹名称，固定后导入导出题目不会有路径变化问题
+		
 		$news_id = null;
-		unset($news_add['cooperator']);
 		if(!($news_id = db('news')->insertGetId($news_add)))
 		{
 			$this->error('Add news failed, SQL error.');
 		}
+		
 		// news已插入，下面处理news_md
 		$News_md = db('news_md');
 		$news_md = $News_md->where('news_id', $news_id)->find();
@@ -172,11 +210,6 @@ class News extends Adminbase
 		}
 		$this->AddPrivilege(session('user_id'), 'news', $news_id);
 		
-        //处理cooperator
-        $cooperator = input('cooperator/s');
-        $cooperatorList = explode(",", $cooperator);
-        $cooperatorFailList = $this->SaveCooperator($cooperatorList, $news_id);
-		$this->InsertTagList($news_id, $tagList);
 		$this->success('News successfully added.', '', ['id' => $news_id]);
 	}
 	public function news_edit()
@@ -196,11 +229,12 @@ class News extends Adminbase
 		{
 			$news = array_replace($news, $news_md);
 		}
-		$cooperator = $this->GetCooperator($news['news_id']);
 		$this->assign([
 			'news' => $news,
-			'cooperator'	=> implode(",", $cooperator),
             'item_priv'     => IsAdmin($this->privilegeStr, $news_id),
+			'edit_mode' => true,
+			'copy_mode' => false,
+			'action' => 'news_edit',
 		]);
 		return $this->fetch();
 	}
@@ -217,52 +251,36 @@ class News extends Adminbase
 		{
 			$this->error('No such news.');
 		}
-		$news_update = input('post.');
-		unset($news_update['cooperator']);
-		if(isset($news_update['tags']))
-		{
-			//tag
-			$news_update['tags'] = trim($news_update['tags'], "; \0\x0B\r\t\n");
-			$tagList = $this->GetTagList($news_update['tags']);
-		}
+		
+		$ret = $this->news_addedit_ajax_process();
+		$news_edit = $ret[0];
+		$news_md_edit = $ret[1];
+		
+		// 合并原有数据
+		$news_update = array_replace($news, $news_edit);
+		$news_update['news_id'] = $news_id; // 确保news_id不被覆盖
+		$news_update['modify_time'] = date('Y-m-d H:i:s');
+		$news_update['modify_user_id'] = session('user_id');
+		
 		$News_md = db('news_md');
 		$news_md = $News_md->where('news_id', $news_id)->find();
-		$news_md_update = [
-			'news_id'	=>	$news_update['news_id'],
-			'content'	=> 	$news_update['content'],
-		];
+		$news_md_edit['news_id'] = $news_id;
 		//更新news_md。因为是新版，所以已有的题目在md表里也可能不存在。
 		if($news_md == null)
 		{
-			$News_md->insert($news_md_update);
+			$News_md->insert($news_md_edit);
 		}
 		else
 		{
-			$News_md->update($news_md_update);
+			$News_md->update($news_md_edit);
 		}
 		//更新news表，保存md编译的html
-		$news_update['content']	= ParseMarkdown($news_update['content']);
-		$news_update['modify_time'] = date('Y-m-d H:i:s');
-		$news_update['modify_user_id'] = session('user_id');
 		if(!$News->update($news_update))
 		{
 			$this->error('Not updated (datas are the same).');
 			return;
 		}
-		if(isset($tagList))
-		{
-			$this->InsertTagList($news_id, $tagList);
-		}
-		//处理cooperator
-		$cooperator = input('cooperator/s');
-		$cooperatorList = explode(",", $cooperator);
-		$cooperatorFailList = $this->SaveCooperator($cooperatorList, $news_id);
-		$alert = false;
-		if(strlen($cooperatorFailList) > 0)
-		{
-			$alert = true;
-		}
-		$this->success('Successfully modified.' . $cooperatorFailList, '', ['alert' => $alert]);
+		$this->success('Successfully modified.', '', []);
 	}
 	//***************************************************************//
 	// Carousel

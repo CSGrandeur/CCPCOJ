@@ -34,8 +34,10 @@ class RuninfoViewer {
 
         // 结构化JSON：按原有结构化视图渲染
         if (dataType === 'json') {
-            const structured = (payload.data && (payload.data.error_summary || payload.data)) || null;
-            if (!structured) {
+            // 提取结构化数据：优先使用 error_summary，否则使用整个 data 对象
+            const jsonData = payload.data || {};
+            const structured = jsonData.error_summary || jsonData;
+            if (!structured || (typeof structured === 'object' && Object.keys(structured).length === 0)) {
                 this.showError('没有错误信息<span class="en-text">No error information available</span>');
                 return;
             }
@@ -64,6 +66,28 @@ class RuninfoViewer {
      * 渲染运行信息内容
      */
     renderContent(data) {
+        // 检查是否是系统错误信息（error_summary格式）
+        if (data.error_type || data.error_message || data.error_code) {
+            // 系统错误信息显示
+            const errorType = data.error_type || '评测系统错误';
+            const errorMessage = data.error_message || data.detail || '未知错误';
+            let html = `
+                <div class="alert alert-danger m-3" role="alert">
+                    <h5 class="alert-heading">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        ${this.escapeHtml(errorType)}
+                        <span class="en-text">Judge System Error</span>
+                    </h5>
+                    <hr>
+                    <pre class="mt-2 mb-0" style="white-space: pre-wrap; word-wrap: break-word; font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 0.875rem; background: #f8f9fa; padding: 1rem; border-radius: 0.375rem;">${this.escapeHtml(errorMessage)}</pre>
+                    ${data.error_code ? `<p class="mt-2 mb-0 text-muted small">错误代码: <code>${this.escapeHtml(data.error_code)}</code> <span class="en-text">Error Code</span></p>` : ''}
+                </div>`;
+            
+            this.contentContainer.innerHTML = html;
+            return;
+        }
+        
+        // 原有的测试用例失败信息显示逻辑
         // 构建结果视图
         let html = `
                 <div class="failed-cases-summary">
@@ -71,7 +95,7 @@ class RuninfoViewer {
                         未通过用例数
                         <span class="en-text">Failed Test Cases</span>
                     </div>
-                    <div class="count">${data.total_failed_cases}</div>
+                    <div class="count">${data.total_failed_cases || 0}</div>
                 </div>`;
         
         if (data.failed_cases && data.failed_cases.length > 0) {

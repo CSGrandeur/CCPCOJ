@@ -83,7 +83,7 @@ $prolist_mode = $prolist_mode ?? 'frontend';
         data-method="get"
         data-search="false"
         data-sort-name="problem_id"
-        data-sort-order="asc"
+        data-sort-order="desc"
         data-pagination-v-align="{if $prolist_mode === 'admin'}both{else}bottom{/if}"
         data-pagination-h-align="left"
         data-pagination-detail-h-align="right"
@@ -107,8 +107,8 @@ $prolist_mode = $prolist_mode ?? 'frontend';
         <th data-field="ac" data-align="center" data-valign="middle"  data-sortable="false" data-width="30" data-formatter="FormatterProblemAc"></th>
         {/if}
         <th data-field="problem_id" data-align="center" data-valign="middle"  data-sortable="true" data-width="55">题号<span class="en-text">ID</span></th>
-        <th data-field="title" data-align="left" data-valign="middle"  data-sortable="false" data-formatter="FormatterProblemTitle">标题<span class="en-text">Title</span></th>
-        <th data-field="source" data-align="left" data-valign="middle"  data-sortable="false" data-formatter="FormatterSource">来源<span class="en-text">Source</span></th>
+        <th data-field="title" data-align="left" data-valign="middle" data-sortable="false" data-formatter="FormatterProblemTitle" class="problem-title-column">标题<span class="en-text">Title</span></th>
+        <th data-field="source" data-align="left" data-valign="middle" data-sortable="false" data-formatter="FormatterSource" class="problem-source-column">来源<span class="en-text">Source</span></th>
         {if $prolist_mode === 'admin'}
         <th data-field="author" data-align="left" data-valign="middle"  data-sortable="false" data-width="80">出题<span class="en-text">Author</span></th>
         {/if}
@@ -173,51 +173,24 @@ window.queryParams = window.makeQueryParams(PROBLEM_LIST_CONFIG.prefix, PROBLEM_
     return params;
 });
 
-// 初始化工具栏功能
-$(function() {
-    if (typeof initBootstrapTableToolbar === 'function') {
-        var toolbarConfig = {
-            tableId: PROBLEM_LIST_CONFIG.tableId,
-            prefix: PROBLEM_LIST_CONFIG.prefix,
-            filterSelectors: PROBLEM_LIST_CONFIG.filterSelectors,
-            searchInputId: PROBLEM_LIST_CONFIG.searchInputId
-        };
-        
-        // 前台特有功能：URL搜索同步
-        if (PROBLEM_LIST_CONFIG.scene === 'frontend' && PROBLEM_LIST_CONFIG.customHandlers) {
-            toolbarConfig.customHandlers = {
-                initUrlSearch: function() {
-                    let problemset_table = $('#' + PROBLEM_LIST_CONFIG.tableId);
-                    let search_cookie_name = problemset_table.attr('data-cookie-id-table') + ".bs.table.searchText";
-                    let search_input = $('#' + PROBLEM_LIST_CONFIG.searchInputId);
-                    
-                    // 使用全局的 GetAnchor/SetAnchor 函数
-                    let search_str = GetAnchor("search");
-                    if(search_str !== null) {
-                        document.cookie = [
-                            search_cookie_name, '=', search_str
-                        ].join('');
-                    }
-                    
-                    search_input.on('input', function() {
-                        SetAnchor(search_input.val(), 'search');
-                    });
-                    
-                    $(window).on('hashchange', function(e) {
-                        let search_str = GetAnchor("search");
-                        search_input.val(search_str).trigger('keyup');
-                    });
-                }
-            };
-        }
-        
-        initBootstrapTableToolbar(toolbarConfig);
-    }
-});
-
 // 前台特有功能初始化
 $(function() {
     if (PROBLEM_LIST_CONFIG.scene === 'frontend') {
+        const table = $('#' + PROBLEM_LIST_CONFIG.tableId);
+        
+        // 确保表格使用自动布局，让标题和来源列能够动态分配空间
+        table.on('post-body.bs.table', function() {
+            const $table = $(this);
+            // 确保表格使用自动布局
+            $table.css('table-layout', 'auto');
+            // 确保标题和来源列能够自然展开
+            $table.find('.problem-title-column, .problem-source-column').css({
+                'width': 'auto',
+                'min-width': '150px'
+            });
+            $table.find('.problem-source-column').css('min-width', '100px');
+        });
+        
         // 初始化页码跳转功能
         if (typeof initPageJump === 'function') {
             initPageJump(PROBLEM_LIST_CONFIG.tableId, 'toobar_ok', 'page_jump_input');
@@ -231,12 +204,12 @@ $(function() {
                     e.returnValue = false;
                 }
                 e.preventDefault();
-                $('#' + PROBLEM_LIST_CONFIG.tableId).bootstrapTable('refresh');
+                table.bootstrapTable('refresh');
             }
         });
         
         // 初始化页码输入框
-        $('#page_jump_input').val($('#' + PROBLEM_LIST_CONFIG.tableId).bootstrapTable('getOptions')['pageNumber']);
+        $('#page_jump_input').val(table.bootstrapTable('getOptions')['pageNumber']);
     }
 });
 </script>
@@ -253,6 +226,53 @@ $(function() {
 }
 .bootstrap-table .fixed-table-toolbar {
     padding: 0.5rem 0;
+}
+
+/* 题目列表表格布局：使用自动布局让列能够动态分配空间 */
+.bootstraptable_refresh_local {
+    table-layout: auto;
+    width: 100%;
+}
+
+/* 题目列表标题和来源列的自然宽度控制 */
+.problem-title-column {
+    min-width: 150px;
+    max-width: none;
+    width: auto;
+}
+
+.problem-source-column {
+    min-width: 100px;
+    max-width: none;
+    width: auto;
+}
+
+/* 标题链接：自然展开，超出时显示省略号 */
+.problem-title-link {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+/* 来源链接：自然展开，超出时显示省略号 */
+.problem-source-link {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.problem-source-link a {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 </style>
 {/if}
