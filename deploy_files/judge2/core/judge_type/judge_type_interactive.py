@@ -20,6 +20,7 @@ if current_dir not in sys.path:
 from base_judge_type import BaseJudgeType, JudgeSysErrTestData, JudgeSysErrCompile, JudgeSysErrProgram
 from tools import status_constants as sc
 from tools.debug_manager import is_debug_enabled
+from tools.tpj_result_analyzer import analyze_tpj_result
 
 class JudgeTypeInteractive(BaseJudgeType):
     """交互题评测类型 (spj=2) - 基于testlib的交互题评测"""
@@ -126,7 +127,6 @@ class JudgeTypeInteractive(BaseJudgeType):
                     pass
                 
                 # 分析TPJ结果（TPJ的返回码和stderr包含评测信息）
-                from tools.tpj_result_analyzer import analyze_tpj_result
                 tpj_result = analyze_tpj_result(tpj_return_code, tpj_stderr, run_time, 0)
                 
                 if is_debug_enabled():

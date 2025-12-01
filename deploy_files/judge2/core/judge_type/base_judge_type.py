@@ -369,9 +369,15 @@ class BaseJudgeType(ABC):
                 time_source = "cpu_time"
             
             # 汇总完整结果（包含 judge_result）
+            # 优先使用 monitoring_result 中的 judge_result（TPJ等特殊评测类型会设置）
+            # 如果没有，才根据 program_status 自动生成
+            judge_result = monitoring_result.get("judge_result")
+            if judge_result is None:
+                judge_result = sc.get_judge_result_from_program_status(monitoring_result["program_status"])
+            
             result = {
                 "program_status": monitoring_result["program_status"],
-                "judge_result": sc.get_judge_result_from_program_status(monitoring_result["program_status"]), # TODO: 这里不应该包含judge_result
+                "judge_result": judge_result,
                 "time": final_time,
                 "memory": monitoring_result.get("memory", 0),
                 "message": monitoring_result.get("message", ""),
@@ -391,6 +397,13 @@ class BaseJudgeType(ABC):
                 result["seccomp_error"] = monitoring_result["seccomp_error"]
             if "error_type" in monitoring_result:
                 result["error_type"] = monitoring_result["error_type"]
+            # 传递 TPJ 分析器返回的字段（testlib_result, testlib_message, judge_info 等）
+            if "testlib_result" in monitoring_result:
+                result["testlib_result"] = monitoring_result["testlib_result"]
+            if "testlib_message" in monitoring_result:
+                result["testlib_message"] = monitoring_result["testlib_message"]
+            if "judge_info" in monitoring_result:
+                result["judge_info"] = monitoring_result["judge_info"]
             
             return result
                 
