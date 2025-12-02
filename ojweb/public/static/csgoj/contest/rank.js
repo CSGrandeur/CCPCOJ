@@ -2154,52 +2154,106 @@ if(typeof RankSystem == 'undefined') {
             setupIconTooltip(playerIcon);
         }
         // BindNamePopovers方法已移除，现在统一使用title-cn和title-en属性
-        CreateHeaderRow() {
-            const headerRow = document.createElement('div');
-            headerRow.className = 'rank-header-row';
-            // 设置表头z-index为100000，确保始终在最上层
-            headerRow.style.zIndex = '100000';
-            // 基础列 - 使用与CreateRankContainer相同的格式
-            let headerHtml = `
+        /**
+         * 是否显示题目统计信息（可被子类重写）
+         * @returns {boolean} 是否显示统计信息
+         */
+        ShouldShowProblemStats() {
+            return true;
+        }
+        
+        /**
+         * 创建表头基础列（排名、题数、罚时）
+         * @returns {string} HTML字符串
+         */
+        CreateHeaderRowBase() {
+            return `
                 <div class="rank-col rank-col-rank"><div class="header-cell">${this.CreateBilingualText('排名', 'Rank')}</div></div>
                 <div class="rank-col rank-col-solve"><div class="header-cell">${this.CreateBilingualText('题数', 'Solved')}</div></div>
                 <div class="rank-col rank-col-penalty"><div class="header-cell">${this.CreateBilingualText('罚时', 'Penalty')}</div></div>
             `;
-            headerHtml += '<div class="pro-header-group">\n';
-            // 添加题目列
+        }
+        
+        /**
+         * 创建单个题目列的表头HTML
+         * @param {Object} problem - 题目对象
+         * @param {Object} stats - 题目统计信息（可选）
+         * @returns {string} HTML字符串
+         */
+        CreateProblemHeaderColumn(problem, stats = null) {
+            const problemAlphabetIdx = RankToolGetProblemAlphabetIdx(problem.num);
+            const color = RankToolParseColor(problem.color);
+            const showStats = this.ShouldShowProblemStats() && stats !== null;
+            
+            let tooltipAttributes = '';
+            let statsHtml = '';
+            
+            if (showStats) {
+                // 生成tooltip文本：显示两套统计数据
+                const tooltipCn = `AC队伍数：${stats.acTeams} / 总提交队伍数：${stats.totalTeams}\nAC提交数：${stats.ac} / 总提交数：${stats.total}`;
+                const tooltipEn = `AC Teams: ${stats.acTeams} / Total Tried Teams: ${stats.totalTeams}\nAC Submissions: ${stats.ac} / Total Submissions: ${stats.total}`;
+                tooltipAttributes = RankToolGenerateBilingualAttributes(tooltipCn, tooltipEn);
+                statsHtml = `
+                    <div class="problem-header-stats">
+                        ${stats.acTeams}/${stats.totalTeams}
+                    </div>
+                `;
+            }
+            
+            return `
+                <div class="rank-col rank-col-problem" style="--rank-problem-color: ${color}">
+                    <div class="problem-header-color-bg">
+                        <i class="bi bi-balloon-fill" title-cn="${color}"></i>
+                    </div>
+                    <div class="problem-header-content" ${tooltipAttributes}>
+                        <div class="problem-header-title">${problemAlphabetIdx}</div>
+                        ${statsHtml}
+                    </div>
+                </div>
+            `;
+        }
+        
+        /**
+         * 创建题目组表头HTML
+         * @returns {string} HTML字符串
+         */
+        CreateProblemHeaderGroup() {
+            let headerHtml = '<div class="pro-header-group">\n';
+            
             if (this.data && this.data.problem) {
-                // ********** 统计 - 题目统计 **********
-                const problemStats = this.CalculateProblemStats();
+                let problemStats = null;
+                if (this.ShouldShowProblemStats()) {
+                    // 只在需要显示统计信息时才计算
+                    problemStats = this.CalculateProblemStats();
+                }
+                
                 this.data.problem.forEach(problem => {
-                    const problemAlphabetIdx = RankToolGetProblemAlphabetIdx(problem.num);
-                    const stats = problemStats[problem.problem_id] || { 
+                    const stats = problemStats ? (problemStats[problem.problem_id] || { 
                         ac: 0, 
                         total: 0, 
                         acTeams: 0, 
                         totalTeams: 0 
-                    };
-                    const color = RankToolParseColor(problem.color);
-                    
-                    // 生成tooltip文本：显示两套统计数据
-                    const tooltipCn = `AC队伍数：${stats.acTeams} / 总提交队伍数：${stats.totalTeams}\nAC提交数：${stats.ac} / 总提交数：${stats.total}`;
-                    const tooltipEn = `AC Teams: ${stats.acTeams} / Total Tried Teams: ${stats.totalTeams}\nAC Submissions: ${stats.ac} / Total Submissions: ${stats.total}`;
-                    
-                    headerHtml += `
-                        <div class="rank-col rank-col-problem" style="--rank-problem-color: ${color}">
-                            <div class="problem-header-color-bg">
-                                <i class="bi bi-balloon-fill" title-cn="${color}"></i>
-                            </div>
-                            <div class="problem-header-content" ${RankToolGenerateBilingualAttributes(tooltipCn, tooltipEn)}>
-                                <div class="problem-header-title">${problemAlphabetIdx}</div>
-                                <div class="problem-header-stats" >
-                                    ${stats.acTeams}/${stats.totalTeams}
-                                </div>
-                            </div>
-                        </div>
-                    `;
+                    }) : null;
+                    headerHtml += this.CreateProblemHeaderColumn(problem, stats);
                 });
             }
+            
             headerHtml += '</div>\n';
+            return headerHtml;
+        }
+        
+        /**
+         * 创建表头行
+         * @returns {HTMLElement} 表头行元素
+         */
+        CreateHeaderRow() {
+            const headerRow = document.createElement('div');
+            headerRow.className = 'rank-header-row';
+            // z-index 已在 CSS 中通过 .rank-header-row 类设置
+            
+            let headerHtml = this.CreateHeaderRowBase();
+            headerHtml += this.CreateProblemHeaderGroup();
+            
             headerRow.innerHTML = headerHtml;
             return headerRow;
         }
@@ -2623,20 +2677,25 @@ if(typeof RankSystem == 'undefined') {
                     problemAlphabetIdx: RankToolGetProblemAlphabetIdx(this.problemMap[problemId].num)
                 };
                 // 计算总分钟数：将 HH:MM:SS 转换为总分钟数
+                // 支持 H:MM:SS, HH:MM:SS, HHH:MM:SS 等格式（支持超过99小时）
                 let briefMinute = '';
-                if (stats.lastSubmitTime && /^(\d{1,2}:)?\d{1,2}:\d{2}$/.test(stats.lastSubmitTime)) {
+                if (stats.lastSubmitTime && /^\d{1,4}:\d{1,2}:\d{2}$/.test(stats.lastSubmitTime)) {
                     const timeParts = stats.lastSubmitTime.split(':');
                     let totalMinutes = 0;
                     if (timeParts.length === 3) {
-                        // HH:MM:SS 格式
+                        // H:MM:SS 或 HH:MM:SS 或 HHH:MM:SS 格式
                         const hours = parseInt(timeParts[0]) || 0;
                         const minutes = parseInt(timeParts[1]) || 0;
                         totalMinutes = hours * 60 + minutes;
-                    } else if (timeParts.length === 2) {
-                        // MM:SS 格式
-                        totalMinutes = parseInt(timeParts[0]) || 0;
                     }
                     briefMinute = totalMinutes + "'";
+                } else if (stats.lastSubmitTime && /^\d{1,2}:\d{2}$/.test(stats.lastSubmitTime)) {
+                    // MM:SS 格式（兼容旧格式）
+                    const timeParts = stats.lastSubmitTime.split(':');
+                    if (timeParts.length === 2) {
+                        const totalMinutes = parseInt(timeParts[0]) || 0;
+                        briefMinute = totalMinutes + "'";
+                    }
                 }
                 // 生成简化的tooltip内容
                 const statusText = stats.status === 'ac' ? '已通过' : 
@@ -2680,6 +2739,10 @@ if(typeof RankSystem == 'undefined') {
                     firstBloodClasses += ' pro-first-blood-global';
                 }
                 
+                // 根据 briefMinute 长度添加类名（超过4位时缩小字号）
+                const briefMinuteLength = briefMinute.length;
+                const briefMinuteClass = briefMinuteLength > 4 ? 'time-brief-long' : '';
+                
                 html += `
                     <div class="rank-col rank-col-problem">
                         <div class="${this.GetProblemStatusClass(stats)}${firstBloodClasses}" 
@@ -2689,7 +2752,7 @@ if(typeof RankSystem == 'undefined') {
                             <div class="problem-content">
                                 <span class="pro-submit-cnt">${this.GetSubmitCountDisplay(stats)}</span>
                                 ${separatorHtml}
-                                <span class="time-brief">${briefMinute}</span>
+                                <span class="time-brief ${briefMinuteClass}">${briefMinute}</span>
                                 <span class="time-full">${this.GetLastSubmitTimeDisplay(stats)}</span>
                             </div>
                         </div>

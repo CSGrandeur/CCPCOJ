@@ -275,26 +275,26 @@
 >
     <thead>
     <tr>
-            <th data-field="idx" data-align="center" data-valign="middle" data-sortable="false" data-width="60" data-formatter="FormatterIndex">序号<span class="en-text">Index</span></th>
-            <th data-field="team_id" data-align="center" data-valign="middle" data-sortable="true" data-width="120" data-cell-style="cellStyleTeamId">账号<span class="en-text">ID</span></th>
-            <th data-field="name" data-align="left" data-valign="middle" data-width="160">姓名<span class="en-text">Name</span></th>
+            <th data-field="idx" data-align="center" data-valign="middle" data-sortable="false" data-width="60" data-formatter="FormatterIndex" title="序号 / Index">序号<span class="en-text">Index</span></th>
+            <th data-field="team_id" data-align="center" data-valign="middle" data-sortable="true" data-width="120" data-cell-style="cellStyleTeamId" title="账号 / ID">账号<span class="en-text">ID</span></th>
+            <th data-field="name" data-align="left" data-valign="middle" data-width="160" title="姓名 / Name">姓名<span class="en-text">Name</span></th>
             {if $action == 'contest_teamgen'}
-            <th data-field="name_en" data-align="left" data-valign="middle" >副语言队名<span class="en-text">Secondary Language Name</span></th>
-            <th data-field="school" data-align="center" data-valign="middle" data-width="150">学校/组织<span class="en-text">School/Organization</span></th>
-            <th data-field="region" data-align="center" data-valign="middle" data-formatter="FormatterRegion">国家/地区<span class="en-text">Country/Region</span></th>
-            <th data-field="tmember" data-align="center" data-valign="middle">队员<span class="en-text">Member</span></th>
-            <th data-field="coach" data-align="center" data-valign="middle" data-width="80">教练<span class="en-text">Coach</span></th>
-            <th data-field="tkind" data-align="center" data-valign="middle" data-formatter="FormatterTkind" data-width="60">类型<span class="en-text">Tkind</span></th>
+            <th data-field="name_en" data-align="left" data-valign="middle" title="副语言队名 / Secondary Language Name">副语言队名<span class="en-text">Secondary Language Name</span></th>
+            <th data-field="school" data-align="center" data-valign="middle" data-width="150" title="学校/组织 / School/Organization">学校/组织<span class="en-text">School/Organization</span></th>
+            <th data-field="region" data-align="center" data-valign="middle" data-formatter="FormatterRegion" title="国家/地区 / Country/Region">国家/地区<span class="en-text">Country/Region</span></th>
+            <th data-field="tmember" data-align="center" data-valign="middle" title="队员 / Member">队员<span class="en-text">Member</span></th>
+            <th data-field="coach" data-align="center" data-valign="middle" data-width="80" title="教练 / Coach">教练<span class="en-text">Coach</span></th>
+            <th data-field="tkind" data-align="center" data-valign="middle" data-formatter="FormatterTkind" data-width="60" title="类型 / Tkind">类型<span class="en-text">Tkind</span></th>
             {/if}
-            <th data-field="room" data-align="center" data-valign="middle">房间/区域<span class="en-text">Room/Area</span></th>
+            <th data-field="room" data-align="center" data-valign="middle" title="房间/区域 / Room/Area">房间/区域<span class="en-text">Room/Area</span></th>
             {if $action == 'contest_staffgen'}
-            <th data-field="privilege" data-align="center" data-valign="middle" data-width="150">权限<span class="en-text">Privilege</span></th>
+            <th data-field="privilege" data-align="center" data-valign="middle" data-width="150" title="权限 / Privilege">权限<span class="en-text">Privilege</span></th>
             {/if}
-            <th data-field="password" data-align="center" data-valign="middle" data-width="100">密码<span class="en-text">Password</span></th>
-        <th data-field="validation_errors" data-align="center" data-valign="middle" data-width="60" data-formatter="FormatterValidationErrors" data-visible="false" data-sortable="true" >错误信息<span class="en-text">Validation Errors</span></th>
+            <th data-field="password" data-align="center" data-valign="middle" data-width="100" title="密码 / Password">密码<span class="en-text">Password</span></th>
+        <th data-field="validation_errors" data-align="center" data-valign="middle" data-width="60" data-formatter="FormatterValidationErrors" data-visible="false" data-sortable="true" title="错误信息 / Validation Errors">错误信息<span class="en-text">Validation Errors</span></th>
         {if ($action == 'contest_teamgen' || $action == 'contest_staffgen') && $contestStatus != 2}
-        <th data-field="modify" data-align="center" data-valign="middle" data-width="70" data-formatter="FormatterModify" data-sortable="false">修改<span class="en-text">Modify</span></th>
-        <th data-field="delete" data-align="center" data-valign="middle" data-width="60" data-formatter="FormatterDel">删除<span class="en-text">Del(Dbl Click)</span></th>
+        <th data-field="modify" data-align="center" data-valign="middle" data-width="70" data-formatter="FormatterModify" data-sortable="false" title="修改 / Modify">修改<span class="en-text">Modify</span></th>
+        <th data-field="delete" data-align="center" data-valign="middle" data-width="60" data-formatter="FormatterDel" title="删除 / Del(Dbl Click)">删除<span class="en-text">Del(Dbl Click)</span></th>
         {/if}
     </tr>
     </thead>

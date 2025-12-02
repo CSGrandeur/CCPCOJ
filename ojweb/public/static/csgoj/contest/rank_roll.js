@@ -104,6 +104,14 @@ class RankRollSystem extends RankSystem {
     }
     
     /**
+     * 重写 ShouldShowProblemStats 方法，滚榜模式下隐藏题目统计信息（尝试数、通过数）
+     * @returns {boolean} 滚榜模式下返回 false，不显示统计信息
+     */
+    ShouldShowProblemStats() {
+        return false;
+    }
+    
+    /**
      * 初始化滚榜状态的内部实现（通用逻辑）
      * 基于 RankSystem 的数据创建滚榜专用数据结构
      * @param {boolean} forceReset - 是否强制重置（忽略已初始化检查）
@@ -331,7 +339,7 @@ class RankRollSystem extends RankSystem {
                                     
                                     <!-- 学校信息 -->
                                     <div class="award-info-row award-info-primary">
-                                        <div class="award-info-label">${this.CreateBilingualText('学校', 'School')}</div>
+                                        <div class="award-info-label">${this.CreateBilingualText('院校|组织', 'School|Organization')}</div>
                                         <div id="award-school" class="award-info-value"></div>
                                     </div>
                                     
@@ -342,13 +350,13 @@ class RankRollSystem extends RankSystem {
                                     </div>
                                     
                                     <!-- 成员信息 -->
-                                    <div class="award-info-row">
+                                    <div id="award-members-row" class="award-info-row">
                                         <div class="award-info-label">${this.CreateBilingualText('成员', 'Members')}</div>
                                         <div id="award-members" class="award-info-value"></div>
                                     </div>
                                     
                                     <!-- 教练信息 -->
-                                    <div class="award-info-row">
+                                    <div id="award-coach-row" class="award-info-row">
                                         <div class="award-info-label">${this.CreateBilingualText('教练', 'Coach')}</div>
                                         <div id="award-coach" class="award-info-value"></div>
                                     </div>
@@ -1465,6 +1473,18 @@ class RankRollSystem extends RankSystem {
                 // 打星队也要"看"，也要确认尘埃落定，只是不参与评奖
                 if (!this.settledTeams.has(teamData.team_id)) {
                     this.currentJudgingIndex = i;
+                    // 关键修改：在返回 needsSkip 之前，先检查是否需要获奖
+                    // 如果需要获奖，返回 needsAward: true；否则返回 needsSkip: true
+                    if (this.ShouldShowAward(teamData, rankedItem, this.realRankMap)) {
+                        // 需要显示获奖，返回 needsAward
+                        return {
+                            team_id: teamData.team_id,
+                            problemId: null,
+                            needsAward: true,
+                            needsSkip: false
+                        };
+                    }
+                    // 不需要获奖，返回 needsSkip（确认"尘埃落定"）
                     return {
                         team_id: teamData.team_id,
                         problemId: null,
@@ -1881,21 +1901,24 @@ class RankRollSystem extends RankSystem {
             const hasFrozenProblems = solutions && solutions.frozen && Object.keys(solutions.frozen).length > 0;
             
             // 由于没有排序，位置应该不会改变（teamIndexBefore === indexAfter）
-            // 如果位置稳定且没有frozen题目，检查获奖
+            // 如果位置稳定且没有frozen题目，先标记为"尘埃落定"，然后调用 JudgeConfirm
+            // 关键修改：不立即调用 JudgeAward，而是标记为"尘埃落定"后调用 JudgeConfirm
+            // 这样用户需要再按一次单步执行才会弹出modal，改善手感
             if (!hasFrozenProblems) {
-                this.currentRollStep = 'sort_award';
-                // 修复：根据自动/手动模式决定继续方式
-                if (this.isAutoRolling) {
-                    // 自动模式：调用 TryAutoRolling 继续流程
-                    this.TryAutoRolling('RollNextStep');
-                } else {
-                    // 手动模式：直接调用 JudgeAward 维持原流程
-                    this.JudgeAward();
-                }
+                // 先标记为"尘埃落定"
+                this.settledTeams.add(this.judgingTeamId);
+                this.currentRollStep = null;
+                // 调用 JudgeConfirm，让 FindNextJudging 检查是否需要获奖
+                this.JudgeConfirm();
                 return;
-            }            
-            // 继续确认（检查当前位置是否有需要处理的）
-            this.JudgeConfirm();
+            }
+            // 关键修改：如果还有frozen题目，不立刻调用 JudgeConfirm() 锁定下一个题目
+            // 而是设置 currentRollStep = null，等待用户按下一步再继续
+            // 这样用户需要再按一次单步执行才会转到下一个待揭晓的题，改善手感
+            this.currentRollStep = null;
+            // 清除当前高亮，等待用户按下一步
+            this.ClearJudgingHighlight();
+            // 不调用 JudgeConfirm()，等待用户按下一步
             return;
         }
         
@@ -2846,12 +2869,7 @@ class RankRollSystem extends RankSystem {
             targetAwardLevel = 1;
         } else if (currentAwardLevel === 1) {
             // 当前在铜奖区，跳到银奖区；如果没有银奖区，跳到金奖区
-            const silverTeam = this.FindLastTeamInAwardLevel(2, this.rankList);
-            if (silverTeam) {
-                targetAwardLevel = 2;
-            } else {
-                targetAwardLevel = 3;
-            }
+            targetAwardLevel = 2;
         } else if (currentAwardLevel === 2) {
             // 当前在银奖区，跳到金奖区
             targetAwardLevel = 3;
@@ -2863,11 +2881,26 @@ class RankRollSystem extends RankSystem {
         
         // 找到目标奖区的最后一个队伍
         let lastAwardTeam = this.FindLastTeamInAwardLevel(targetAwardLevel, this.rankList);
-        // 如果没有找到目标奖区，尝试找下一个存在的奖区
-        if (!lastAwardTeam && targetAwardLevel === 2) {
-            // 如果没有银奖，尝试找金奖
-            targetAwardLevel = 3;
-            lastAwardTeam = this.FindLastTeamInAwardLevel(3, this.rankList);
+        
+        // 关键修复：如果预期的下一个奖区不存在，则要尝试再下一个奖区
+        // 比如当前无奖，要跳到铜奖，然而本场比赛没有铜奖，则要尝试计算银奖奖区
+        // 如果当前是铜奖，而本场比赛没有银奖，则要继续尝试计算金奖奖区
+        if (!lastAwardTeam) {
+            // 如果目标奖区不存在，尝试下一个奖区
+            if (targetAwardLevel === 1) {
+                // 如果没有铜奖，尝试找银奖
+                targetAwardLevel = 2;
+                lastAwardTeam = this.FindLastTeamInAwardLevel(2, this.rankList);
+                if (!lastAwardTeam) {
+                    // 如果没有银奖，尝试找金奖
+                    targetAwardLevel = 3;
+                    lastAwardTeam = this.FindLastTeamInAwardLevel(3, this.rankList);
+                }
+            } else if (targetAwardLevel === 2) {
+                // 如果没有银奖，尝试找金奖
+                targetAwardLevel = 3;
+                lastAwardTeam = this.FindLastTeamInAwardLevel(3, this.rankList);
+            }
         }
         
         if (!lastAwardTeam) {
@@ -3997,6 +4030,33 @@ class RankRollSystem extends RankSystem {
     }
     
     /**
+     * 设置获奖信息行的显示/隐藏和内容
+     * @param {string} rowId - 行的ID（如 'award-members-row'）
+     * @param {HTMLElement} valueElement - 值元素（如 awardMembers）
+     * @param {string} value - 要显示的值，如果为空字符串则隐藏行
+     */
+    setAwardInfoRow(rowId, valueElement, value) {
+        const row = this.container.querySelector(`#${rowId}`);
+        const isEmpty = !value || value.trim() === '';
+        
+        if (isEmpty) {
+            // 值为空，隐藏整个行
+            if (row) {
+                row.style.display = 'none';
+                row.classList.add('award-info-row-hidden');
+            }
+            this.enableMarqueeIfNeeded(valueElement, '');
+        } else {
+            // 值不为空，显示行并设置值
+            if (row) {
+                row.style.display = 'flex';
+                row.classList.remove('award-info-row-hidden');
+            }
+            this.enableMarqueeIfNeeded(valueElement, value);
+        }
+    }
+    
+    /**
      * 显示获奖
      */
     ShowAward(team_id, award) {
@@ -4032,28 +4092,18 @@ class RankRollSystem extends RankSystem {
         // 使用跑马灯功能设置文本（会自动检测溢出并启用跑马灯）
         this.enableMarqueeIfNeeded(awardSchool, team.school || this.CreateBilingualText('未知学校/组织', 'Unknown School/Organization'));
         this.enableMarqueeIfNeeded(awardTeamName, team.name || team_id);
-        this.enableMarqueeIfNeeded(awardMembers, team.tmember || '');
-        this.enableMarqueeIfNeeded(awardCoach, team.coach || '');
+        
+        // 处理成员和教练信息：如果为空则隐藏整个行（包括label）
+        this.setAwardInfoRow('award-members-row', awardMembers, team.tmember || '');
+        this.setAwardInfoRow('award-coach-row', awardCoach, team.coach || '');
         
         if (awardRank) awardRank.textContent = this.GetCurrentRank(team_id);
         if (awardSolved) awardSolved.textContent = teamData.solved;
         
         // 处理首答信息：有首答才显示，没有就隐藏（基于真实最终榜的结果）
-        const awardFirstBloodRow = this.container.querySelector('#award-first-blood-row');
         const firstBloodList = this.GetFirstBloodList(team_id);
-        if (firstBloodList && firstBloodList !== null && firstBloodList !== '-') {
-            this.enableMarqueeIfNeeded(awardFirstBlood, firstBloodList);
-            if (awardFirstBloodRow) {
-                awardFirstBloodRow.style.display = 'flex';
-                awardFirstBloodRow.classList.remove('award-info-row-hidden'); // 移除隐藏标记
-            }
-        } else {
-            this.enableMarqueeIfNeeded(awardFirstBlood, ''); // 清空首答内容
-            if (awardFirstBloodRow) {
-                awardFirstBloodRow.style.display = 'none';
-                awardFirstBloodRow.classList.add('award-info-row-hidden'); // 添加隐藏标记
-            }
-        }
+        const hasFirstBlood = firstBloodList && firstBloodList !== null && firstBloodList !== '-';
+        this.setAwardInfoRow('award-first-blood-row', awardFirstBlood, hasFirstBlood ? firstBloodList : '');
         
         // 处理学校logo（半透明背景）
         if (awardSchoolLogo && team.school) {

@@ -19,6 +19,14 @@ if(typeof CSGAnim == 'undefined') {
             this.risingElements = new WeakSet(); // 标记正在上升的元素
             // z-index 自增计数器（从100开始，表头使用100000）
             this.risingZIndexCounter = 100;
+            
+            // z-index 队列管理（避免累加超出表头的 500）
+            this.risingZIndexQueue = []; // Array<{element, zIndex, teamId}>
+            this.risingZIndexQueueMaxSize = 200; // 队列最大长度
+            this.risingZIndexQueueKeepSize = 10; // 保留的最近队伍数
+            this.risingZIndexQueueCleanSize = 190; // 清理的数量
+            this.risingZIndexBase = 100; // z-index 基准值
+            this.risingZIndexResetStart = 101; // 重置后的起始 z-index
         }
     
         /**
@@ -30,6 +38,85 @@ if(typeof CSGAnim == 'undefined') {
             const adjustedDuration = baseDuration / speedMultiplier;
             
             return Math.max(minDuration, Math.min(maxDuration, adjustedDuration));
+        }
+
+        /**
+         * 管理上升队伍的 z-index 队列
+         * 当队列达到最大长度时，清理旧的 z-index，保留最近的队伍
+         * 使用 Set/Map 优化去重，避免 O(n) 暴力查找
+         * @param {HTMLElement} element - 上升队伍的元素
+         * @returns {number} - 分配的 z-index 值
+         */
+        manageRisingZIndex(element) {
+            if (!element) {
+                return this.risingZIndexCounter++;
+            }
+            
+            // 获取 teamId
+            const teamId = element.getAttribute('data-row-id');
+            if (!teamId) {
+                // 如果没有 teamId，使用默认自增方式
+                return this.risingZIndexCounter++;
+            }
+            
+            // 检查队列是否达到最大长度
+            if (this.risingZIndexQueue.length >= this.risingZIndexQueueMaxSize) {
+                // 使用 Set 存储最近保留的队伍 teamId（O(1) 查找）
+                const recentTeamIds = new Set();
+                const recentStartIndex = this.risingZIndexQueue.length - this.risingZIndexQueueKeepSize;
+                
+                // 构建最近保留队伍的 teamId Set（O(1) 查找）
+                for (let i = recentStartIndex; i < this.risingZIndexQueue.length; i++) {
+                    const item = this.risingZIndexQueue[i];
+                    if (item && item.teamId) {
+                        recentTeamIds.add(item.teamId);
+                    }
+                }
+                
+                // 清理前 N 个队伍的 z-index（排除最近保留的队伍）
+                const cleanEndIndex = this.risingZIndexQueue.length - this.risingZIndexQueueKeepSize;
+                for (let i = 0; i < cleanEndIndex; i++) {
+                    const item = this.risingZIndexQueue[i];
+                    if (item && item.element && item.teamId) {
+                        // 使用 Set 的 has 方法，O(1) 时间复杂度
+                        if (!recentTeamIds.has(item.teamId)) {
+                            // 这个队伍不在最近保留的队伍中，清理它的 z-index
+                            item.element.style.zIndex = '';
+                        }
+                        // 如果这个队伍在最近保留的队伍中，保留它的 z-index，后续会重置
+                    }
+                }
+                
+                // 将最近保留的队伍 z-index 重置为 101~110
+                let resetZIndex = this.risingZIndexResetStart;
+                for (let i = recentStartIndex; i < this.risingZIndexQueue.length; i++) {
+                    const item = this.risingZIndexQueue[i];
+                    if (item && item.element) {
+                        // 更新 z-index（无论之前是否被清理，都重新设置）
+                        item.element.style.zIndex = String(resetZIndex);
+                        item.zIndex = resetZIndex;
+                        resetZIndex++;
+                    }
+                }
+                
+                // 更新计数器，确保后续分配的 z-index 不会冲突
+                this.risingZIndexCounter = resetZIndex;
+                
+                // 移除前 N 个元素（保留最近保留的队伍）
+                this.risingZIndexQueue = this.risingZIndexQueue.slice(recentStartIndex);
+            }
+            
+            // 分配新的 z-index
+            const zIndex = this.risingZIndexCounter++;
+            
+            // 添加到队列
+            this.risingZIndexQueue.push({
+                element: element,
+                zIndex: zIndex,
+                teamId: teamId
+            });
+            
+            return zIndex;
         }
 
         /**
@@ -575,8 +662,9 @@ if(typeof CSGAnim == 'undefined') {
                             
                             data.element.style.willChange = 'transform';
                             if (data.isRising) {
-                                // 使用自增z-index，确保每个上升队伍都有唯一的z-index
-                                data.element.style.zIndex = String(this.risingZIndexCounter++);
+                                // 使用队列管理 z-index，避免累加超出表头
+                                const zIndex = this.manageRisingZIndex(data.element);
+                                data.element.style.zIndex = String(zIndex);
                             }
                         });
                         
@@ -944,9 +1032,10 @@ if(typeof CSGAnim == 'undefined') {
                             // 立即应用反向transform和transition，避免用户看到最终位置
                             element.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0)`;
                             element.style.transition = `transform ${duration}ms ${easing}`;
-                            // 上升队伍设置自增的 z-index，避免被其他队伍遮挡
+                            // 上升队伍设置 z-index，使用队列管理避免累加超出表头
                             if (isRising) {
-                                element.style.zIndex = String(this.risingZIndexCounter++);
+                                const zIndex = this.manageRisingZIndex(element);
+                                element.style.zIndex = String(zIndex);
                             }
                         });
                         

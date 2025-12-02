@@ -47,12 +47,12 @@
 >
     <thead>
     <tr>
-        <th data-field="team_id" data-align="center" data-valign="middle" data-sortable="true" data-width="55">User ID</th>
-        <th data-field="name" data-align="left" data-valign="middle" >Name</th>
-        <th data-field="password" data-align="center" data-valign="middle"  data-width="60" >Password</th>
-        <th data-field="privilege" data-align="center" data-valign="middle"  data-width="60" >Privilege</th>
-        <th data-field="room" data-align="center" data-valign="middle"  data-width="60" >Room</th>
-        <th data-field="delete" data-align="center" data-valign="middle"  data-width="60" data-formatter="FormatterDel">Del(Dbl Click)</th>
+        <th data-field="team_id" data-align="center" data-valign="middle" data-sortable="true" data-width="55" title="账号 / User ID">User ID</th>
+        <th data-field="name" data-align="left" data-valign="middle" title="姓名 / Name">Name</th>
+        <th data-field="password" data-align="center" data-valign="middle"  data-width="60" title="密码 / Password">Password</th>
+        <th data-field="privilege" data-align="center" data-valign="middle"  data-width="60" title="权限 / Privilege">Privilege</th>
+        <th data-field="room" data-align="center" data-valign="middle"  data-width="60" title="房间 / Room">Room</th>
+        <th data-field="delete" data-align="center" data-valign="middle"  data-width="60" data-formatter="FormatterDel" title="删除 / Del(Dbl Click)">Del(Dbl Click)</th>
     </tr>
     </thead>
 </table>

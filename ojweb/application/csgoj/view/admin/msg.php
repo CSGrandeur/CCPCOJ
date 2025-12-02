@@ -138,7 +138,7 @@
 
 <script type="text/javascript">
     function FormatterContestMsgEdit(value, row, index, field) {
-        return row.defunct == 1 ? "<button class='btn btn-primary btn-sm'><i class='bi bi-pencil me-1'></i>编辑<span class='en-text'>Edit</span></button>" : '-';
+        return row.defunct == 1 ? "<button class='btn btn-primary btn-sm'><span><i class='bi bi-pencil me-1'></i>编辑<span class='en-text'>Edit</span></span></button>" : '-';
     }
 
     function FormatterContestMsgStatus(value, row, index, field) {

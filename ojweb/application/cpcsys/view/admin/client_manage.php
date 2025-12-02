@@ -210,19 +210,19 @@
 >
     <thead>
     <tr>
-        <th data-field="state" data-checkbox="true" data-width="50"></th>
-        <th data-field="idx" data-align="center" data-valign="middle" data-sortable="false" data-width="80" data-formatter="FormatterIdx">序号<span class="en-text">Index</span></th>
-        <th data-field="team_id_bind" data-align="center" data-valign="middle" data-sortable="true" data-width="120">队伍号<span class="en-text">Team ID</span></th>
-        <th data-field="ip_bind" data-align="center" data-valign="middle" data-sortable="true" data-width="150">IP地址<span class="en-text">IP Address</span></th>
-        <!-- <th data-field="ssh_user" data-align="center" data-valign="middle" data-width="100">SSH用户<span class="en-text">SSH User</span></th>
-        <th data-field="ssh_port" data-align="center" data-valign="middle" data-width="80">SSH端口<span class="en-text">SSH Port</span></th>
-        <th data-field="connect_status" data-align="center" data-valign="middle" data-width="100" data-formatter="FormatterConnectStatus">连接状态<span class="en-text">Connect Status</span></th>
-        <th data-field="lock_status" data-align="center" data-valign="middle" data-width="100" data-formatter="FormatterLockStatus">锁屏状态<span class="en-text">Lock Status</span></th>
-        <th data-field="ssh_actions" data-align="center" data-valign="middle" data-width="200" data-formatter="FormatterSshActions" data-sortable="false" data-visible="true">SSH操作<span class="en-text">SSH Actions</span></th> -->
-        <th data-field="validation_errors" data-align="center" data-valign="middle" data-width="60" data-formatter="FormatterValidationErrors" data-visible="false" data-sortable="true">错误信息<span class="en-text">Validation Errors</span></th>
+        <th data-field="state" data-checkbox="true" data-width="50" title="选择 / Select"></th>
+        <th data-field="idx" data-align="center" data-valign="middle" data-sortable="false" data-width="80" data-formatter="FormatterIdx" title="序号 / Index">序号<span class="en-text">Index</span></th>
+        <th data-field="team_id_bind" data-align="center" data-valign="middle" data-sortable="true" data-width="120" title="队伍号 / Team ID">队伍号<span class="en-text">Team ID</span></th>
+        <th data-field="ip_bind" data-align="center" data-valign="middle" data-sortable="true" data-width="150" title="IP地址 / IP Address">IP地址<span class="en-text">IP Address</span></th>
+        <!-- <th data-field="ssh_user" data-align="center" data-valign="middle" data-width="100" title="SSH用户 / SSH User">SSH用户<span class="en-text">SSH User</span></th>
+        <th data-field="ssh_port" data-align="center" data-valign="middle" data-width="80" title="SSH端口 / SSH Port">SSH端口<span class="en-text">SSH Port</span></th>
+        <th data-field="connect_status" data-align="center" data-valign="middle" data-width="100" data-formatter="FormatterConnectStatus" title="连接状态 / Connect Status">连接状态<span class="en-text">Connect Status</span></th>
+        <th data-field="lock_status" data-align="center" data-valign="middle" data-width="100" data-formatter="FormatterLockStatus" title="锁屏状态 / Lock Status">锁屏状态<span class="en-text">Lock Status</span></th>
+        <th data-field="ssh_actions" data-align="center" data-valign="middle" data-width="200" data-formatter="FormatterSshActions" data-sortable="false" data-visible="true" title="SSH操作 / SSH Actions">SSH操作<span class="en-text">SSH Actions</span></th> -->
+        <th data-field="validation_errors" data-align="center" data-valign="middle" data-width="60" data-formatter="FormatterValidationErrors" data-visible="false" data-sortable="true" title="错误信息 / Validation Errors">错误信息<span class="en-text">Validation Errors</span></th>
         {if $contestStatus != 2}
-        <th data-field="modify" data-align="center" data-valign="middle" data-width="70" data-formatter="FormatterModify" data-sortable="false">修改<span class="en-text">Modify</span></th>
-        <th data-field="delete" data-align="center" data-valign="middle" data-width="60" data-formatter="FormatterDel" data-sortable="false">删除<span class="en-text">Del(Dbl Click)</span></th>
+        <th data-field="modify" data-align="center" data-valign="middle" data-width="70" data-formatter="FormatterModify" data-sortable="false" title="修改 / Modify">修改<span class="en-text">Modify</span></th>
+        <th data-field="delete" data-align="center" data-valign="middle" data-width="60" data-formatter="FormatterDel" data-sortable="false" title="删除 / Del(Dbl Click)">删除<span class="en-text">Del(Dbl Click)</span></th>
         {/if}
     </tr>
     </thead>

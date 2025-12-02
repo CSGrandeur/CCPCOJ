@@ -14,11 +14,11 @@
     </a>
     
     <!-- 队伍信息展开面板 -->
-    <div id="team_info_panel" class="card position-absolute" style="top: 0; right: 0; width: 300px; max-width: 90vw; z-index: 1001; display: none;">
-        <div class="card-header d-flex align-items-center" style="height: 40px; padding: 0 1rem;">
-            <h5 class="card-title mb-0" style="font-size: 0.875rem;">队伍面板 <span class="en-text">Team Panel</span></h5>
+    <div id="team_info_panel" class="card position-absolute team-info-panel">
+        <div class="card-header d-flex align-items-center team-info-panel-header">
+            <h5 class="card-title mb-0 team-info-panel-title">队伍面板 <span class="en-text">Team Panel</span></h5>
         </div>
-        <div class="card-body" style="padding: 0.75rem;">
+        <div class="card-body team-info-panel-body">
             <!-- 队伍ID -->
             <div class="team-info-item" title="队伍ID / Team ID: {$login_teaminfo['team_id']}">
                 <i class="bi bi-hash text-primary"></i>

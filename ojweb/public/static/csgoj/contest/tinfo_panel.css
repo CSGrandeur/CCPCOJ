@@ -1,3 +1,16 @@
+/* z-index 基准值 */
+:root {
+    --rank-z-index-base: 600;
+}
+
+/* 队伍信息面板容器 */
+.contest-header-actions-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: calc(var(--rank-z-index-base) + 22); /* 高于 controls-toolbar (10001) */
+}
+
 /* 队伍信息面板样式 */
 .contest-header-actions {
     display: flex;
@@ -15,7 +28,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    z-index: 1002;
+    z-index: calc(var(--rank-z-index-base) + 22);
     font-size: 1rem;
 }
 
@@ -24,6 +37,16 @@
     font-size: 1.2rem;
 }
 
+
+/* 面板基础样式 */
+#team_info_panel {
+    top: 0;
+    right: 0;
+    width: 300px;
+    max-width: 90vw;
+    z-index: calc(var(--rank-z-index-base) + 21);
+    display: none;
+}
 
 /* 面板显示动画 */
 #team_info_panel.show {
@@ -85,6 +108,22 @@
     color: #6c757d;
     margin-top: 2px;
     font-style: italic;
+}
+
+/* 面板头部样式 */
+.team-info-panel-header {
+    height: 40px;
+    padding: 0 1rem;
+}
+
+/* 面板标题样式 */
+.team-info-panel-title {
+    font-size: 0.875rem;
+}
+
+/* 面板主体样式 */
+.team-info-panel-body {
+    padding: 0.75rem;
 }
 
 

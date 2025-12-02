@@ -126,6 +126,9 @@
     --rank-transition-fast: 0.15s ease;
     --rank-transition-normal: 0.3s ease;
     --rank-transition-slow: 0.5s ease;
+    
+    /* z-index 基准值 */
+    --rank-z-index-base: 500;
 }
 
 /* 基础样式 */
@@ -232,7 +235,7 @@
     border-bottom: 1px solid #dee2e6;
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: var(--rank-z-index-base);
     width: 100%;
     flex-wrap: nowrap;
     overflow-x: auto;
@@ -345,7 +348,7 @@
     border-radius: 6px;
     border: 1px solid #dee2e6;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    z-index: 100001;
+    z-index: calc(var(--rank-z-index-base) + 1);
 }
 
 .toolbar-group {
@@ -988,7 +991,7 @@
 /* 学校名 - 跨两行 */
 .school-name {
     grid-row: 1 / 3; /* 跨两行 */
-    font-size: 1.4rem; /* 增大字号 */
+    font-size: 22px; 
     font-weight: 800;
     color: #111827;
     white-space: nowrap;
@@ -1327,24 +1330,24 @@
 }
 
 .rank-item.gold {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); /* 更深的金色渐变 */
-    color: #ffffff; /* 白色文字，增强对比度 */
-    border: 2px solid #b45309; /* 更深的金色边框 */
-    box-shadow: 0 2px 8px rgba(180, 83, 9, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, #ffd700 0%, #ffb300 100%); /* 明亮的金色渐变，更易区分 */
+    color: #1a1a1a; /* 深色文字，在明亮金色上更清晰 */
+    border: 2px solid #ff8f00; /* 金色边框 */
+    box-shadow: 0 2px 8px rgba(255, 179, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .rank-item.silver {
-    background: linear-gradient(135deg, #6c757d 0%, #495057 100%); /* 深灰色渐变，特化银奖 */
-    color: #ffffff; /* 白色文字，增强对比度 */
-    border: 2px solid #343a40; /* 深灰色边框 */
-    box-shadow: 0 2px 8px rgba(52, 58, 64, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, #c0c0c0 0%, #a8a8a8 100%); /* 银灰色渐变，更接近真实银色 */
+    color: #1a1a1a; /* 深色文字，在银色上更清晰 */
+    border: 2px solid #909090; /* 银灰色边框 */
+    box-shadow: 0 2px 8px rgba(144, 144, 144, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .rank-item.bronze {
-    background: linear-gradient(135deg, #d97706 0%, #b45309 100%); /* 更深的铜色渐变 */
-    color: #ffffff; /* 白色文字，增强对比度 */
-    border: 2px solid #92400e; /* 更深的铜色边框 */
-    box-shadow: 0 2px 8px rgba(146, 64, 14, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, #cd7f32 0%, #b87333 100%); /* 经典铜色渐变，与金色明显区分 */
+    color: #ffffff; /* 白色文字，在深铜色上更清晰 */
+    border: 2px solid #9d5f1f; /* 深铜色边框 */
+    box-shadow: 0 2px 8px rgba(157, 95, 31, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .rank-item.star {
@@ -1532,6 +1535,11 @@
     text-shadow: 0 1px 2px rgba(255,0,0,0.7), 0 0px 4px rgba(255,0,0,0.45);
 }
 
+/* 当 time-brief 长度超过4位时，自动缩小字号 */
+.time-brief.time-brief-long {
+    font-size: var(--rank-font-size-xl);
+}
+
 /* 悬停时显示完整时间 */
 .problem-item .time-brief,
 .problem-item .time-full {
@@ -1587,7 +1595,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 100010; /* 提高到比 controls-toolbar (100001) 更高 */
+    z-index: calc(var(--rank-z-index-base) + 10); /* 提高到比 controls-toolbar 更高 */
     backdrop-filter: blur(6px); 
 }
 
@@ -1605,7 +1613,7 @@
     font-size: 18px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.15);
     animation: fadeIn 0.25s ease;
-    z-index: 100011; /* 确保在 loading-overlay 之上 */
+    z-index: calc(var(--rank-z-index-base) + 11); /* 确保在 loading-overlay 之上 */
 }
 
 .rank-system .loading-spinner::before {
@@ -1638,7 +1646,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 100003; /* Bootstrap 5 modal的z-index */
+    z-index: calc(var(--rank-z-index-base) + 3); /* Bootstrap 5 modal的z-index */
 }
 
 .modal-content {
@@ -2268,6 +2276,23 @@
     border-top: 2px solid rgba(0, 0, 0, 0.1);
 }
 
+/* 如果教练行隐藏，一血行可见时，一血行不需要上边框 */
+#award-coach-row.award-info-row-hidden + #award-first-blood-row:not(.award-info-row-hidden) {
+    border-top: none;
+    padding-top: 0;
+}
+
+/* 统计容器前面的分割线：当信息行隐藏时，确保统计容器有上边框 */
+/* 规则：如果统计容器前面是隐藏的信息行（成员/教练/一血），显示上边框 */
+#award-coach-row.award-info-row-hidden + .award-stats-container,
+#award-coach-row.award-info-row-hidden + #award-first-blood-row.award-info-row-hidden + .award-stats-container,
+#award-members-row.award-info-row-hidden + #award-coach-row.award-info-row-hidden + .award-stats-container,
+#award-members-row.award-info-row-hidden + #award-coach-row.award-info-row-hidden + #award-first-blood-row.award-info-row-hidden + .award-stats-container {
+    margin-top: 8px;
+    padding-top: 16px;
+    border-top: 2px solid rgba(0, 0, 0, 0.1);
+}
+
 .award-info-primary {
     padding-bottom: 16px; /* 主信息进一步压缩 */
 }
@@ -2509,7 +2534,7 @@
     width: 100vw;
     height: 100vh;
     background: rgba(0, 0, 0, 0.6);
-    z-index: 999999;
+    z-index: calc(var(--rank-z-index-base) + 9999);
     display: none;
     align-items: center;
     justify-content: center;
@@ -2781,7 +2806,7 @@
     font-size: var(--rank-font-size-md);
     line-height: 1.5;
     white-space: pre-line;
-    z-index: 100009; /* 确保在全屏模式下显示 */
+    z-index: calc(var(--rank-z-index-base) + 9); /* 确保在全屏模式下显示 */
     max-width: 320px;
     word-wrap: break-word;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
@@ -2864,7 +2889,7 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    z-index: 10000;
+    z-index: var(--rank-z-index-base);
     overflow: auto;
     background: white; /* 确保背景色 */
     -ms-overflow-style: none;
@@ -2886,14 +2911,23 @@
 
 /* 全屏模式下的tooltip样式 */
 .rank-system.fullscreen .tooltip {
-    z-index: 10010; /* 确保在全屏模式下显示 */
+    z-index: calc(var(--rank-z-index-base) + 10); /* 确保在全屏模式下显示 */
     position: fixed; /* 使用fixed定位，相对于视口 */
 }
 
 /* 全屏模式下的modal样式 */
 .rank-system.fullscreen .modal-overlay {
-    z-index: 10020; /* 确保在全屏模式下显示，高于全屏容器 */
+    z-index: calc(var(--rank-z-index-base) + 20); /* 确保在全屏模式下显示，高于全屏容器 */
     position: fixed; /* 使用fixed定位，相对于视口 */
+}
+
+/* 全屏模式下增大校名和队名字号 */
+.rank-system.fullscreen .school-name {
+    font-size: 32px; /* 从 22px 增大到 29px */
+}
+
+.rank-system.fullscreen .team-name-cn {
+    font-size: 24px; /* 从 18px 增大到 24px */
 }
 
 .rank-system ::-webkit-scrollbar {
@@ -3214,7 +3248,7 @@
     flex-direction: column;
     gap: 10px;
     min-width: 280px;
-    z-index: 1000;
+    z-index: var(--rank-z-index-base);
     max-height: 80vh;
     overflow-y: auto;
 }
@@ -3314,7 +3348,7 @@
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.2s ease;
-    z-index: 1000;
+    z-index: var(--rank-z-index-base);
     display: none; /* 默认隐藏，hover时显示 */
 }
 

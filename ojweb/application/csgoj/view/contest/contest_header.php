@@ -153,7 +153,7 @@
     </div>
     
     <!-- 右上角队伍信息面板 -->
-    <div class="contest-header-actions-container" style="position: absolute; top: 0; right: 0; z-index: 1000;">
+    <div class="contest-header-actions-container">
         {include file="../../csgoj/view/contest/team_info_panel" /}
     </div>
 </div>
