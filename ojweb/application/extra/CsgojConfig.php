@@ -94,7 +94,7 @@ return [
     'OJ_CONFIG' => [
         'user_id_maxlen' => 30
     ],
-    'OJ_UPLOAD_ATTACH_MAXSIZE'      => 536870912,    // 一般文件上传尺寸限制，比如题目描述的插图
+    'OJ_UPLOAD_ATTACH_MAXSIZE'      => 1073741824,    // 一般文件上传尺寸限制，比如题目描述的插图
     'OJ_UPLOAD_TESTDATA_MAXSIZE'    => 1073741824,   // 判题数据的尺寸限制
     'OJ_UPLOAD_IMPORT_MAXSIZE'      => 1073741824,   // 导入题目最大尺寸
     'OJ_UPLOAD_MAXNUM'              => 20,          // 一次最多上传多少个文件

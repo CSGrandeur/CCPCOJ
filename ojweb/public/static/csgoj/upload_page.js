@@ -162,7 +162,7 @@ const handleRename = (row) => {
             alerty.error('重命名请求失败', 'Rename request failed');
         });
     } else {
-        alerty.error('请输入有效的文件名', 'Please enter a valid filename<br/>(Only letters, numbers, Chinese characters, underscores and correct extensions allowed)');
+        alerty.error('请输入有效的文件名', 'Please enter a valid filename<br/>(Only letters, numbers, Chinese characters, underscores, dots, hyphens, parentheses and correct extensions allowed)');
     }
 };
 
@@ -202,7 +202,7 @@ $(document).on('change', '#upload_input', function() {
 // 检查多文件上传
 const checkMultiFile = (filelist, maxsize, reCheckFile) => {
     let filenameCheck = true;
-    let msg = `单文件大小限制 (Single file size limit): ${Math.ceil(maxsize / 1024 / 1024)}MB<br/>文件名限制 (File name limit): 仅包含字母、数字、中文、下划线和正确的扩展名<br/>`;
+    let msg = `单文件大小限制 (Single file size limit): ${Math.ceil(maxsize / 1024 / 1024)}MB<br/>文件名限制 (File name limit): 仅包含字母、数字、中文、下划线、点号、连字符、括号和正确的扩展名<br/>`;
     
     if (filelist.files.length > maxFileNum) {
         filenameCheck = false;
