@@ -88,8 +88,6 @@ class JudgeTypeInteractive(BaseJudgeType):
             )
             try:
                 # 等待两个进程完成
-                start_time = time.time()
-                
                 # 对于交互题，stdin/stdout 已经通过管道连接
                 # 不能使用 communicate()，因为它会尝试读取 stdout/stdin，会阻塞交互
                 # 直接使用 wait() 等待进程完成，与其他评测模式保持一致
@@ -104,17 +102,60 @@ class JudgeTypeInteractive(BaseJudgeType):
                 
                 tpj_return_code = tpj_process.returncode
                 
-                # 等待用户进程完成（如果还没结束）
+                # TPJ退出后立即关闭用户程序的管道，避免用户程序阻塞在缓冲区刷新
+                # 这可以确保用户程序能够检测到EOF并正常退出
+                if user_process.stdin:
+                    try:
+                        user_process.stdin.close()  # 关闭TPJ写给用户的管道
+                        if is_debug_enabled():
+                            self.logger.debug("已关闭用户程序的stdin管道（TPJ退出后）")
+                    except Exception:
+                        pass
+                if user_process.stdout:
+                    try:
+                        user_process.stdout.close()  # 关闭用户写给TPJ的管道
+                        if is_debug_enabled():
+                            self.logger.debug("已关闭用户程序的stdout管道（TPJ退出后）")
+                    except Exception:
+                        pass
+                
+                # 等待用户进程完成
+                # 注意：wait(timeout) 必须使用挂钟时间，但这里使用固定短超时（0.5秒）
+                # 因为管道已关闭，用户程序应该能快速检测到EOF并退出
+                # 如果用户程序在0.5秒内未退出，说明可能阻塞，直接kill
+                # 最终返回的时间仍然是CPU时间（从监控器获取），不依赖这里的挂钟时间
+                user_wait_timeout = 0.5  # 固定0.5秒超时，足够程序检测EOF并退出
                 try:
-                    user_process.wait(timeout=time_limit)
+                    user_process.wait(timeout=user_wait_timeout)
                 except subprocess.TimeoutExpired:
+                    # 如果用户进程在短时间内未退出，强制终止
+                    if is_debug_enabled():
+                        self.logger.debug(f"用户进程在{user_wait_timeout}秒内未退出，强制终止")
                     user_process.kill()
                     raise
                 
                 user_return_code = user_process.returncode
                 
-                end_time = time.time()
-                run_time = int((end_time - start_time) * 1000)  # 毫秒
+                # 从监控器获取CPU时间和内存（与其他评测模式一致）
+                # 使用用户程序的CPU时间作为运行时间
+                try:
+                    user_monitoring_data = user_monitor._get_monitoring_data()
+                    user_cpu_time = user_monitoring_data.get("cpu_time_used", 0)  # 毫秒
+                    user_memory = user_monitoring_data.get("memory_used", 0)  # KB
+                    
+                    # 验证CPU时间的合理性
+                    if user_cpu_time < 0:
+                        self.logger.warning(f"用户程序CPU时间获取失败: {user_cpu_time}ms，使用0")
+                        user_cpu_time = 0
+                    
+                    run_time = int(user_cpu_time) if user_cpu_time > 0 else 0
+                    
+                    if is_debug_enabled():
+                        self.logger.debug(f"用户程序监控数据: CPU时间={user_cpu_time}ms, 内存={user_memory}KB")
+                except Exception as e:
+                    self.logger.warning(f"获取用户程序监控数据失败: {e}，使用默认值")
+                    run_time = 0
+                    user_memory = 0
                 
                 # 读取 TPJ 的 stderr（进程结束后读取，避免阻塞）
                 # 参考 judge_type_tpj.py 的处理方式
@@ -127,7 +168,8 @@ class JudgeTypeInteractive(BaseJudgeType):
                     pass
                 
                 # 分析TPJ结果（TPJ的返回码和stderr包含评测信息）
-                tpj_result = analyze_tpj_result(tpj_return_code, tpj_stderr, run_time, 0)
+                # 使用用户程序的CPU时间和内存（与其他评测模式一致）
+                tpj_result = analyze_tpj_result(tpj_return_code, tpj_stderr, run_time, user_memory)
                 
                 if is_debug_enabled():
                     self.logger.debug(f"TPJ分析结果: {tpj_result}")
