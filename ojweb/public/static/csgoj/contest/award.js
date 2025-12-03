@@ -1,12 +1,18 @@
-class AwardSystem {
+class AwardSystem extends RankSystem {
     constructor(containerId, config = {}) {
-        this.containerId = containerId;
-        this.config = config;
-        this.rankSystem = null;
+        // 使用不存在的容器ID触发外部模式，合并配置
+        const mergedConfig = RankToolMergeConfig(window.RANK_CONFIG || {}, config);
+        mergedConfig.flg_rank_cache = mergedConfig.flg_rank_cache !== undefined ? mergedConfig.flg_rank_cache : false;
+        
+        // 调用父类构造函数，使用不存在的容器ID触发外部模式
+        super("award_external_mode", mergedConfig);
+        
+        // 获奖系统专用属性
         this.awardData = [];
         this.mapAward = {};
         this.awardToExport = [];
         this.contestTitle = "";
+        this.teamIdMap = {}; // team_id 到 awardData item 的映射
 
         this.init();
     }
@@ -15,7 +21,46 @@ class AwardSystem {
         this.createContainer();
         this.bindEvents();
         this.initSwitches();
-        this.loadAwardData();
+        
+        // 外部模式下，需要手动加载数据
+        // 因为父类的 Init() 在外部模式下会直接返回，不会调用 LoadData()
+        try {
+            // 初始化缓存（如果还没有初始化）
+            if (!this.cache) {
+                this.cache = new IndexedDBCache('csgoj_rank', 'logotable');
+                this.logoCache = new IndexedDBCache('csgoj_rank', 'logotable');
+            }
+            await this.cache.init();
+            this.InitLazyLoaders();
+            // 加载数据，这会触发 OriInit() 方法
+            await this.LoadData();
+        } catch (error) {
+            console.error("加载获奖数据失败:", error);
+            this.showError("加载获奖数据失败: " + error.message);
+        }
+    }
+
+    /**
+     * 重写 InitLazyLoaders：外部模式下不需要懒加载器
+     */
+    InitLazyLoaders() {
+        // 外部模式下，没有容器，不需要初始化懒加载器
+        if (this.externalMode || !this.container) {
+            return;
+        }
+        // 调用父类方法
+        super.InitLazyLoaders();
+    }
+
+    /**
+     * 重写 OriInit：在数据初始化完成后，处理获奖数据
+     */
+    OriInit(raw_data) {
+        // 调用父类的 OriInit 方法（处理数据、计算排名等）
+        super.OriInit(raw_data);
+        
+        // 处理获奖数据
+        this.processAwardData();
     }
 
     createContainer() {
@@ -78,36 +123,14 @@ class AwardSystem {
         }
     }
 
-    async loadAwardData() {
-        try {
-            // 创建 RankSystem 实例，使用不存在的容器ID触发外部模式
-            // 使用 window.RANK_CONFIG 作为配置
-            this.rankSystem = new RankSystem(
-                "award_external_mode",
-                window.RANK_CONFIG || {
-                    flg_rank_cache: false,
-                }
-            );
-
-            // rank模块 加载数据
-            await this.rankSystem.LoadData();
-
-            // 处理数据
-            this.processAwardData();
-        } catch (error) {
-            console.error("加载获奖数据失败:", error);
-            this.showError("加载获奖数据失败: " + error.message);
-        }
-    }
-
     processAwardData() {
         // 处理数据并加载到table
-        // 检查 rank 模块是否加载完毕
-        if (!this.rankSystem.OuterIsDataLoaded()) {
+        // 检查数据是否已加载
+        if (!this.OuterIsDataLoaded()) {
             throw new Error("RankSystem data not loaded");
         }
 
-        const contest = this.rankSystem.OuterGetContest();
+        const contest = this.OuterGetContest();
         this.contestTitle = contest?.title || "";
 
         this.calculateAwards();
@@ -116,14 +139,14 @@ class AwardSystem {
 
     calculateAwards() {
         // 计算全部获奖信息
-        // 根据开关状态设置 rankSystem 的打星模式
+        // 根据开关状态设置打星模式
         const flg_include_star = this.getSwitchWithStarTeam();
         const flg_ac_team_base = this.getSwitchAcTeamBased();
 
         this.awardData = this.getAwardData();
 
-        // 使用 rankSystem 的动态获奖线计算
-        const awardRanks = this.rankSystem.GetAwardRanks({
+        // 使用动态获奖线计算
+        const awardRanks = this.GetAwardRanks({
             flg_ac_team_base: flg_ac_team_base,
             starMode: flg_include_star ? 2 : 0,
         });
@@ -146,11 +169,27 @@ class AwardSystem {
             this.mapAward[this.awardToExport[i]] = [];
         }
 
-        const SchoolAwardSet = new Set();
-        // 处理每个队伍的获奖信息 - 使用 rankSystem 处理后的数据
+        // 先统计正式参赛女队数量（用于判断是否设置最佳女队奖）
+        let formalGirlTeamCount = 0;
+        let bestGirlTeamItem = null; // 用于记录排名最高的女队
         for (let i = 0; i < this.awardData.length; i++) {
-            const item = this.awardData[i]; // 修正变量名，避免混淆
-            const team = item.team; // item.team 才是真正的 team 信息
+            const item = this.awardData[i];
+            const team = item.team;
+            // 正式参赛女队：tkind === 1 且不是打星队
+            if (team && team.tkind === 1 && !item.isStar) {
+                formalGirlTeamCount++;
+                // 记录排名最高的女队（displayRank 越小排名越高）
+                if (!bestGirlTeamItem || item.displayRank < bestGirlTeamItem.displayRank) {
+                    bestGirlTeamItem = item;
+                }
+            }
+        }
+
+        const SchoolAwardSet = new Set();
+        // 处理每个队伍的获奖信息
+        for (let i = 0; i < this.awardData.length; i++) {
+            const item = this.awardData[i];
+            const team = item.team;
             if (item.solved <= 0) continue; // 无论是否为基数 0 题都默认不发奖，如有需求可另外手动处理
 
             // 初始化获奖数组
@@ -191,30 +230,18 @@ class AwardSystem {
                 this.mapAward["冠亚季军"].push({ remark: "季军学校", item: item });
             }
 
-            // 最佳女队/女生奖
-            if (team && team.tkind === 1 && item.displayRank <= rankBronze) {
-                const isTeam =
-                    team.tmember &&
-                    (team.tmember.includes("、") ||
-                        team.tmember.includes(",") ||
-                        team.tmember.includes("，"));
-                const awardName = isTeam ? "最佳女队奖" : "最佳女生奖";
-                item.awards.push(awardName);
-                this.mapAward["最佳女队/女生奖"].push(item);
-            }
-
-            // 最快解题奖 - 使用 rankSystem 的 map_fb 数据
+            // 最快解题奖 - 使用 map_fb 数据
             const includeStar = this.getSwitchWithStarTeam();
             const fbData = includeStar
-                ? this.rankSystem.map_fb.global
-                : this.rankSystem.map_fb.regular;
+                ? this.map_fb.global
+                : this.map_fb.regular;
 
             // 检查该队伍是否获得任何题目的最快解题奖
             for (const problemId in fbData) {
                 const fbTeam = fbData[problemId];
                 if (fbTeam && fbTeam.team_id === team.team_id) {
                     // 获取题目编号
-                    const problem = this.rankSystem.problemMap[problemId];
+                    const problem = this.problemMap[problemId];
                     const problemIndex = problem
                         ? RankToolGetProblemAlphabetIdx(problem.num)
                         : problemId;
@@ -229,26 +256,81 @@ class AwardSystem {
             }
         }
 
-        // 顽强拼搏奖 - 使用 rankSystem 的数据
+        // 统一处理最佳女队/女生奖：只有当正式参赛女队数量 >= 3 时才给奖
+        if (formalGirlTeamCount >= 3 && bestGirlTeamItem && bestGirlTeamItem.displayRank <= rankBronze) {
+            const team = bestGirlTeamItem.team;
+            const isTeam =
+                team.tmember &&
+                (team.tmember.includes("、") ||
+                    team.tmember.includes(",") ||
+                    team.tmember.includes("，"));
+            const awardName = isTeam ? "最佳女队奖" : "最佳女生奖";
+            bestGirlTeamItem.awards.push(awardName);
+            this.mapAward["最佳女队/女生奖"].push(bestGirlTeamItem);
+        }
+
+        // 顽强拼搏奖 - 使用 solutionMap 的数据
         this.calculateStruggleAward(rankBronze);
     }
 
     calculateStruggleAward(rankBronze) {
-        // 从 rankSystem 获取 AC 顺序数据
-        const solutions = this.rankSystem.OuterGetSolutions();
-        if (solutions && solutions.length > 0) {
-            const acOrder = solutions
-                .filter((s) => s.result === 4) // AC
-                .sort((a, b) => a.in_date.localeCompare(b.in_date));
-
-            for (let i = 0; i < acOrder.length; i++) {
-                const team_id = acOrder[i].team_id;
-                // 使用映射快速查找，O(1) 时间复杂度
+        // 从 solutionMap 中提取所有有效AC记录（第一次AC）
+        // solutionMap[team_id].ac[problemId] 存储的是该队伍该题目的第一次AC时间
+        const solutionMap = this.solutionMap;
+        if (!solutionMap) {
+            return;
+        }
+        
+        // 构建所有有效AC的数组（只包含正式队伍，排除打星队）
+        const validAcList = [];
+        for (const team_id in solutionMap) {
+            const teamSolutions = solutionMap[team_id];
+            if (teamSolutions && teamSolutions.ac) {
                 const item = this.teamIdMap[team_id];
-                if (item && item.displayRank > rankBronze) {
+                // 只考虑正式队伍（没得奖的队伍，且不是打星队）
+                if (item && item.displayRank > rankBronze && !item.isStar) {
+                    // 遍历该队伍的所有第一次AC记录
+                    for (const problemId in teamSolutions.ac) {
+                        const acTime = teamSolutions.ac[problemId];
+                        if (acTime) {
+                            validAcList.push({
+                                team_id: team_id,
+                                problemId: problemId,
+                                acTime: acTime
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        
+        if (validAcList.length === 0) {
+            return;
+        }
+        
+        // 按时间排序（从早到晚）
+        validAcList.sort((a, b) => {
+            const cmp = a.acTime.localeCompare(b.acTime);
+            if (cmp !== 0) return cmp;
+            // 如果时间相同，按 team_id 排序以保持稳定性
+            return a.team_id.localeCompare(b.team_id);
+        });
+        
+        // 从后往前遍历，找到最后1-2个没得奖的队伍的有效AC
+        let awardCount = 0;
+        const maxAwardCount = 2; // 最多给2个队伍
+        
+        for (let i = validAcList.length - 1; i >= 0 && awardCount < maxAwardCount; i--) {
+            const acRecord = validAcList[i];
+            const item = this.teamIdMap[acRecord.team_id];
+            
+            // 检查队伍是否存在且没得奖（排名超过铜奖线）
+            if (item && item.displayRank > rankBronze && !item.isStar) {
+                // 检查是否已经得过奖（避免重复）
+                if (!item.awards.includes("顽强拼搏奖")) {
                     item.awards.push("顽强拼搏奖");
                     this.mapAward["顽强拼搏奖"].push(item);
-                    break;
+                    awardCount++;
                 }
             }
         }
@@ -270,7 +352,7 @@ class AwardSystem {
     }
 
     getAwardData() {
-        this.awardData = this.rankSystem.OuterGetRankList(
+        this.awardData = this.OuterGetRankList(
             this.getSwitchWithStarTeam() ? 2 : 0
         );
         // 更新 team_id 映射
@@ -311,7 +393,6 @@ class AwardSystem {
             };
             return rowData;
         });
-
         // 显示表格并更新数据
         const table = document.getElementById("award_table");
         if (table) {

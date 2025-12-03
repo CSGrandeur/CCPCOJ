@@ -124,7 +124,7 @@
 </div>
 
 <script type="text/javascript">
-// RankSystem 配置信息
+// RankSystem 配置信息（AwardSystem 继承自 RankSystem，会使用此配置）
 window.RANK_CONFIG = {
     key: 'award_<?php echo $contest['contest_id']; ?>',
     cid_list: '<?php echo $contest['contest_id']; ?>',
@@ -136,15 +136,7 @@ window.RANK_CONFIG = {
     flg_rank_cache: false
 };
 
-// 获奖系统配置信息
-window.AWARD_CONFIG = {
-    module: "<?php echo $module; ?>",
-    cid: "<?php echo $contest['contest_id']; ?>",
-    contest_title: "<?php echo $contest['title']; ?>",
-    flg_rank_cache: false
-};
-
-// 初始化获奖系统
-new AwardSystem('award_container', window.AWARD_CONFIG);
+// 初始化获奖系统（继承自 RankSystem，会自动使用 window.RANK_CONFIG）
+new AwardSystem('award_container');
 </script>
 </div>
