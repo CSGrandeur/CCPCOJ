@@ -302,7 +302,7 @@ class JudgeClient:
                 # 交互题评测 (spj=2)
                 from judge_type.judge_type_interactive import JudgeTypeInteractive
                 interactive_judge = JudgeTypeInteractive(self.config, work_dir)
-                return interactive_judge.run_interactive_judge_mode(problem_id, executable, time_limit, memory_limit)
+                return interactive_judge.run_interactive_judge_mode(problem_id, executable, time_limit, memory_limit, language)
             else:
                 raise JudgeSysErr(f"不支持的评测类型：{spj}")
         except JudgeSysErr as e:

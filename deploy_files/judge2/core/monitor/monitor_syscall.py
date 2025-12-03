@@ -103,11 +103,19 @@ class MonitorSyscall(MonitorBase):
                 # 允许读取任何文件描述符（Python解释器需要，安全由chroot保证）
                 filter.add_rule(seccomp.ALLOW, syscall)
             elif syscall in ["write", "writev", "pwrite64"]:
-                # 只允许写入stdout/stderr
-                filter.add_rule(seccomp.ALLOW, syscall,
-                              seccomp.Arg(0, seccomp.EQ, 1))  # stdout
-                filter.add_rule(seccomp.ALLOW, syscall,
-                              seccomp.Arg(0, seccomp.EQ, 2))  # stderr
+                # 解释型语言（Java、Python）的运行时可能需要使用其他文件描述符
+                # JVM/Python解释器可能会dup stdout到其他fd，或使用内部fd进行通信
+                if self.language in ["java", "python"]:
+                    # 允许写入fd <= 10（解释器内部使用的fd通常在这个范围内）
+                    # 这比完全放开更安全，同时满足解释型语言的需求
+                    filter.add_rule(seccomp.ALLOW, syscall,
+                                  seccomp.Arg(0, seccomp.LE, 10))
+                else:
+                    # 编译型语言（C/C++）：只允许写入stdout/stderr
+                    filter.add_rule(seccomp.ALLOW, syscall,
+                                  seccomp.Arg(0, seccomp.EQ, 1))  # stdout
+                    filter.add_rule(seccomp.ALLOW, syscall,
+                                  seccomp.Arg(0, seccomp.EQ, 2))  # stderr
             elif syscall == "tgkill":
                 # 限制tgid和tid > 0（seccomp不支持参数间比较）
                 filter.add_rule(seccomp.ALLOW, syscall,

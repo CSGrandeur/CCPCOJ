@@ -21,6 +21,8 @@ from base_judge_type import BaseJudgeType, JudgeSysErrTestData, JudgeSysErrCompi
 from tools import status_constants as sc
 from tools.debug_manager import is_debug_enabled
 from tools.tpj_result_analyzer import analyze_tpj_result
+from monitor.run_monitor import create_run_monitor
+from tools.debug_manager import is_syscallfree_enabled
 
 class JudgeTypeInteractive(BaseJudgeType):
     """交互题评测类型 (spj=2) - 基于testlib的交互题评测"""
@@ -32,7 +34,7 @@ class JudgeTypeInteractive(BaseJudgeType):
         self.tpj_work_dir = None  # TPJ 工作目录（用于编译和运行）
     
     def run_interactive_judge(self, tpj_executable: str, user_executable: str, in_file: str, 
-                            out_file: str, time_limit: float, memory_limit: int) -> Dict[str, Any]:
+                            out_file: str, time_limit: float, memory_limit: int, language: str = "cpp") -> Dict[str, Any]:
         """运行交互题评测（使用新的monitor方案）
         
         注意：tpj_executable 参数保留以保持接口兼容，但实际不使用
@@ -81,10 +83,15 @@ class JudgeTypeInteractive(BaseJudgeType):
                 if is_debug_enabled():
                     self.logger.debug(f"注意：测试用例没有 .out 文件，使用空文件占位符")
             
+            # syscallfree模式：清空dmesg日志（与 run_with_monitoring 保持一致）
+            if is_syscallfree_enabled():
+                subprocess.run(["dmesg", "-C"], capture_output=True)
+                self.logger.info("交互题评测：已清空dmesg日志")
+            
             # 创建交互进程管道（返回进程和监控器）
             user_process, tpj_process, user_monitor, tpj_monitor = self._create_interactive_processes(
                 user_executable, chroot_input_file, chroot_output_file, 
-                time_limit, memory_limit
+                time_limit, memory_limit, language
             )
             try:
                 # 等待两个进程完成
@@ -138,25 +145,58 @@ class JudgeTypeInteractive(BaseJudgeType):
                 
                 # 从监控器获取CPU时间和内存（与其他评测模式一致）
                 # 使用用户程序的CPU时间作为运行时间
+                user_cpu_time = 0
+                user_memory = 0
                 try:
                     user_monitoring_data = user_monitor._get_monitoring_data()
                     user_cpu_time = user_monitoring_data.get("cpu_time_used", 0)  # 毫秒
                     user_memory = user_monitoring_data.get("memory_used", 0)  # KB
                     
-                    # 验证CPU时间的合理性
+                    # 验证CPU时间的合理性（与 run_with_monitoring 保持一致）
                     if user_cpu_time < 0:
-                        self.logger.warning(f"用户程序CPU时间获取失败: {user_cpu_time}ms，使用0")
-                        user_cpu_time = 0
-                    
-                    run_time = int(user_cpu_time) if user_cpu_time > 0 else 0
+                        raise RuntimeError("CPU时间监控失败，无法获取CPU时间数据")
                     
                     if is_debug_enabled():
                         self.logger.debug(f"用户程序监控数据: CPU时间={user_cpu_time}ms, 内存={user_memory}KB")
+                except RuntimeError as e:
+                    # CPU时间监控失败是严重错误，需要记录并返回系统错误
+                    self.logger.error(f"获取用户程序监控数据失败: {e}")
+                    return {
+                        "program_status": sc.PROGRAM_SYSTEM_ERROR,
+                        "judge_result": sc.get_judge_result_from_program_status(sc.PROGRAM_SYSTEM_ERROR),
+                        "time": 0,
+                        "memory": 0,
+                        "message": f"监控系统错误: {e}"
+                    }
                 except Exception as e:
                     self.logger.warning(f"获取用户程序监控数据失败: {e}，使用默认值")
-                    run_time = 0
+                    user_cpu_time = 0
                     user_memory = 0
                 
+                # 【关键修复】先分析用户程序的返回码，如果有错误，直接返回错误
+                # 直接使用 user_monitor._analyze_result()，与默认评测和TPJ评测保持一致
+                # 注意：交互题中用户程序的stdout/stderr是管道，不收集，传入空字符串
+                user_result = user_monitor._analyze_result(
+                    user_return_code, user_memory, user_cpu_time,
+                    stderr_data="", stdout_data=""
+                )
+                
+                # 检查用户程序是否有错误（非正常完成）
+                if user_result.get("program_status") != sc.PROGRAM_COMPLETED:
+                    # 用户程序有错误（seccomp、超时、内存超限等），直接返回
+                    # 需要添加 judge_result（如果缺失）
+                    if "judge_result" not in user_result:
+                        user_result["judge_result"] = sc.get_judge_result_from_program_status(
+                            user_result.get("program_status")
+                        )
+                    if is_debug_enabled():
+                        self.logger.debug(f"用户程序异常，返回错误: {user_result}")
+                    return user_result
+                
+                # 用户程序正常，计算运行时间用于TPJ结果
+                run_time = int(user_cpu_time) if user_cpu_time > 0 else 0
+                
+                # 用户程序正常，继续分析TPJ结果
                 # 读取 TPJ 的 stderr（进程结束后读取，避免阻塞）
                 # 参考 judge_type_tpj.py 的处理方式
                 tpj_stderr = ""
@@ -169,11 +209,22 @@ class JudgeTypeInteractive(BaseJudgeType):
                 
                 # 分析TPJ结果（TPJ的返回码和stderr包含评测信息）
                 # 使用用户程序的CPU时间和内存（与其他评测模式一致）
+                # analyze_tpj_result 会自动处理TPJ异常退出情况（返回JF）
                 tpj_result = analyze_tpj_result(tpj_return_code, tpj_stderr, run_time, user_memory)
+                
+                # 如果TPJ异常退出（返回JF），记录日志
+                if tpj_result.get("judge_result") == sc.JUDGE_JUDGE_FAILED:
+                    if is_debug_enabled():
+                        self.logger.error(f"TPJ程序异常退出，返回码: {tpj_return_code}，stderr: {tpj_stderr[:200]}")
                 
                 if is_debug_enabled():
                     self.logger.debug(f"TPJ分析结果: {tpj_result}")
                     self.logger.debug(f"用户进程返回码: {user_return_code}")
+                
+                # syscallfree模式：保存dmesg日志（与 run_with_monitoring 保持一致）
+                if is_syscallfree_enabled():
+                    user_monitor._save_dmesg_log()
+                    tpj_monitor._save_dmesg_log()
                 
                 return tpj_result
                     
@@ -183,6 +234,17 @@ class JudgeTypeInteractive(BaseJudgeType):
                     user_process.kill()
                 if tpj_process:
                     tpj_process.kill()
+                
+                # syscallfree模式：保存dmesg日志（即使超时也要保存）
+                if is_syscallfree_enabled():
+                    try:
+                        if user_monitor:
+                            user_monitor._save_dmesg_log()
+                        if tpj_monitor:
+                            tpj_monitor._save_dmesg_log()
+                    except Exception:
+                        pass
+                
                 return {
                     "program_status": sc.PROGRAM_TIME_LIMIT_EXCEEDED,
                     "judge_result": sc.JUDGE_TIME_LIMIT_EXCEEDED,
@@ -226,6 +288,17 @@ class JudgeTypeInteractive(BaseJudgeType):
                 
         except Exception as e:
             self.logger.error(f"运行交互题评测时发生错误：{e}")
+            
+            # syscallfree模式：保存dmesg日志（即使异常也要保存）
+            if is_syscallfree_enabled():
+                try:
+                    if user_monitor:
+                        user_monitor._save_dmesg_log()
+                    if tpj_monitor:
+                        tpj_monitor._save_dmesg_log()
+                except Exception:
+                    pass
+            
             return {
                 "program_status": sc.PROGRAM_SYSTEM_ERROR,
                 "judge_result": sc.JUDGE_SYSTEM_ERROR,
@@ -247,7 +320,7 @@ class JudgeTypeInteractive(BaseJudgeType):
     
     def _create_interactive_processes(self, user_executable: str, 
                                     chroot_input_file: str, chroot_output_file: str,
-                                    time_limit: float, memory_limit: int):
+                                    time_limit: float, memory_limit: int, language: str = "cpp"):
         """创建交互进程管道
         
         Args:
@@ -256,11 +329,11 @@ class JudgeTypeInteractive(BaseJudgeType):
             chroot_output_file: TPJ 工作目录中的输出文件路径
             time_limit: 时间限制
             memory_limit: 内存限制
+            language: 用户程序的语言类型
         
         Returns:
             tuple: (user_process, tpj_process, user_monitor, tpj_monitor)
         """
-        from monitor.run_monitor import create_run_monitor
         
         # 创建用户程序监控器（使用选手工作目录）
         user_monitor = create_run_monitor(
@@ -269,7 +342,7 @@ class JudgeTypeInteractive(BaseJudgeType):
             time_limit=time_limit,
             work_dir=self.work_dir,
             test_case_name="user_interactive",
-            language="cpp",  # 假设用户程序是C++
+            language=language,  # 使用传入的 language，而不是硬编码 "cpp"
             task_type=sc.TASK_TYPE_PLAYER_RUN
         )
         
@@ -290,8 +363,15 @@ class JudgeTypeInteractive(BaseJudgeType):
         tpj_tout_file = os.path.join(self.tpj_work_dir, "tpj_tout.tmp")
         
         # 构建命令
-        # 选手程序：直接从 stdin 读取，向 stdout 输出
-        user_cmd = [user_executable]
+        # 选手程序：使用语言处理器获取运行命令（与 run_solution 保持一致）
+        # 这样可以正确处理Python、Java等解释型语言
+        from lang.lang_factory import LanguageFactory
+        lang_handler = LanguageFactory.create_language_handler(language, self.config, self.work_dir)
+        if not lang_handler:
+            raise ValueError(f"不支持的语言: {language}")
+        
+        # 使用语言处理器获取运行命令（与 run_solution 保持一致）
+        user_cmd = lang_handler.get_run_command(user_executable)
         
         # TPJ程序：根据 testlib.h registerInteraction 的参数要求
         # TPJ 可执行文件已经在工作目录中，使用相对路径
@@ -339,14 +419,13 @@ class JudgeTypeInteractive(BaseJudgeType):
         # 返回进程和监控器，以便后续清理资源
         return user_process, tpj_process, user_monitor, tpj_monitor
     
-    
     def run_single_test_case(self, in_file: str, out_file: str, case_name: str, 
                            executable: str, time_limit: float, memory_limit: int, 
                            language: str = "cpp") -> Dict[str, Any]:
         """运行单个测试用例 - 交互题评测实现"""
         try:
             # 运行交互题评测
-            result = self.run_interactive_judge(self.tpj_executable, executable, in_file, out_file, time_limit, memory_limit)
+            result = self.run_interactive_judge(self.tpj_executable, executable, in_file, out_file, time_limit, memory_limit, language)
             return result
             
         except Exception as e:

@@ -7,7 +7,7 @@ TPJ 结果分析器
 
 import sys
 import os
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 # 添加路径以导入状态常量
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -15,6 +15,33 @@ parent_dir = os.path.dirname(current_dir)
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 from tools import status_constants as sc
+
+# testlib 返回值映射（与 testlib.h 保持一致）
+TESTLIB_RETURN_CODES = {
+    0: "ACCEPTED",
+    1: "WRONG_ANSWER", 
+    2: "PRESENTATION_ERROR",
+    3: "FAIL",
+    4: "DIRT",
+    5: "POINTS",
+    7: "POINTS",
+    8: "UNEXPECTED_EOF"
+}
+
+# testlib 正常返回码列表
+TESTLIB_VALID_CODES = list(TESTLIB_RETURN_CODES.keys())
+
+
+def is_testlib_return_code(return_code: int) -> bool:
+    """检查返回码是否为 testlib 正常返回码
+    
+    Args:
+        return_code: TPJ 程序返回码
+        
+    Returns:
+        如果是 testlib 正常返回码，返回 True；否则返回 False
+    """
+    return return_code in TESTLIB_RETURN_CODES
 
 
 def analyze_tpj_result(return_code: int, stderr_data: str = "", cpu_time_used: float = 0, memory_used: int = 0) -> Dict[str, Any]:
@@ -30,18 +57,6 @@ def analyze_tpj_result(return_code: int, stderr_data: str = "", cpu_time_used: f
     Returns:
         包含完整评测结果的字典
     """
-    # testlib 返回值映射
-    testlib_codes = {
-        0: "ACCEPTED",
-        1: "WRONG_ANSWER", 
-        2: "PRESENTATION_ERROR",
-        3: "FAIL",
-        4: "DIRT",
-        5: "POINTS",
-        7: "POINTS",
-        8: "UNEXPECTED_EOF"
-    }
-    
     # 基础结果
     result = {
         "program_status": sc.PROGRAM_COMPLETED,
@@ -55,8 +70,8 @@ def analyze_tpj_result(return_code: int, stderr_data: str = "", cpu_time_used: f
     }
     
     # 检查是否为 testlib 返回值
-    if return_code in testlib_codes:
-        testlib_result = testlib_codes[return_code]
+    if return_code in TESTLIB_RETURN_CODES:
+        testlib_result = TESTLIB_RETURN_CODES[return_code]
         result["testlib_result"] = testlib_result
         
         if testlib_result == "ACCEPTED":
@@ -83,10 +98,12 @@ def analyze_tpj_result(return_code: int, stderr_data: str = "", cpu_time_used: f
             result["message"] = f"TPJ评测结果：{testlib_result}"
             result["judge_info"] = stderr_data.strip()
     else:
-        # 非 testlib 返回值，视为系统错误
+        # 非 testlib 返回值，TPJ程序异常退出，返回JF（Judge Failed）
+        # 统一处理：无论是交互题还是SPJ题，TPJ异常退出都应该返回JF
         result["program_status"] = sc.PROGRAM_SYSTEM_ERROR
         result["judge_result"] = sc.get_judge_result_from_program_status(sc.PROGRAM_SYSTEM_ERROR)
         result["message"] = f"TPJ程序异常退出，返回码: {return_code}"
+        result["judge_info"] = stderr_data.strip() if stderr_data else None
     
     return result
 

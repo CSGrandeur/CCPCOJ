@@ -30,6 +30,7 @@ GLOBAL_BASE_WHITELIST = {
     "close_range",
     "fcntl",
     "fstat",
+    "fsync",      # 文件同步到磁盘（Python的os.fsync需要，用于确保输出被刷新）
     "lseek",
     "newfstatat",
     
