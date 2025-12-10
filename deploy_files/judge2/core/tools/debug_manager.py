@@ -12,6 +12,7 @@ import logging
 import argparse
 from typing import Dict, Any, Optional, List
 from datetime import datetime
+import time
 
 # 将当前目录和父目录添加到Python路径
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -125,8 +126,20 @@ class DebugManager:
         # 设置日志级别
         logger.setLevel(cls._log_level)
         
-        # 创建格式化器
-        formatter = logging.Formatter(
+        # 创建格式化器（使用UTC+8时区）
+        class UTC8Formatter(logging.Formatter):
+            def formatTime(self, record, datefmt=None):
+                # 将UTC时间转换为UTC+8时区
+                ct = self.converter(record.created)
+                # 添加8小时偏移量（UTC+8）
+                ct_adjusted = time.localtime(record.created + 8 * 3600)
+                if datefmt:
+                    s = time.strftime(datefmt, ct_adjusted)
+                else:
+                    s = time.strftime(self.default_time_format, ct_adjusted)
+                return s
+        
+        formatter = UTC8Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         )
         
@@ -146,8 +159,10 @@ class DebugManager:
         except Exception:
             pass
 
-        # 文件处理器
-        today = datetime.now().strftime("%Y%m%d")
+        # 文件处理器（使用UTC+8时区获取日期）
+        # 获取UTC+8时区的当前日期
+        utc8_time = time.time() + 8 * 3600
+        today = time.strftime("%Y%m%d", time.localtime(utc8_time))
         log_file = os.path.join(cls._log_dir, f"{module_name}_{today}.log")
         file_handler = logging.FileHandler(log_file, encoding='utf-8')
         file_handler.setFormatter(formatter)
@@ -247,13 +262,26 @@ class DebugManager:
         # 设置日志级别
         logger.setLevel(cls._log_level)
         
-        # 创建格式化器
-        formatter = logging.Formatter(
+        # 创建格式化器（使用UTC+8时区）
+        class UTC8Formatter(logging.Formatter):
+            def formatTime(self, record, datefmt=None):
+                # 将UTC时间转换为UTC+8时区
+                ct = self.converter(record.created)
+                # 添加8小时偏移量（UTC+8）
+                ct_adjusted = time.localtime(record.created + 8 * 3600)
+                if datefmt:
+                    s = time.strftime(datefmt, ct_adjusted)
+                else:
+                    s = time.strftime(self.default_time_format, ct_adjusted)
+                return s
+        
+        formatter = UTC8Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         )
         
-        # 文件处理器（总是记录到文件）
-        today = datetime.now().strftime("%Y%m%d")
+        # 文件处理器（总是记录到文件，使用UTC+8时区获取日期）
+        utc8_time = time.time() + 8 * 3600
+        today = time.strftime("%Y%m%d", time.localtime(utc8_time))
         log_file = os.path.join(cls._log_dir, f"{module_name}_{today}.log")
         file_handler = logging.FileHandler(log_file, encoding='utf-8')
         file_handler.setFormatter(formatter)
@@ -352,8 +380,20 @@ def get_debug_logger(module_name: str) -> logging.Logger:
 
         logger.setLevel(DebugManager._log_level)
 
-        # 设置格式
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        # 设置格式（使用UTC+8时区）
+        class UTC8Formatter(logging.Formatter):
+            def formatTime(self, record, datefmt=None):
+                # 将UTC时间转换为UTC+8时区
+                ct = self.converter(record.created)
+                # 添加8小时偏移量（UTC+8）
+                ct_adjusted = time.localtime(record.created + 8 * 3600)
+                if datefmt:
+                    s = time.strftime(datefmt, ct_adjusted)
+                else:
+                    s = time.strftime(self.default_time_format, ct_adjusted)
+                return s
+        
+        formatter = UTC8Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
         # 添加控制台处理器（统一使用 stdout）
         console_handler = logging.StreamHandler(sys.stdout)
@@ -361,10 +401,12 @@ def get_debug_logger(module_name: str) -> logging.Logger:
         console_handler.setFormatter(formatter)
         logger.addHandler(console_handler)
 
-        # 添加文件处理器（如果 log_dir 可用）
+        # 添加文件处理器（如果 log_dir 可用，使用UTC+8时区获取日期）
         if DebugManager._log_dir:
             try:
-                log_file = os.path.join(DebugManager._log_dir, f"{module_name}_{datetime.now().strftime('%Y%m%d')}.log")
+                utc8_time = time.time() + 8 * 3600
+                today_str = time.strftime('%Y%m%d', time.localtime(utc8_time))
+                log_file = os.path.join(DebugManager._log_dir, f"{module_name}_{today_str}.log")
                 file_handler = logging.FileHandler(log_file, encoding='utf-8', mode='a')
                 file_handler.setLevel(DebugManager._log_level)
                 file_handler.setFormatter(formatter)

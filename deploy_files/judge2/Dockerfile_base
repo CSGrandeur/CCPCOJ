@@ -6,7 +6,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
     LANG=zh_CN.UTF-8 \
     LANGUAGE=zh_CN:zh \
-    LC_ALL=zh_CN.UTF-8
+    LC_ALL=zh_CN.UTF-8 \
+    TZ=Asia/Shanghai
 
 # 替换为国内镜像源
 RUN sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list.d/ubuntu.sources && \
@@ -72,14 +73,17 @@ RUN apt-get update && \
     update-alternatives --install /usr/bin/php php /usr/bin/php8.3 100 && \
     rm -rf /var/lib/apt/lists/*
 
-# 安装和配置语言包（变化频率低，单独一层）
+# 安装和配置语言包和时区（变化频率低，单独一层）
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     locales \
     locales-all \
+    tzdata \
     && rm -rf /var/lib/apt/lists/* && \
     locale-gen zh_CN.UTF-8 && \
-    update-locale LANG=zh_CN.UTF-8
+    update-locale LANG=zh_CN.UTF-8 && \
+    ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
+    echo "Asia/Shanghai" > /etc/timezone
 
 # 设置工作目录
 WORKDIR /usr/local/bin

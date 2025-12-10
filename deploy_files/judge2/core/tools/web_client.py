@@ -117,10 +117,9 @@ def require_auth(func):
         # 确保已认证
         if not self.is_authenticated:
             if is_debug_enabled():
-                self.logger.debug(f"认证失败，尝试重新登录...")
+                self.logger.debug(f"未认证，尝试重新登录...")
             if not self._authenticate():
-                if is_debug_enabled():
-                    self.logger.debug(f"认证失败，跳过方法调用: {func.__name__}")
+                self.logger.warning(f"认证失败，无法调用方法: {func.__name__}，将返回默认值")
                 # 根据函数返回类型返回适当的默认值
                 if func.__annotations__.get('return') == bool:
                     return False
@@ -176,6 +175,8 @@ class WebClient:
         self.is_authenticated = False
         self.max_retries = 3
         self.retry_delay = 1  # 秒
+        self.max_retry_delay = 30  # 最大重试延迟（秒）
+        self.consecutive_failures = 0  # 连续失败次数
         
         # 加载缓存的 cookie
         self._load_cookies()
@@ -236,7 +237,7 @@ class WebClient:
                 self.logger.debug(f"关闭 WebClient Session 时发生错误: {e}")
         
     def _make_request(self, method: str, endpoint: str, **kwargs) -> Optional[Dict[str, Any]]:
-        """发起HTTP请求的通用方法（带重试机制）"""
+        """发起HTTP请求的通用方法（带重试机制和指数退避）"""
         for attempt in range(self.max_retries):
             try:
                 # 使用封装的URL构建方法
@@ -300,13 +301,17 @@ class WebClient:
                             self.logger.warning("认证失败，尝试重新登录")
                             self.is_authenticated = False
                             if self._authenticate():
-                                # 重新发起请求
+                                # 重新发起请求（不增加attempt计数）
                                 continue
                             else:
+                                self.consecutive_failures += 1
                                 return None
+                        # 请求成功，重置连续失败计数
+                        self.consecutive_failures = 0
                         return result
                     except json.JSONDecodeError:
                         # 如果不是JSON响应，返回文本内容
+                        self.consecutive_failures = 0
                         return {"success": True, "data": response.text}
                 else:
                     # 详细的错误信息
@@ -333,20 +338,27 @@ class WebClient:
                     log_error_with_context(self.logger, "HTTP请求失败", None, error_details)
                     
                     if attempt < self.max_retries - 1:
-                        self.logger.info(f"等待 {self.retry_delay} 秒后重试...")
-                        time.sleep(self.retry_delay)
+                        # 指数退避：延迟时间 = min(retry_delay * 2^attempt, max_retry_delay)
+                        delay = min(self.retry_delay * (2 ** attempt), self.max_retry_delay)
+                        self.logger.info(f"等待 {delay} 秒后重试（第 {attempt + 1}/{self.max_retries} 次尝试）...")
+                        time.sleep(delay)
                         continue
+                    self.consecutive_failures += 1
                     return None
                     
             except requests.exceptions.RequestException as e:
                 self.logger.error(f"请求异常：{e}")
                 if attempt < self.max_retries - 1:
-                    self.logger.info(f"等待 {self.retry_delay} 秒后重试...")
-                    time.sleep(self.retry_delay)
+                    # 指数退避：延迟时间 = min(retry_delay * 2^attempt, max_retry_delay)
+                    delay = min(self.retry_delay * (2 ** attempt), self.max_retry_delay)
+                    self.logger.info(f"等待 {delay} 秒后重试（第 {attempt + 1}/{self.max_retries} 次尝试）...")
+                    time.sleep(delay)
                     continue
+                self.consecutive_failures += 1
                 return None
             except Exception as e:
                 self.logger.error(f"请求处理异常：{e}")
+                self.consecutive_failures += 1
                 return None
         
         return None

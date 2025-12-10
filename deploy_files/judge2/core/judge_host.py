@@ -70,14 +70,23 @@ class JudgeHost:
         if is_debug_enabled():
             self.logger.debug("获取待评测任务...")
         
-        tasks = self.web_client.get_pending_tasks(max_tasks=1)
-        
-        if is_debug_enabled():
-            self.logger.debug(f"获取到 {len(tasks)} 个待评测任务")
-            for i, task in enumerate(tasks):
-                self.logger.debug(f"  任务 {i+1}: {task}")
-        
-        return tasks
+        try:
+            tasks = self.web_client.get_pending_tasks(max_tasks=1)
+            
+            # 检查是否因为网络问题返回了空列表
+            if tasks is None:
+                self.logger.warning("获取待评测任务失败（网络错误或认证失败），返回空列表")
+                return []
+            
+            if is_debug_enabled():
+                self.logger.debug(f"获取到 {len(tasks)} 个待评测任务")
+                for i, task in enumerate(tasks):
+                    self.logger.debug(f"  任务 {i+1}: {task}")
+            
+            return tasks
+        except Exception as e:
+            self.logger.error(f"获取待评测任务时发生异常：{e}")
+            return []
     
     def run_judge_client(self, solution_id: int) -> int:
         """运行评测客户端
@@ -215,12 +224,17 @@ class JudgeHost:
         except Exception:
             sleep_time = 3
             self.logger.warning("评测机配置文件中没有设置 sleep_time，使用默认值 3")
+        
+        consecutive_empty_cycles = 0  # 连续空循环次数
+        max_consecutive_empty_cycles = 10  # 最大连续空循环次数（用于检测是否卡住）
+        
         while self.running:
             try:
                 # 获取待评测任务
                 tasks = self.get_pending_tasks()
                 
                 if tasks:
+                    consecutive_empty_cycles = 0  # 重置连续空循环计数
                     self.logger.info(f"获取到 {len(tasks)} 个待评测任务")
                     
                     # 处理第一个任务（单任务模式）
@@ -229,14 +243,32 @@ class JudgeHost:
                     # 处理完成后立即进入下一次循环（不等待）
                 else:
                     # 没有任务时休眠
+                    consecutive_empty_cycles += 1
+                    
+                    # 如果连续多次空循环，记录日志（可能是网络问题或服务器问题）
+                    if consecutive_empty_cycles >= max_consecutive_empty_cycles:
+                        # 检查WebClient的连续失败次数
+                        if hasattr(self.web_client, 'consecutive_failures') and self.web_client.consecutive_failures > 0:
+                            self.logger.warning(
+                                f"连续 {consecutive_empty_cycles} 次未获取到任务，"
+                                f"WebClient连续失败 {self.web_client.consecutive_failures} 次，"
+                                f"可能是网络问题或服务器问题。继续重试..."
+                            )
+                        else:
+                            # 正常情况：没有待评测任务
+                            if consecutive_empty_cycles == max_consecutive_empty_cycles:
+                                self.logger.info(f"连续 {consecutive_empty_cycles} 次未获取到任务，继续等待...")
+                    
                     time.sleep(sleep_time)
                 
             except KeyboardInterrupt:
                 self.logger.info("收到中断信号，退出主循环")
                 break
             except Exception as e:
-                self.logger.error(f"主循环中发生错误：{e}")
+                self.logger.error(f"主循环中发生错误：{e}", exc_info=True)
+                # 错误后等待，但不要永久停止
                 time.sleep(5)  # 错误后等待5秒再继续
+                consecutive_empty_cycles = 0  # 重置计数，因为发生了异常
         
         self.logger.info("主循环结束")
 
