@@ -60,15 +60,15 @@ function FormatterPassRate(value, row, index, field) {
     return value === null ? '-' : `${value * 100}%`;
 }
 function FormatterLanguage(value, row, index, field) {
+    let value_show = value;
+    switch(value) {
+        case 'Python3': value_show = 'Py3'; break;
+        default: value_show = value;
+    }
     if(('code_show' in row) && row['code_show']) {
-        let value_show = value;
-        switch(value) {
-            case 'Python3': value_show = 'Py3'; break;
-            default: value_show = value;
-        }
         return `<button class='btn btn-primary lang-btn' solution_id='${row['solution_id']}' title='${value}'>${value_show}</button>`;
     } else {
-        return `<strong class='lang-strong'>${value}</strong>`;
+        return `<strong class='lang-strong'>${value_show}</strong>`;
     }
 }
 function FormatterRejudge(value, row, index, field) {
