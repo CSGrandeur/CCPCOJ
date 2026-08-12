@@ -1,3 +1,11 @@
+本仓库为 **CCPCOJ 1.x**。后续仅修复缺陷，不再更新功能。
+
+体验 **2.x** 请参阅 [CCPCOJ-Doc](https://github.com/SZTU-ACM/CCPCOJ-Doc) 的部署文档、用户文档，使用其中的部署脚本完成安装。
+
+---
+
+# CCPCOJ 1.x 文档
+
 # CCPCOJ - 一站式XCPC比赛系统
 
 > [CSGOJ](https://github.com/CSGrandeur/CSGOJ) 分支版本
