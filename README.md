@@ -1,9 +1,9 @@
 <p align="center">
   <a href="https://github.com/SZTU-ACM/CCPCOJ-2">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset=".github/archived-banner-dark.png">
-      <source media="(prefers-color-scheme: light)" srcset=".github/archived-banner-light.png">
-      <img alt="本仓库已归档，不再更新 — 欢迎前往 SZTU-ACM/CCPCOJ-2 部署使用新版本" src=".github/archived-banner-light.png" width="100%">
+      <source media="(prefers-color-scheme: dark)" srcset="https://cdn.jsdelivr.net/gh/CSGrandeur/CCPCOJ@master/doc/archived-banner-dark.png">
+      <source media="(prefers-color-scheme: light)" srcset="https://cdn.jsdelivr.net/gh/CSGrandeur/CCPCOJ@master/doc/archived-banner-light.png">
+      <img alt="本仓库已归档，不再更新 — 欢迎前往 SZTU-ACM/CCPCOJ-2 部署使用新版本" src="https://cdn.jsdelivr.net/gh/CSGrandeur/CCPCOJ@master/doc/archived-banner-light.png" width="100%">
     </picture>
   </a>
 </p>
